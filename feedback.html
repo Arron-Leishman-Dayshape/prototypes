@@ -344,6 +344,78 @@
       box-shadow: 0 16px 48px rgba(0,0,0,0.35);
       background: #fff;
     }
+    .confirm-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(26, 29, 38, 0.45);
+    }
+    .confirm-modal[hidden] { display: none !important; }
+    .confirm-dialog {
+      width: min(400px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 48px rgba(26, 29, 38, 0.22);
+      padding: 22px 22px 18px;
+    }
+    .confirm-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .confirm-dialog-head h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .confirm-dialog-close {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .confirm-dialog-close:hover { background: #f3f4f6; color: var(--ink); }
+    .confirm-dialog-sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .confirm-dialog-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .confirm-dialog-actions .btn-ghost,
+    .confirm-dialog-actions .btn-danger {
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font: 600 0.95rem/1 "DM Sans", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .btn-danger {
+      border: 0;
+      background: #a3003c;
+      color: #fff;
+    }
+    .btn-danger:hover { filter: brightness(1.06); }
+    .btn-danger:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
     .empty {
       padding: 36px 20px;
       text-align: center;
@@ -413,6 +485,20 @@
     <img id="lightboxImg" alt="Screenshot full size" />
   </div>
 
+  <div class="confirm-modal" id="deleteModal" hidden>
+    <div class="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+      <div class="confirm-dialog-head">
+        <h2 id="deleteModalTitle">Delete comment?</h2>
+        <button type="button" class="confirm-dialog-close" id="deleteModalClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="confirm-dialog-sub">This removes the comment for everyone. It can’t be undone.</p>
+      <div class="confirm-dialog-actions">
+        <button type="button" class="btn-ghost" id="deleteModalCancel">Cancel</button>
+        <button type="button" class="btn-danger" id="deleteModalConfirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="config.js"></script>
   <script src="shared/access.js"></script>
   <script src="shared/feedback-store.js"></script>
@@ -433,6 +519,11 @@
       var banner = document.getElementById('localBanner');
       var lightbox = document.getElementById('lightbox');
       var lightboxImg = document.getElementById('lightboxImg');
+      var deleteModal = document.getElementById('deleteModal');
+      var deleteModalConfirm = document.getElementById('deleteModalConfirm');
+      var deleteModalCancel = document.getElementById('deleteModalCancel');
+      var deleteModalClose = document.getElementById('deleteModalClose');
+      var pendingDeleteId = null;
       var store = window.PrototypesFeedbackStore;
       var telemetry = window.PrototypesTelemetry;
       var access = window.PrototypesAccess;
@@ -787,33 +878,54 @@
         }).join('');
       }
 
+      function closeDeleteModal() {
+        if (!deleteModal || deleteModal.hidden) return;
+        deleteModal.hidden = true;
+        pendingDeleteId = null;
+        deleteModalConfirm.disabled = false;
+        deleteModalConfirm.textContent = 'Delete';
+      }
+
+      function openDeleteModal(commentId) {
+        pendingDeleteId = commentId;
+        deleteModalConfirm.disabled = false;
+        deleteModalConfirm.textContent = 'Delete';
+        deleteModal.hidden = false;
+        deleteModalConfirm.focus();
+      }
+
+      function runDelete(commentId) {
+        deleteModalConfirm.disabled = true;
+        deleteModalConfirm.textContent = 'Deleting…';
+        store.remove(id, commentId).then(function (result) {
+          threadItems = (threadItems || []).filter(function (item) { return item.id !== commentId; });
+          renderThread(threadItems);
+          exportBtn.disabled = !threadItems.length;
+          closeDeleteModal();
+          if (result && result.remoteFailed) {
+            window.alert('Deleted on this browser only. Remote delete failed — check the Supabase delete policy.');
+            return;
+          }
+          return store.list(id).then(function (fresh) {
+            threadItems = fresh.items || [];
+            renderThread(threadItems);
+            exportBtn.disabled = !threadItems.length;
+            banner.hidden = !!fresh.shared;
+          });
+        }).catch(function () {
+          deleteModalConfirm.disabled = false;
+          deleteModalConfirm.textContent = 'Delete';
+          window.alert('Couldn’t delete that comment. Try again.');
+        });
+      }
+
       thread.addEventListener('click', function (e) {
         var delBtn = e.target.closest('.item-delete');
         if (delBtn) {
           e.preventDefault();
           var commentId = delBtn.getAttribute('data-delete-id');
           if (!commentId) return;
-          if (!window.confirm('Delete this comment? This can’t be undone.')) return;
-          delBtn.disabled = true;
-          store.remove(id, commentId).then(function (result) {
-            threadItems = (threadItems || []).filter(function (item) { return item.id !== commentId; });
-            renderThread(threadItems);
-            exportBtn.disabled = !threadItems.length;
-            if (result && result.remoteFailed) {
-              window.alert('Deleted on this browser only. Remote delete failed — check the Supabase delete policy.');
-              return;
-            }
-            // Re-fetch so this browser cache matches what everyone else will see
-            return store.list(id).then(function (fresh) {
-              threadItems = fresh.items || [];
-              renderThread(threadItems);
-              exportBtn.disabled = !threadItems.length;
-              banner.hidden = !!fresh.shared;
-            });
-          }).catch(function () {
-            delBtn.disabled = false;
-            window.alert('Couldn’t delete that comment. Try again.');
-          });
+          openDeleteModal(commentId);
           return;
         }
 
@@ -822,12 +934,28 @@
         lightboxImg.src = img.src;
         lightbox.hidden = false;
       });
+
+      deleteModalConfirm.addEventListener('click', function () {
+        if (!pendingDeleteId) return;
+        runDelete(pendingDeleteId);
+      });
+      deleteModalCancel.addEventListener('click', closeDeleteModal);
+      deleteModalClose.addEventListener('click', closeDeleteModal);
+      deleteModal.addEventListener('click', function (e) {
+        if (e.target === deleteModal) closeDeleteModal();
+      });
+
       lightbox.addEventListener('click', function () {
         lightbox.hidden = true;
         lightboxImg.removeAttribute('src');
       });
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && !lightbox.hidden) {
+        if (e.key !== 'Escape') return;
+        if (!deleteModal.hidden) {
+          closeDeleteModal();
+          return;
+        }
+        if (!lightbox.hidden) {
           lightbox.hidden = true;
           lightboxImg.removeAttribute('src');
         }
