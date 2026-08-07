@@ -770,11 +770,15 @@
               '</figure>'
             : '';
           return (
-            '<article class="item">' +
+            '<article class="item" data-comment-id="' + escapeAttr(item.id) + '">' +
               '<div class="item-head">' +
                 '<span class="item-name">' + escapeHtml(item.name || 'Anonymous') + '</span>' +
                 stars +
                 '<span>' + escapeHtml(when) + '</span>' +
+                '<span class="item-head-spacer"></span>' +
+                '<button type="button" class="item-delete" data-delete-id="' + escapeAttr(item.id) + '" aria-label="Delete comment">' +
+                  '<i class="fa-regular fa-trash-can" aria-hidden="true"></i> Delete' +
+                '</button>' +
               '</div>' +
               '<p class="item-body">' + escapeHtml(item.message) + '</p>' +
               shot +
@@ -784,6 +788,27 @@
       }
 
       thread.addEventListener('click', function (e) {
+        var delBtn = e.target.closest('.item-delete');
+        if (delBtn) {
+          e.preventDefault();
+          var commentId = delBtn.getAttribute('data-delete-id');
+          if (!commentId) return;
+          if (!window.confirm('Delete this comment? This can’t be undone.')) return;
+          delBtn.disabled = true;
+          store.remove(id, commentId).then(function (result) {
+            threadItems = (threadItems || []).filter(function (item) { return item.id !== commentId; });
+            renderThread(threadItems);
+            exportBtn.disabled = !threadItems.length;
+            if (result && result.remoteFailed) {
+              window.alert('Deleted here, but Supabase blocked remote delete. Run the delete policy SQL so it syncs for everyone.');
+            }
+          }).catch(function () {
+            delBtn.disabled = false;
+            window.alert('Couldn’t delete that comment. Try again.');
+          });
+          return;
+        }
+
         var img = e.target.closest('img[data-full]');
         if (!img) return;
         lightboxImg.src = img.src;
