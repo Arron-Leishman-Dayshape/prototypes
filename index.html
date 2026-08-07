@@ -81,17 +81,29 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       color: inherit;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+    }
+    .card.is-openable,
+    .sub.is-openable {
+      cursor: pointer;
+    }
+    .card.is-openable:hover,
+    .sub.is-openable:hover {
+      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+      box-shadow: 0 10px 28px rgba(26, 29, 38, 0.08);
+      transform: translateY(-1px);
+      background: #fff;
+    }
+    .card.is-openable:focus-visible,
+    .sub.is-openable:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
     .card h2 {
       margin: 0 0 4px;
       font-size: 1.15rem;
       font-weight: 700;
     }
-    .card h2 a {
-      color: inherit;
-      text-decoration: none;
-    }
-    .card h2 a:hover { color: var(--accent); }
     .card p {
       margin: 0;
       color: var(--muted);
@@ -120,35 +132,45 @@
       background: #f3efe8;
       color: #8a5a2b;
     }
-    .links {
+    .actions {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: stretch;
       gap: 8px;
     }
-    .links a,
-    .links button {
+    .actions button {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      font-weight: 600;
-      color: var(--accent);
-      text-decoration: none;
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font: 600 0.9rem/1 "DM Sans", system-ui, sans-serif;
       white-space: nowrap;
-      font-size: 0.95rem;
-      font-family: inherit;
-      background: none;
-      border: 0;
-      padding: 0;
       cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
     }
-    .links a.secondary,
-    .links button.secondary { color: var(--muted); font-weight: 600; }
-    .links a:hover,
-    .links button:hover { text-decoration: underline; }
-    .links button.is-copied { color: var(--accent); }
+    .actions button:hover {
+      border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .actions button.is-copied {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
 
-    .card.is-group { grid-template-columns: 1fr; }
+    .card.is-group { grid-template-columns: 1fr; cursor: default; }
+    .card.is-group:hover {
+      border-color: var(--line);
+      box-shadow: none;
+      transform: none;
+    }
     .subs {
       display: grid;
       gap: 8px;
@@ -165,14 +187,13 @@
       border: 1px solid var(--line);
       border-radius: 10px;
       background: color-mix(in srgb, var(--paper) 55%, var(--panel));
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
     }
     .sub h3 {
       margin: 0 0 3px;
       font-size: 1rem;
       font-weight: 700;
     }
-    .sub h3 a { color: inherit; text-decoration: none; }
-    .sub h3 a:hover { color: var(--accent); }
     .sub p {
       margin: 0;
       color: var(--muted);
@@ -202,7 +223,8 @@
       .wrap { width: calc(100% - 28px); padding-top: 36px; }
       .card { grid-template-columns: 1fr; }
       .sub { grid-template-columns: 1fr; }
-      .links { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
+      .actions { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
+      .actions button { flex: 1 1 auto; }
     }
   </style>
 </head>
@@ -284,10 +306,36 @@
         });
 
       list.addEventListener('click', function (e) {
-        var btn = e.target.closest('.share-btn');
-        if (!btn) return;
+        var actionBtn = e.target.closest('.actions button');
+        if (actionBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (actionBtn.classList.contains('share-btn')) {
+            sharePrototype(actionBtn);
+            return;
+          }
+          if (actionBtn.classList.contains('feedback-btn')) {
+            var fb = actionBtn.getAttribute('data-feedback-href');
+            if (fb) location.href = fb;
+            return;
+          }
+          return;
+        }
+
+        var openable = e.target.closest('.is-openable[data-href]');
+        if (!openable || !list.contains(openable)) return;
+        var href = openable.getAttribute('data-href');
+        if (href) location.href = href;
+      });
+
+      list.addEventListener('keydown', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target.closest('.actions button')) return;
+        var openable = e.target.closest('.is-openable[data-href]');
+        if (!openable || !list.contains(openable)) return;
         e.preventDefault();
-        sharePrototype(btn);
+        var href = openable.getAttribute('data-href');
+        if (href) location.href = href;
       });
 
       var shareHubBtn = document.getElementById('shareHubBtn');
@@ -382,43 +430,44 @@
         }
       }
 
-      function linksMarkup(item) {
+      function actionsMarkup(item) {
         var key = access.configuredKey();
         var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id) + (key ? '&key=' + encodeURIComponent(key) : '');
         var shareUrl = absoluteUrl(item.path);
         return (
-          '<div class="links">' +
-            '<a href="' + escapeAttr(item.path) + '">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>' +
-            '<button type="button" class="secondary share-btn" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
+          '<div class="actions">' +
+            '<button type="button" class="share-btn" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
               '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i> <span class="share-label">Share</span>' +
             '</button>' +
-            '<a class="secondary" href="' + feedbackHref + '"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback</a>' +
+            '<button type="button" class="feedback-btn" data-feedback-href="' + escapeAttr(feedbackHref) + '">' +
+              '<i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback' +
+            '</button>' +
           '</div>'
         );
       }
 
       function cardMarkup(item) {
         return (
-          '<li class="card" data-prototype-id="' + escapeAttr(item.id) + '">' +
+          '<li class="card is-openable" data-prototype-id="' + escapeAttr(item.id) + '" data-href="' + escapeAttr(item.path) + '" tabindex="0" role="link" aria-label="Open ' + escapeAttr(item.title || item.id) + '">' +
             '<div>' +
-              '<h2><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h2>' +
+              '<h2>' + escapeHtml(item.title || item.id) + '</h2>' +
               '<p>' + escapeHtml(item.description || '') + '</p>' +
               metaMarkup(item) +
             '</div>' +
-            linksMarkup(item) +
+            actionsMarkup(item) +
           '</li>'
         );
       }
 
       function subMarkup(item) {
         return (
-          '<li class="sub" data-prototype-id="' + escapeAttr(item.id) + '">' +
+          '<li class="sub is-openable" data-prototype-id="' + escapeAttr(item.id) + '" data-href="' + escapeAttr(item.path) + '" tabindex="0" role="link" aria-label="Open ' + escapeAttr(item.title || item.id) + '">' +
             '<div>' +
-              '<h3><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h3>' +
+              '<h3>' + escapeHtml(item.title || item.id) + '</h3>' +
               '<p>' + escapeHtml(item.description || '') + '</p>' +
               metaMarkup(item) +
             '</div>' +
-            linksMarkup(item) +
+            actionsMarkup(item) +
           '</li>'
         );
       }
