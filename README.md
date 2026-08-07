@@ -114,8 +114,9 @@ On each prototype’s feedback page, use **Export thread** to download a self-co
 
 Publish directory: `.` · No build command.
 
-## Share with reviewers
+## Share with reviewers vs internal
 
-- Hub: `https://your-site.pages.dev/`
-- One mock: `…/mocks/practitioner-kanban.html`
-- That mock’s feedback: `…/feedback.html?id=practitioner-kanban`
+- **Reviewers:** use **Share** on a hub card (or the mock URL). They get the mock only — can leave feedback, cannot open the hub or view threads.
+- **Your team:** use **Copy hub link** on the hub (includes a secret `?key=`). That unlocks the hub + feedback inboxes.
+- Change `internalAccessKey` in `config.js` anytime to revoke old hub links.
+

@@ -206,9 +206,12 @@
   </div>
 
   <script src="config.js"></script>
+  <script src="shared/access.js"></script>
   <script src="shared/feedback-store.js"></script>
   <script>
     (function () {
+      if (!window.PrototypesAccess.requireInternalAccess()) return;
+
       var params = new URLSearchParams(location.search);
       var id = (params.get('id') || '').trim();
       var titleEl = document.getElementById('title');
@@ -221,9 +224,15 @@
       var lightbox = document.getElementById('lightbox');
       var lightboxImg = document.getElementById('lightboxImg');
       var store = window.PrototypesFeedbackStore;
+      var access = window.PrototypesAccess;
       var cfg = window.PROTOTYPES_CONFIG || {};
       var threadItems = [];
       var threadTitle = id;
+      var hubHref = 'index.html' + (access.configuredKey() ? ('?key=' + encodeURIComponent(access.configuredKey())) : '');
+
+      document.querySelectorAll('a[href="index.html"]').forEach(function (a) {
+        a.href = hubHref;
+      });
 
       if (cfg.siteName) document.title = 'Feedback · ' + cfg.siteName;
 

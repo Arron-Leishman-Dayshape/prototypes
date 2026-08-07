@@ -8,11 +8,12 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 
 ## Layout
 
-- `index.html` — landing page (reads `manifest.json`)
+- `index.html` — internal landing page (gated by `internalAccessKey`)
 - `manifest.json` — list of mocks (required for hub cards)
-- `mocks/*.html` — individual prototypes
-- `feedback.html?id=<prototype-id>` — per-prototype feedback inbox
-- `config.js` — site name + Supabase keys (do not remove keys)
+- `mocks/*.html` — individual prototypes (**public** share links)
+- `feedback.html?id=<prototype-id>` — internal per-prototype inbox (gated)
+- `config.js` — site name, Supabase keys, `internalAccessKey` (do not remove keys)
+- `shared/access.js` — hub/thread access gate
 - `shared/feedback-store.js`, `shared/feedback.js`, `shared/feedback.css` — feedback widget
 
 ## Adding or updating a mock
@@ -28,6 +29,7 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 
 ```html
 <script src="../config.js"></script>
+<script src="../shared/access.js"></script>
 <script src="../shared/feedback-store.js"></script>
 <script src="../shared/feedback.js" defer></script>
 ```
@@ -52,12 +54,16 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 - **Do** keep each mock self-contained HTML when possible.
 - **Do** scope feedback to the prototype via `data-prototype-id`.
 - **Do** update `manifest.json` whenever you add/rename a mock.
+- **Do** share **mock URLs only** with external reviewers (Share on the hub card).
+- **Don’t** share the hub URL (or `?key=…`) outside your team.
 - **Don’t** put Dayshape app source here — HTML mocks only.
-- **Don’t** remove or overwrite `supabaseUrl` / `supabaseAnonKey` in `config.js`.
+- **Don’t** remove or overwrite `supabaseUrl` / `supabaseAnonKey` / `internalAccessKey` in `config.js`.
 - **Don’t** mix feedback across prototypes or reintroduce Formspree/email unless asked.
 
 ## Share URLs (after push)
 
-- Hub: `https://arronleishman.github.io/prototypes/`
-- Mock: `https://arronleishman.github.io/prototypes/mocks/<id>.html`
-- Feedback: `https://arronleishman.github.io/prototypes/feedback.html?id=<id>`
+- **Reviewer (public mock):** `https://arronleishman.github.io/prototypes/mocks/<id>.html`  
+  They can use the mock + leave feedback. No hub, no View thread.
+- **Internal hub:** use **Copy hub link** on the hub (includes `?key=…`)  
+  Or: `https://arronleishman.github.io/prototypes/?key=<internalAccessKey>`
+- **Internal feedback:** from the hub only (also requires the key)

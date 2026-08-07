@@ -52,7 +52,16 @@
     var scripts = document.querySelectorAll('script[src*="feedback.js"]');
     var src = scripts.length ? scripts[scripts.length - 1].getAttribute('src') : '';
     var base = src ? src.replace(/shared\/feedback\.js(?:\?.*)?$/, '') : '/';
-    return base + 'feedback.html?id=' + encodeURIComponent(prototypeId);
+    var access = window.PrototypesAccess;
+    var url = base + 'feedback.html?id=' + encodeURIComponent(prototypeId);
+    if (access && access.configuredKey()) {
+      url += '&key=' + encodeURIComponent(access.configuredKey());
+    }
+    return url;
+  }
+
+  function isInternalViewer() {
+    return !!(window.PrototypesAccess && window.PrototypesAccess.hasAccess());
   }
 
   function loadHtml2Canvas() {
@@ -292,7 +301,9 @@
         '</div>' +
         '<p class="ProtoFeedback-status" id="protoFeedbackStatus" aria-live="polite"></p>' +
         '<div class="ProtoFeedback-actions">' +
-          '<a class="ProtoFeedback-inbox-link" id="protoFeedbackInbox" href="' + hubFeedbackUrl() + '">View thread</a>' +
+          (isInternalViewer()
+            ? '<a class="ProtoFeedback-inbox-link" id="protoFeedbackInbox" href="' + hubFeedbackUrl() + '">View thread</a>'
+            : '<span class="ProtoFeedback-inbox-link" style="opacity:.75;pointer-events:none">Sent to the team</span>') +
           '<button type="button" class="ProtoFeedback-cancel" id="protoFeedbackCancel">Cancel</button>' +
           '<button type="submit" class="ProtoFeedback-submit" id="protoFeedbackSubmit">Send</button>' +
         '</div>' +

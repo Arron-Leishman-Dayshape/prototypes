@@ -211,9 +211,15 @@
     <h1 class="brand" id="siteName">High Volume Prototypes</h1>
     <p class="tagline" id="siteTagline">Click a mock, share the link, leave feedback.</p>
     <div class="hint">
-      <span><i class="fa-solid fa-link"></i> Share any mock URL</span>
-      <span><i class="fa-solid fa-rotate"></i> Push updates — links stay live</span>
+      <span><i class="fa-solid fa-link"></i> Share <strong>mock</strong> links with reviewers</span>
+      <span><i class="fa-solid fa-lock"></i> Hub + threads stay internal</span>
       <span><i class="fa-regular fa-comment-dots"></i> Feedback is per prototype</span>
+    </div>
+    <div class="hint" id="hubShareRow" style="margin-top:-12px">
+      <span><i class="fa-solid fa-share-nodes"></i> Internal hub link (team only)</span>
+      <button type="button" id="shareHubBtn" class="secondary" style="margin-left:auto;font:600 0.92rem/1 inherit;border:0;background:none;color:var(--accent);cursor:pointer;padding:0">
+        Copy hub link
+      </button>
     </div>
     <ul class="list" id="mockList" aria-live="polite">
       <li class="empty">Loading mocks…</li>
@@ -223,11 +229,15 @@
     </footer>
   </main>
   <script src="config.js"></script>
+  <script src="shared/access.js"></script>
   <script src="shared/feedback-store.js"></script>
   <script>
     (function () {
+      if (!window.PrototypesAccess.requireInternalAccess()) return;
+
       var cfg = window.PROTOTYPES_CONFIG || {};
       var store = window.PrototypesFeedbackStore;
+      var access = window.PrototypesAccess;
       if (cfg.siteName) {
         document.getElementById('siteName').textContent = cfg.siteName;
         document.title = cfg.siteName;
@@ -279,6 +289,23 @@
         e.preventDefault();
         sharePrototype(btn);
       });
+
+      var shareHubBtn = document.getElementById('shareHubBtn');
+      if (shareHubBtn) {
+        shareHubBtn.addEventListener('click', function () {
+          var url = access.hubUrlWithKey();
+          var done = function () {
+            shareHubBtn.textContent = 'Copied hub link!';
+            setTimeout(function () { shareHubBtn.textContent = 'Copy hub link'; }, 1600);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(done);
+          } else {
+            window.prompt('Copy this internal hub link:', url);
+            done();
+          }
+        });
+      }
 
       function sharePrototype(btn) {
         var url = btn.getAttribute('data-share-url') || '';
@@ -356,7 +383,8 @@
       }
 
       function linksMarkup(item) {
-        var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id);
+        var key = access.configuredKey();
+        var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id) + (key ? '&key=' + encodeURIComponent(key) : '');
         var shareUrl = absoluteUrl(item.path);
         return (
           '<div class="links">' +
