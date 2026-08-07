@@ -132,42 +132,68 @@
       background: #f3efe8;
       color: #8a5a2b;
     }
-    .actions {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 8px;
+    .menu {
+      position: relative;
+      z-index: 2;
     }
-    .actions button {
+    .menu-toggle {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      height: 36px;
-      padding: 0 12px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: #fff;
-      color: var(--ink);
-      font: 600 0.9rem/1 "DM Sans", system-ui, sans-serif;
-      white-space: nowrap;
-      cursor: pointer;
+      font-size: 1rem;
       transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
     }
-    .actions button:hover {
+    .menu-toggle:hover,
+    .menu.is-open .menu-toggle {
       border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
       color: var(--accent);
       background: var(--accent-soft);
     }
-    .actions button:disabled {
+    .menu-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 200px;
+      padding: 6px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 14px 36px rgba(26, 29, 38, 0.14);
+      display: none;
+    }
+    .menu.is-open .menu-panel { display: grid; gap: 2px; }
+    .menu-panel button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ink);
+      font: 600 0.92rem/1 "DM Sans", system-ui, sans-serif;
+      text-align: left;
+      cursor: pointer;
+    }
+    .menu-panel button:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .menu-panel button:disabled {
       opacity: 0.65;
       cursor: wait;
     }
-    .actions button.is-copied {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-soft);
-    }
+    .menu-panel i { width: 1em; text-align: center; color: var(--muted); }
+    .menu-panel button:hover i { color: var(--accent); }
 
     .card.is-group { grid-template-columns: 1fr; cursor: default; }
     .card.is-group:hover {
@@ -227,8 +253,6 @@
       .wrap { width: calc(100% - 28px); padding-top: 36px; }
       .card { grid-template-columns: 1fr; }
       .sub { grid-template-columns: 1fr; }
-      .actions { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
-      .actions button { flex: 1 1 auto; }
     }
 
     .share-modal {
@@ -497,10 +521,22 @@
       });
 
       list.addEventListener('click', function (e) {
-        var actionBtn = e.target.closest('.actions button');
+        var menuToggle = e.target.closest('.menu-toggle');
+        if (menuToggle) {
+          e.preventDefault();
+          e.stopPropagation();
+          var menu = menuToggle.closest('.menu');
+          var wasOpen = menu.classList.contains('is-open');
+          closeAllMenus();
+          if (!wasOpen) menu.classList.add('is-open');
+          return;
+        }
+
+        var actionBtn = e.target.closest('.menu-panel button');
         if (actionBtn) {
           e.preventDefault();
           e.stopPropagation();
+          closeAllMenus();
           if (actionBtn.classList.contains('share-btn')) {
             openShareModal({
               url: actionBtn.getAttribute('data-share-url') || '',
@@ -520,15 +556,29 @@
           return;
         }
 
+        closeAllMenus();
+
         var openable = e.target.closest('.is-openable[data-href]');
         if (!openable || !list.contains(openable)) return;
+        if (e.target.closest('.menu')) return;
         var href = openable.getAttribute('data-href');
         if (href) location.href = href;
       });
 
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.menu')) closeAllMenus();
+      });
+
+      function closeAllMenus() {
+        document.querySelectorAll('.menu.is-open').forEach(function (m) {
+          m.classList.remove('is-open');
+        });
+      }
+
       list.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeAllMenus();
         if (e.key !== 'Enter' && e.key !== ' ') return;
-        if (e.target.closest('.actions button')) return;
+        if (e.target.closest('.menu')) return;
         var openable = e.target.closest('.is-openable[data-href]');
         if (!openable || !list.contains(openable)) return;
         e.preventDefault();
@@ -624,16 +674,21 @@
         var shareUrl = absoluteUrl(item.path);
         var fileName = String(item.path || '').split('/').pop() || (item.id + '.html');
         return (
-          '<div class="actions">' +
-            '<button type="button" class="share-btn" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
-              '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i> <span class="share-label">Share</span>' +
+          '<div class="menu">' +
+            '<button type="button" class="menu-toggle" aria-label="More actions" aria-haspopup="true" aria-expanded="false">' +
+              '<i class="fa-solid fa-ellipsis" aria-hidden="true"></i>' +
             '</button>' +
-            '<button type="button" class="download-btn" data-download-path="' + escapeAttr(item.path) + '" data-download-name="' + escapeAttr(fileName) + '">' +
-              '<i class="fa-solid fa-download" aria-hidden="true"></i> <span class="download-label">Download HTML</span>' +
-            '</button>' +
-            '<button type="button" class="feedback-btn" data-feedback-href="' + escapeAttr(feedbackHref) + '">' +
-              '<i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback' +
-            '</button>' +
+            '<div class="menu-panel" role="menu">' +
+              '<button type="button" class="share-btn" role="menuitem" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
+                '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Share' +
+              '</button>' +
+              '<button type="button" class="download-btn" role="menuitem" data-download-path="' + escapeAttr(item.path) + '" data-download-name="' + escapeAttr(fileName) + '">' +
+                '<i class="fa-solid fa-download" aria-hidden="true"></i> <span class="download-label">Download HTML</span>' +
+              '</button>' +
+              '<button type="button" class="feedback-btn" role="menuitem" data-feedback-href="' + escapeAttr(feedbackHref) + '">' +
+                '<i class="fa-solid fa-chart-line" aria-hidden="true"></i> Insights' +
+              '</button>' +
+            '</div>' +
           '</div>'
         );
       }

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Feedback</title>
+  <title>Insights</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
@@ -16,6 +16,7 @@
       --paper: #f7f6f2;
       --panel: #ffffff;
       --accent: #2f5d50;
+      --accent-soft: #e8f0ed;
     }
     * { box-sizing: border-box; }
     body {
@@ -28,7 +29,7 @@
         linear-gradient(180deg, var(--paper) 0%, #efece6 100%);
     }
     .wrap {
-      width: min(720px, calc(100% - 40px));
+      width: min(780px, calc(100% - 40px));
       margin: 0 auto;
       padding: 40px 0 80px;
     }
@@ -43,6 +44,14 @@
       font-size: 0.92rem;
     }
     .back:hover { color: var(--accent); }
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
     h1 {
       font-family: "Fraunces", Georgia, serif;
       font-size: clamp(1.8rem, 4vw, 2.4rem);
@@ -54,14 +63,14 @@
       color: var(--muted);
       font-size: 1rem;
     }
-    .actions {
+    .toolbar {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin: 18px 0 28px;
+      margin: 18px 0 20px;
     }
-    .actions a,
-    .actions button {
+    .toolbar a,
+    .toolbar button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -74,20 +83,45 @@
       font-family: inherit;
       cursor: pointer;
     }
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-      border: 0;
-    }
+    .btn-primary { background: var(--accent); color: #fff; border: 0; }
     .btn-ghost {
       border: 1px solid var(--line);
       background: var(--panel);
       color: var(--ink);
     }
-    .btn-ghost:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 4px;
+      margin: 0 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--panel) 80%, transparent);
     }
+    .tab {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font: 600 0.92rem/1 "DM Sans", system-ui, sans-serif;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab:hover { color: var(--ink); background: rgba(255,255,255,0.7); }
+    .tab.is-active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .tab-panel[hidden] { display: none !important; }
+
     .banner {
       padding: 12px 14px;
       border-radius: 8px;
@@ -104,6 +138,33 @@
       padding: 1px 5px;
       border-radius: 4px;
     }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .stat-label {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-value {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+
     .thread { display: grid; gap: 12px; }
     .item {
       background: var(--panel);
@@ -153,6 +214,34 @@
       border-top: 1px solid var(--line);
       background: #fafafb;
     }
+
+    .panel-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 22px 20px;
+    }
+    .panel-card h2 {
+      margin: 0 0 8px;
+      font-size: 1.15rem;
+    }
+    .panel-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .panel-card ol {
+      margin: 0 0 16px;
+      padding-left: 1.2em;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+    .panel-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
     .lightbox {
       position: fixed;
       inset: 0;
@@ -180,27 +269,84 @@
       color: var(--muted);
       background: color-mix(in srgb, var(--panel) 70%, transparent);
     }
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
     <a class="back" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> All prototypes</a>
-    <h1 id="title">Feedback</h1>
+    <p class="eyebrow">Insights</p>
+    <h1 id="title">Insights</h1>
     <p class="sub" id="subtitle">Loading…</p>
-    <div class="actions" id="actions" hidden>
+
+    <div class="toolbar" id="actions" hidden>
       <a class="btn-primary" id="openMock" href="#"><i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Open prototype</a>
       <button type="button" class="btn-ghost" id="exportBtn" disabled>
-        <i class="fa-solid fa-download" aria-hidden="true"></i> Export thread
+        <i class="fa-solid fa-download" aria-hidden="true"></i> Export comments
       </button>
       <a class="btn-ghost" href="index.html">Back to hub</a>
     </div>
+
+    <div class="tabs" role="tablist" aria-label="Insights">
+      <button type="button" class="tab is-active" role="tab" aria-selected="true" data-tab="comments">
+        <i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Comments
+      </button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="heatmaps">
+        <i class="fa-solid fa-fire" aria-hidden="true"></i> Heatmaps
+      </button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="sessions">
+        <i class="fa-solid fa-circle-play" aria-hidden="true"></i> Sessions
+      </button>
+      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="overview">
+        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Overview
+      </button>
+    </div>
+
     <div class="banner" id="localBanner" hidden>
       Showing notes saved in <strong>this browser</strong> only. Add free Supabase keys in <code>config.js</code> so every reviewer shares one thread per prototype.
     </div>
-    <div class="thread" id="thread" aria-live="polite">
-      <div class="empty">Loading feedback…</div>
-    </div>
+
+    <section class="tab-panel" id="panel-comments" data-panel="comments">
+      <div class="thread" id="thread" aria-live="polite">
+        <div class="empty">Loading feedback…</div>
+      </div>
+    </section>
+
+    <section class="tab-panel" id="panel-heatmaps" data-panel="heatmaps" hidden>
+      <div class="panel-card" id="heatmapsCard"></div>
+    </section>
+
+    <section class="tab-panel" id="panel-sessions" data-panel="sessions" hidden>
+      <div class="panel-card" id="sessionsCard"></div>
+    </section>
+
+    <section class="tab-panel" id="panel-overview" data-panel="overview" hidden>
+      <div class="stats">
+        <div class="stat">
+          <p class="stat-label">Comments</p>
+          <p class="stat-value" id="statComments">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">Avg rating</p>
+          <p class="stat-value" id="statRating">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">With screenshots</p>
+          <p class="stat-value" id="statShots">—</p>
+        </div>
+      </div>
+      <div class="panel-card">
+        <h2>What this overview covers</h2>
+        <p>Comment stats come from this prototype’s feedback thread. Heatmaps and session replays live in Microsoft Clarity once you add a project ID.</p>
+        <div class="panel-actions">
+          <a class="btn-ghost" id="overviewClarity" href="https://clarity.microsoft.com" target="_blank" rel="noopener">Open Clarity</a>
+        </div>
+      </div>
+    </section>
   </main>
+
   <div class="lightbox" id="lightbox" hidden>
     <img id="lightboxImg" alt="Screenshot full size" />
   </div>
@@ -214,6 +360,7 @@
 
       var params = new URLSearchParams(location.search);
       var id = (params.get('id') || '').trim();
+      var initialTab = (params.get('tab') || 'comments').toLowerCase();
       var titleEl = document.getElementById('title');
       var subEl = document.getElementById('subtitle');
       var thread = document.getElementById('thread');
@@ -228,20 +375,112 @@
       var cfg = window.PROTOTYPES_CONFIG || {};
       var threadItems = [];
       var threadTitle = id;
+      var mockPath = '';
       var hubHref = 'index.html' + (access.configuredKey() ? ('?key=' + encodeURIComponent(access.configuredKey())) : '');
+      var clarityId = (cfg.clarityId || '').trim();
 
       document.querySelectorAll('a[href="index.html"]').forEach(function (a) {
         a.href = hubHref;
       });
 
-      if (cfg.siteName) document.title = 'Feedback · ' + cfg.siteName;
+      if (cfg.siteName) document.title = 'Insights · ' + cfg.siteName;
 
       if (!id) {
         titleEl.textContent = 'Pick a prototype';
-        subEl.textContent = 'Feedback is stored per prototype. Open one from the hub.';
-        thread.innerHTML = '<div class="empty"><a href="index.html">Go to the hub</a> and choose Feedback on a mock.</div>';
+        subEl.textContent = 'Insights are per prototype. Open one from the hub.';
+        thread.innerHTML = '<div class="empty"><a href="' + hubHref + '">Go to the hub</a> and choose Insights on a mock.</div>';
         return;
       }
+
+      function mockAbsoluteUrl() {
+        if (!mockPath) return '';
+        try { return new URL(mockPath, location.href).href; } catch (e) { return mockPath; }
+      }
+
+      function clarityProjectUrl(section) {
+        if (!clarityId) return 'https://clarity.microsoft.com';
+        // Project dashboard; filters for URL happen inside Clarity UI.
+        var base = 'https://clarity.microsoft.com/projects/view/' + encodeURIComponent(clarityId) + '/';
+        if (section === 'recordings') return base + 'recordings';
+        if (section === 'heatmaps') return base + 'heatmaps';
+        return base + 'dashboard';
+      }
+
+      function renderTelemetryCards() {
+        var url = mockAbsoluteUrl();
+        var heat = document.getElementById('heatmapsCard');
+        var sessions = document.getElementById('sessionsCard');
+        var overviewClarity = document.getElementById('overviewClarity');
+
+        if (clarityId) {
+          heat.innerHTML =
+            '<h2>Heatmaps</h2>' +
+            '<p>Click and scroll heatmaps for this mock are in Microsoft Clarity. Open Clarity, then filter by this prototype URL:</p>' +
+            '<p><code style="font-size:0.85em;word-break:break-all">' + escapeHtml(url || 'Open the prototype once so traffic starts flowing') + '</code></p>' +
+            '<div class="panel-actions">' +
+              '<a class="btn-primary" href="' + escapeAttr(clarityProjectUrl('heatmaps')) + '" target="_blank" rel="noopener">Open heatmaps in Clarity</a>' +
+              (url ? '<button type="button" class="btn-ghost" data-copy-url="' + escapeAttr(url) + '">Copy mock URL</button>' : '') +
+            '</div>';
+
+          sessions.innerHTML =
+            '<h2>Session replays</h2>' +
+            '<p>Watch how reviewers moved through this mock. In Clarity, open Recordings and filter to the same URL.</p>' +
+            '<div class="panel-actions">' +
+              '<a class="btn-primary" href="' + escapeAttr(clarityProjectUrl('recordings')) + '" target="_blank" rel="noopener">Open sessions in Clarity</a>' +
+              (url ? '<button type="button" class="btn-ghost" data-copy-url="' + escapeAttr(url) + '">Copy mock URL</button>' : '') +
+            '</div>';
+          overviewClarity.href = clarityProjectUrl('dashboard');
+        } else {
+          var setup =
+            '<h2>Connect Microsoft Clarity</h2>' +
+            '<p>Heatmaps and session replays need a free Clarity project. Once connected, these tabs deep-link into the right views.</p>' +
+            '<ol>' +
+              '<li>Create a project at <a href="https://clarity.microsoft.com" target="_blank" rel="noopener">clarity.microsoft.com</a></li>' +
+              '<li>Copy the project ID into <code>config.js</code> as <code>clarityId</code></li>' +
+              '<li>Push, then open the mock a few times so traffic appears</li>' +
+            '</ol>' +
+            '<div class="panel-actions">' +
+              '<a class="btn-primary" href="https://clarity.microsoft.com" target="_blank" rel="noopener">Set up Clarity</a>' +
+            '</div>';
+          heat.innerHTML = setup.replace('<h2>Connect Microsoft Clarity</h2>', '<h2>Heatmaps</h2>');
+          sessions.innerHTML = setup.replace('<h2>Connect Microsoft Clarity</h2>', '<h2>Sessions</h2>');
+        }
+      }
+
+      function setTab(name) {
+        var allowed = { comments: 1, heatmaps: 1, sessions: 1, overview: 1 };
+        if (!allowed[name]) name = 'comments';
+        document.querySelectorAll('.tab').forEach(function (tab) {
+          var on = tab.getAttribute('data-tab') === name;
+          tab.classList.toggle('is-active', on);
+          tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('.tab-panel').forEach(function (panel) {
+          panel.hidden = panel.getAttribute('data-panel') !== name;
+        });
+        var url = new URL(location.href);
+        url.searchParams.set('tab', name);
+        history.replaceState(null, '', url.href);
+      }
+
+      document.querySelector('.tabs').addEventListener('click', function (e) {
+        var tab = e.target.closest('.tab');
+        if (!tab) return;
+        setTab(tab.getAttribute('data-tab'));
+      });
+
+      document.body.addEventListener('click', function (e) {
+        var copyBtn = e.target.closest('[data-copy-url]');
+        if (!copyBtn) return;
+        var value = copyBtn.getAttribute('data-copy-url') || '';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(value).then(function () {
+            var prev = copyBtn.textContent;
+            copyBtn.textContent = 'Copied!';
+            setTimeout(function () { copyBtn.textContent = prev; }, 1400);
+          });
+        }
+      });
 
       fetch('manifest.json', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : []; })
@@ -254,30 +493,49 @@
           var item = flat.find(function (m) { return m.id === id; });
           var title = item ? item.title : id;
           threadTitle = title;
+          mockPath = item && item.path ? item.path : '';
           titleEl.textContent = title;
-          subEl.textContent = 'Feedback thread for this prototype only';
-          document.title = 'Feedback · ' + title;
+          subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
+          document.title = 'Insights · ' + title;
           actions.hidden = false;
-          if (item && item.path) openMock.href = item.path;
+          if (mockPath) openMock.href = mockPath;
           else openMock.hidden = true;
+          renderTelemetryCards();
         })
         .catch(function () {
           titleEl.textContent = id;
-          subEl.textContent = 'Feedback thread for this prototype only';
+          subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
           actions.hidden = false;
           openMock.hidden = true;
+          renderTelemetryCards();
         });
 
       store.list(id).then(function (result) {
         banner.hidden = !!result.shared;
         threadItems = result.items || [];
         renderThread(threadItems);
+        renderOverview(threadItems);
         exportBtn.disabled = !threadItems.length;
       });
 
+      setTab(initialTab);
+
+      function renderOverview(items) {
+        document.getElementById('statComments').textContent = String(items.length);
+        var rated = items.filter(function (i) { return i.rating && !isNaN(Number(i.rating)); });
+        if (rated.length) {
+          var avg = rated.reduce(function (sum, i) { return sum + Number(i.rating); }, 0) / rated.length;
+          document.getElementById('statRating').textContent = avg.toFixed(1) + ' / 5';
+        } else {
+          document.getElementById('statRating').textContent = '—';
+        }
+        var shots = items.filter(function (i) { return !!i.screenshotData; }).length;
+        document.getElementById('statShots').textContent = String(shots);
+      }
+
       function renderThread(items) {
         if (!items.length) {
-          thread.innerHTML = '<div class="empty">No feedback yet. Open the prototype and use the Feedback button.</div>';
+          thread.innerHTML = '<div class="empty">No comments yet. Open the prototype and use the Feedback button.</div>';
           return;
         }
         thread.innerHTML = items.map(function (item) {
