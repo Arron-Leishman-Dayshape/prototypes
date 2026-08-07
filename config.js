@@ -4,9 +4,8 @@ window.PROTOTYPES_CONFIG = {
   siteTagline: 'Click a mock, share the link, leave feedback.',
 
   // Shared feedback store (free Supabase). Feedback is stored per prototype — no email.
-  // Setup: see README → “Feedback store”
-  supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseUrl: 'https://eruyowhibdrnfpnbjwos.supabase.co',
+  supabaseAnonKey: 'sb_publishable_ZTFQX_SAjjRV7WkDmCCCzQ_hsWX0wvj',
 
   // Optional: Microsoft Clarity project ID for heatmaps + session replay
   // https://clarity.microsoft.com
