@@ -28,7 +28,23 @@
   }
 
   function writeLocal(prototypeId, list) {
-    localStorage.setItem(localKey(prototypeId), JSON.stringify((list || []).slice(0, 300)));
+    var key = localKey(prototypeId);
+    var trimmed = (list || []).slice(0, 200);
+    try {
+      localStorage.setItem(key, JSON.stringify(trimmed));
+      return;
+    } catch (e) {
+      // Quota: drop oldest screenshots then retry
+      trimmed.forEach(function (item, i) {
+        if (i > 20) item.screenshotData = '';
+      });
+      try {
+        localStorage.setItem(key, JSON.stringify(trimmed));
+      } catch (e2) {
+        trimmed.forEach(function (item) { item.screenshotData = ''; });
+        localStorage.setItem(key, JSON.stringify(trimmed.slice(0, 80)));
+      }
+    }
   }
 
   function normalize(row) {
@@ -41,6 +57,7 @@
       message: row.message || '',
       pageUrl: row.pageUrl || row.page_url || '',
       pagePath: row.pagePath || row.page_path || '',
+      screenshotData: row.screenshotData || row.screenshot_data || '',
       createdAt: row.createdAt || row.created_at || row.timestamp || new Date().toISOString(),
     };
   }
@@ -50,7 +67,16 @@
     (remote || []).concat(local || []).forEach(function (item) {
       var n = normalize(item);
       if (!n.id) return;
-      if (!map[n.id] || String(n.createdAt) > String(map[n.id].createdAt)) map[n.id] = n;
+      var prev = map[n.id];
+      if (!prev) {
+        map[n.id] = n;
+        return;
+      }
+      // Prefer newer timestamp; keep screenshot from whichever has it
+      var newer = String(n.createdAt) >= String(prev.createdAt) ? n : prev;
+      var older = newer === n ? prev : n;
+      if (!newer.screenshotData && older.screenshotData) newer.screenshotData = older.screenshotData;
+      map[n.id] = newer;
     });
     return Object.keys(map)
       .map(function (k) { return map[k]; })
@@ -96,14 +122,28 @@
       page_path: item.pagePath,
       created_at: item.createdAt,
     };
+    if (item.screenshotData) body.screenshot_data = item.screenshotData;
 
     return fetch(supabaseBase(), {
       method: 'POST',
       headers: supabaseHeaders(),
       body: JSON.stringify(body),
     }).then(function (res) {
-      if (!res.ok) throw new Error('Supabase save failed (' + res.status + ')');
-      return { item: item, shared: true };
+      if (res.ok) return { item: item, shared: true };
+
+      // Column may not exist yet — retry without screenshot so text still syncs
+      if (item.screenshotData && (res.status === 400 || res.status === 415)) {
+        delete body.screenshot_data;
+        return fetch(supabaseBase(), {
+          method: 'POST',
+          headers: supabaseHeaders(),
+          body: JSON.stringify(body),
+        }).then(function (res2) {
+          if (!res2.ok) throw new Error('Supabase save failed (' + res2.status + ')');
+          return { item: item, shared: true, screenshotSkipped: true };
+        });
+      }
+      throw new Error('Supabase save failed (' + res.status + ')');
     });
   }
 

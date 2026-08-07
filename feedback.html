@@ -16,7 +16,6 @@
       --paper: #f7f6f2;
       --panel: #ffffff;
       --accent: #2f5d50;
-      --accent-soft: #e8f0ed;
     }
     * { box-sizing: border-box; }
     body {
@@ -61,7 +60,8 @@
       gap: 10px;
       margin: 18px 0 28px;
     }
-    .actions a {
+    .actions a,
+    .actions button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -71,15 +71,22 @@
       font-weight: 600;
       text-decoration: none;
       font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
     }
     .btn-primary {
       background: var(--accent);
       color: #fff;
+      border: 0;
     }
     .btn-ghost {
       border: 1px solid var(--line);
       background: var(--panel);
       color: var(--ink);
+    }
+    .btn-ghost:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
     .banner {
       padding: 12px 14px;
@@ -121,6 +128,50 @@
       line-height: 1.5;
       font-size: 1rem;
     }
+    .item-shot {
+      margin-top: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #f3f4f6;
+    }
+    .item-shot img {
+      display: block;
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      object-position: top center;
+      background: #fff;
+      cursor: zoom-in;
+    }
+    .item-shot-label {
+      margin: 0;
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      background: #fafafb;
+    }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(26, 29, 38, 0.82);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+    .lightbox[hidden] { display: none !important; }
+    .lightbox img {
+      max-width: min(1100px, 100%);
+      max-height: 90vh;
+      border-radius: 8px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+      background: #fff;
+    }
     .empty {
       padding: 36px 20px;
       text-align: center;
@@ -138,6 +189,9 @@
     <p class="sub" id="subtitle">Loading…</p>
     <div class="actions" id="actions" hidden>
       <a class="btn-primary" id="openMock" href="#"><i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Open prototype</a>
+      <button type="button" class="btn-ghost" id="exportBtn" disabled>
+        <i class="fa-solid fa-download" aria-hidden="true"></i> Export thread
+      </button>
       <a class="btn-ghost" href="index.html">Back to hub</a>
     </div>
     <div class="banner" id="localBanner" hidden>
@@ -147,6 +201,9 @@
       <div class="empty">Loading feedback…</div>
     </div>
   </main>
+  <div class="lightbox" id="lightbox" hidden>
+    <img id="lightboxImg" alt="Screenshot full size" />
+  </div>
 
   <script src="config.js"></script>
   <script src="shared/feedback-store.js"></script>
@@ -159,9 +216,14 @@
       var thread = document.getElementById('thread');
       var actions = document.getElementById('actions');
       var openMock = document.getElementById('openMock');
+      var exportBtn = document.getElementById('exportBtn');
       var banner = document.getElementById('localBanner');
+      var lightbox = document.getElementById('lightbox');
+      var lightboxImg = document.getElementById('lightboxImg');
       var store = window.PrototypesFeedbackStore;
       var cfg = window.PROTOTYPES_CONFIG || {};
+      var threadItems = [];
+      var threadTitle = id;
 
       if (cfg.siteName) document.title = 'Feedback · ' + cfg.siteName;
 
@@ -175,7 +237,6 @@
       fetch('manifest.json', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (items) {
-          // Manifest entries may be groups; prototypes can live in `children`.
           var flat = (items || []).reduce(function (all, entry) {
             return all.concat(
               Array.isArray(entry.children) && entry.children.length ? entry.children : [entry]
@@ -183,22 +244,29 @@
           }, []);
           var item = flat.find(function (m) { return m.id === id; });
           var title = item ? item.title : id;
+          threadTitle = title;
           titleEl.textContent = title;
           subEl.textContent = 'Feedback thread for this prototype only';
           document.title = 'Feedback · ' + title;
-          if (item && item.path) {
-            openMock.href = item.path;
-            actions.hidden = false;
-          }
+          actions.hidden = false;
+          if (item && item.path) openMock.href = item.path;
+          else openMock.hidden = true;
         })
         .catch(function () {
           titleEl.textContent = id;
           subEl.textContent = 'Feedback thread for this prototype only';
+          actions.hidden = false;
+          openMock.hidden = true;
         });
 
       store.list(id).then(function (result) {
         banner.hidden = !!result.shared;
-        var items = result.items || [];
+        threadItems = result.items || [];
+        renderThread(threadItems);
+        exportBtn.disabled = !threadItems.length;
+      });
+
+      function renderThread(items) {
         if (!items.length) {
           thread.innerHTML = '<div class="empty">No feedback yet. Open the prototype and use the Feedback button.</div>';
           return;
@@ -211,6 +279,12 @@
                 '<span style="opacity:0.25">' + '★'.repeat(Math.max(0, 5 - (Number(item.rating) || 0))) + '</span>' +
               '</span>'
             : '';
+          var shot = item.screenshotData
+            ? '<figure class="item-shot">' +
+                '<img src="' + escapeAttr(item.screenshotData) + '" alt="Referenced UI screenshot" data-full="1" />' +
+                '<figcaption class="item-shot-label">Referenced UI</figcaption>' +
+              '</figure>'
+            : '';
           return (
             '<article class="item">' +
               '<div class="item-head">' +
@@ -219,16 +293,81 @@
                 '<span>' + escapeHtml(when) + '</span>' +
               '</div>' +
               '<p class="item-body">' + escapeHtml(item.message) + '</p>' +
+              shot +
             '</article>'
           );
         }).join('');
+      }
+
+      thread.addEventListener('click', function (e) {
+        var img = e.target.closest('img[data-full]');
+        if (!img) return;
+        lightboxImg.src = img.src;
+        lightbox.hidden = false;
       });
+      lightbox.addEventListener('click', function () {
+        lightbox.hidden = true;
+        lightboxImg.removeAttribute('src');
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !lightbox.hidden) {
+          lightbox.hidden = true;
+          lightboxImg.removeAttribute('src');
+        }
+      });
+
+      exportBtn.addEventListener('click', function () {
+        if (!threadItems.length) return;
+        var html = buildExportHtml(threadTitle, id, threadItems);
+        var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'feedback-' + id + '.html';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      function buildExportHtml(title, prototypeId, items) {
+        var blocks = items.map(function (item) {
+          var shot = item.screenshotData
+            ? '<figure style="margin:12px 0 0;border:1px solid #ddd;border-radius:8px;overflow:hidden">' +
+                '<img src="' + escapeAttr(item.screenshotData) + '" alt="Screenshot" style="display:block;width:100%;max-height:480px;object-fit:contain" />' +
+                '<figcaption style="padding:6px 10px;font-size:12px;color:#666">Referenced UI</figcaption>' +
+              '</figure>'
+            : '';
+          return (
+            '<article style="border:1px solid #e4e6ee;border-radius:12px;padding:16px;margin:0 0 12px;background:#fff">' +
+              '<header style="display:flex;flex-wrap:wrap;gap:8px 14px;margin-bottom:8px;font-size:14px;color:#5c6378">' +
+                '<strong style="color:#1a1d26">' + escapeHtml(item.name || 'Anonymous') + '</strong>' +
+                (item.rating ? '<span>Rating: ' + escapeHtml(item.rating) + '/5</span>' : '') +
+                '<span>' + escapeHtml(formatWhen(item.createdAt)) + '</span>' +
+              '</header>' +
+              '<p style="white-space:pre-wrap;line-height:1.5;margin:0">' + escapeHtml(item.message) + '</p>' +
+              shot +
+            '</article>'
+          );
+        }).join('');
+
+        return (
+          '<!DOCTYPE html><html lang="en-GB"><head><meta charset="UTF-8" />' +
+          '<title>Feedback export — ' + escapeHtml(title) + '</title>' +
+          '<style>body{font-family:system-ui,sans-serif;margin:0;padding:32px;background:#f7f6f2;color:#1a1d26}' +
+          '.wrap{max-width:720px;margin:0 auto}h1{margin:0 0 6px}p.meta{color:#5c6378}</style></head><body><div class="wrap">' +
+          '<h1>' + escapeHtml(title) + '</h1>' +
+          '<p class="meta">Exported feedback thread · ' + escapeHtml(prototypeId) + ' · ' +
+            escapeHtml(new Date().toLocaleString()) + ' · ' + items.length + ' comments</p>' +
+          blocks +
+          '</div></body></html>'
+        );
+      }
 
       function formatWhen(iso) {
         if (!iso) return '';
         try {
-          var d = new Date(iso);
-          return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+          return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
         } catch (e) {
           return String(iso);
         }
@@ -241,6 +380,7 @@
           .replace(/>/g, '&gt;')
           .replace(/"/g, '&quot;');
       }
+      function escapeAttr(s) { return escapeHtml(s).replace(/'/g, '&#39;'); }
     })();
   </script>
 </body>

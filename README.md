@@ -55,6 +55,21 @@ supabaseAnonKey: 'eyJhbGciOi...',
 
 Until those keys are set, feedback still saves **per prototype in that browser only** (fine for your own testing).
 
+### Optional screenshots
+
+Feedback can include an optional UI screenshot (click an element or capture the page). Run this once in the Supabase SQL Editor so images sync for everyone:
+
+```sql
+alter table feedback
+  add column if not exists screenshot_data text;
+```
+
+(Also in `supabase-screenshot.sql`.)
+
+### Export
+
+On each prototype’s feedback page, use **Export thread** to download a self-contained HTML file (comments + screenshots).
+
 ## Add a mock
 
 1. Put the HTML in `mocks/` (e.g. `mocks/my-flow.html`).
