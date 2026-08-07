@@ -33,6 +33,14 @@
     ]
   },
   {
+    "id": "gantt-resource-breakdown",
+    "title": "Gantt resource breakdown",
+    "description": "Break Gantt resource rows down by Role, Primary Booking Type or Resource Requirement — aggregated demand, Other row, locked slim availability, quick add and multi-select.",
+    "path": "mocks/gantt-resource-breakdown.html",
+    "status": "active",
+    "updated": "2026-08-07"
+  },
+  {
     "id": "portfolios-v3",
     "title": "Portfolio Views",
     "description": "Create/edit portfolios, dynamic filters, Performance tab with mixed economics n/a suppression.",

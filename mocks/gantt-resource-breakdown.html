@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-prototype-id="gantt-resource-breakdown" data-prototype-title="Gantt resource breakdown">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gantt resource breakdown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+/* ============================================================
+   Dayshape design tokens
+   ============================================================ */
+:root {
+    --primary: #4f3fa0;
+    --primary-emphasis: #403577;
+    --primary-strong: #3d2f80;
+    --primary-subtle: #f0effb;
+    --primary-accent: #dedaf4;
+
+    --surface-default: #fff;
+    --surface-subtle-light: #f8f8f8;
+    --surface-subtle-dark: #f1f1f4;
+    --surface-list-item-hover: #f1f1f4;
+    --surface-list-item-selected-light: #f0effb;
+    --surface-emphasis: #4c5172;
+    --surface-strong: #3d425c;
+    --surface-primary: #4f3fa0;
+    --surface-overlay: rgba(0, 0, 0, .5);
+    --surface-header: #fafafa;
+    --surface-group: #f3f3f6;
+    --surface-disabled: #f5f5f7;
+
+    --surface-success-subtle: #e1faeb;
+    --surface-danger-subtle: #feecf2;
+    --surface-warning-subtle: #fff0e0;
+    --surface-info-subtle: #edf0f8;
+
+    --text-default: #222430;
+    --text-subtle: #6a708f;
+    --text-disabled: #989bb6;
+    --text-accent: #4c5172;
+    --text-inverse: #fff;
+    --text-primary: #4f3fa0;
+    --text-danger: #a3003c;
+    --text-warning: #b45309;
+
+    --icon-default: #4c5172;
+    --icon-subtle: #888;
+    --icon-disabled: #b9bcd0;
+
+    --border-subtle: #e2e3e9;
+    --border-default: #babfd1;
+    --border-emphasis: #d7d8df;
+    --border-radius-default: 4px;
+    --border-xs: 1px;
+
+    --font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-size-medium: 0.875rem;
+    --font-size-small: 0.75rem;
+    --font-size-xsmall: 0.6875rem;
+
+    --padding-xs: 0.5rem;
+    --padding-sm: 0.75rem;
+    --padding-md: 1rem;
+    --padding-lg: 1.5rem;
+
+    /* Booking / phase data colours */
+    --phase-preparation: #2398f2;
+    --phase-first-review: #2d7d46;
+    --phase-second-review: #7b3fa0;
+    --booking-blue: #2980b9;
+    --booking-green: #2d7d46;
+    --booking-purple: #4f4970;
+    --booking-magenta: #c24cad;
+    --today-marker: #f4645f;
+
+    /* Layout */
+    --rail-w: 33px;
+    --col-name-w: 128px;
+    --col-grade-w: 47px;
+    --col-expand-w: 20px;
+    --col-dim-w: 87px;
+    --left-w: 282px;
+    --week-w: 85px;
+    --sub-row-h: 24px;
+    --group-h: 27px;
+    --slim-h: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: var(--font-family);
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    background: var(--surface-default);
+    overflow: hidden;
+}
+
+button { font-family: inherit; }
+
+/* ============================================================
+   App shell
+   ============================================================ */
+.App { display: flex; height: 100vh; }
+
+/* ── Left nav rail ─────────────────────────────────────────── */
+.Rail {
+    width: var(--rail-w);
+    flex: 0 0 var(--rail-w);
+    background: var(--primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0;
+    gap: 2px;
+}
+.Rail-logo {
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 10px;
+    opacity: .95;
+}
+.Rail-icon {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,.82);
+    font-size: 13px;
+    border-radius: 3px;
+    cursor: default;
+}
+.Rail-icon.is-active { background: rgba(255,255,255,.16); color: #fff; }
+.Rail-spacer { flex: 1; }
+
+/* ── Main column ───────────────────────────────────────────── */
+.Main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── Toolbar ───────────────────────────────────────────────── */
+.Toolbar {
+    flex: 0 0 auto;
+    background: var(--surface-default);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.Toolbar-row { display: flex; gap: 6px; align-items: center; }
+
+.Tbtn {
+    height: 26px;
+    min-width: 44px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-emphasis);
+    border-radius: 3px;
+    color: var(--icon-default);
+    font-size: var(--font-size-small);
+    cursor: pointer;
+}
+.Tbtn:hover { background: var(--surface-subtle-dark); }
+.Tbtn.is-active { background: var(--surface-emphasis); border-color: var(--surface-emphasis); color: var(--text-inverse); }
+.Tbtn.is-primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 600; }
+.Tbtn .fa-caret-down { font-size: 10px; opacity: .8; }
+.Tbtn--wide { min-width: 92px; justify-content: space-between; }
+
+.Tsearch {
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    border: var(--border-xs) solid var(--border-emphasis);
+    border-radius: 3px;
+    background: #fff;
+    overflow: hidden;
+}
+.Tsearch input {
+    border: 0; outline: 0;
+    height: 100%;
+    width: 96px;
+    padding: 0 6px;
+    font-size: var(--font-size-small);
+    font-family: inherit;
+    color: var(--text-default);
+}
+.Tsearch button {
+    border: 0; background: transparent;
+    color: var(--icon-default);
+    cursor: pointer;
+    padding: 0 6px;
+    height: 100%;
+}
+
+.Toolbar-spacer { flex: 1; }
+.Toolbar-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: var(--font-size-small);
+    color: var(--text-subtle);
+    padding-right: 4px;
+}
+.Toolbar-mode strong { color: var(--text-default); font-weight: 600; }
+
+/* ============================================================
+   Gantt grid
+   ============================================================ */
+.Gantt {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    position: relative;
+    background: var(--surface-default);
+}
+.Gantt-inner { position: relative; width: max-content; min-width: 100%; }
+
+/* Header */
+.Head { position: sticky; top: 0; z-index: 30; background: var(--surface-header); }
+.Head-row { display: flex; }
+.Head-left {
+    position: sticky; left: 0; z-index: 2;
+    width: var(--left-w); flex: 0 0 var(--left-w);
+    background: var(--surface-header);
+    border-right: var(--border-xs) solid var(--border-subtle);
+}
+.Head-months, .Head-weeks, .Head-days { display: flex; }
+.Head-month {
+    flex: 0 0 auto;
+    height: 18px;
+    border-right: var(--border-xs) solid var(--border-emphasis);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.Head-week {
+    width: var(--week-w); flex: 0 0 var(--week-w);
+    height: 17px;
+    border-right: var(--border-xs) solid var(--border-emphasis);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-xsmall);
+    color: var(--text-subtle);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.Head-dayset { width: var(--week-w); flex: 0 0 var(--week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
+.Head-day {
+    flex: 1;
+    height: 16px;
+    border-right: var(--border-xs) solid var(--border-subtle);
+    border-bottom: var(--border-xs) solid var(--border-emphasis);
+    font-size: 10px;
+    color: var(--text-subtle);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.Head-day:last-child { border-right: 0; }
+.Head-day.is-today { color: var(--text-danger); font-weight: 700; }
+
+/* Body rows */
+.Row { display: flex; }
+.Row-left {
+    position: sticky; left: 0; z-index: 10;
+    width: var(--left-w); flex: 0 0 var(--left-w);
+    background: var(--surface-default);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    display: flex;
+}
+.Row-track { position: relative; display: flex; }
+
+/* Group header */
+.GroupRow .Row-left,
+.GroupRow .Row-track {
+    height: var(--group-h);
+    background: var(--surface-group);
+    border-bottom: var(--border-xs) solid var(--border-emphasis);
+}
+.GroupRow .Row-left {
+    align-items: center;
+    padding-left: 10px;
+    gap: 7px;
+    font-size: var(--font-size-xsmall);
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-accent);
+    cursor: pointer;
+}
+.GroupRow .Row-left i { font-size: 10px; color: var(--icon-default); width: 9px; }
+
+/* Worker block */
+.WorkerRow { border-bottom: var(--border-xs) solid var(--border-emphasis); }
+.WorkerRow .Row-left { align-items: stretch; }
+
+.Cell-name {
+    width: var(--col-name-w); flex: 0 0 var(--col-name-w);
+    padding: 6px 8px 0 0;
+    text-align: right;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    line-height: 16px;
+    overflow: hidden;
+    display: flex; align-items: flex-start; justify-content: flex-end; gap: 5px;
+}
+.Cell-name span {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.Cell-name .fa-link { font-size: 9px; color: var(--icon-subtle); margin-top: 4px; }
+
+.Cell-grade {
+    width: var(--col-grade-w); flex: 0 0 var(--col-grade-w);
+    padding: 6px 0 0 8px;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+}
+.Cell-expand {
+    width: var(--col-expand-w); flex: 0 0 var(--col-expand-w);
+    padding-top: 5px;
+    display: flex; align-items: flex-start; justify-content: center;
+}
+.Expander {
+    width: 13px; height: 13px;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--icon-default);
+    font-size: 8px;
+    line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+.Expander:hover { border-color: var(--primary); color: var(--primary); }
+
+.Cell-dims {
+    width: var(--col-dim-w); flex: 0 0 var(--col-dim-w);
+    border-left: var(--border-xs) solid var(--border-subtle);
+    display: flex; flex-direction: column;
+}
+.DimLabel {
+    height: var(--sub-row-h);
+    display: flex; align-items: center;
+    padding: 0 6px;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    background: var(--surface-default);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    gap: 5px;
+    position: relative;
+}
+.DimLabel:last-child { border-bottom: 0; }
+.DimLabel.is-other { color: var(--text-subtle); }
+.DimLabel.is-accented { color: var(--primary); }
+.DimLabel-accent {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+}
+.DimLabel.is-expanded { background: var(--surface-list-item-selected-light); font-weight: 600; }
+
+/* Slim availability strip in the left panel gutter */
+.SlimGutter { height: var(--slim-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
+
+/* Timeline cells */
+.Track-weeks { display: flex; flex-direction: column; }
+.Track-subrow { display: flex; height: var(--sub-row-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
+.Track-subrow:last-child { border-bottom: 0; }
+
+.Cellw {
+    width: var(--week-w); flex: 0 0 var(--week-w);
+    border-right: var(--border-xs) solid var(--border-emphasis);
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    position: relative;
+    cursor: default;
+    user-select: none;
+}
+.Cellw.is-zero { color: var(--text-disabled); }
+.Cellw.is-clickable { cursor: pointer; }
+.Cellw.is-clickable:hover { background: var(--surface-list-item-hover); }
+.Cellw.is-selected { background: var(--primary-subtle); box-shadow: inset 0 0 0 1px var(--primary); z-index: 2; }
+.Cellw-hint {
+    position: absolute; right: 3px; top: 50%; transform: translateY(-50%);
+    font-size: 9px; color: var(--icon-disabled); opacity: 0;
+}
+.Cellw.is-clickable:hover .Cellw-hint { opacity: 1; }
+
+/* Weekend / day gridlines behind the cells */
+.Cellw-grid { position: absolute; inset: 0; display: flex; pointer-events: none; }
+.Cellw-grid i { flex: 1; border-right: var(--border-xs) solid #f2f2f5; }
+.Cellw-grid i:last-child { border-right: 0; }
+
+/* Individual bookings shown when a resource row is expanded */
+.Track-items { display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
+.ItemRow { display: flex; height: 21px; }
+.ItemSlot { width: var(--week-w); flex: 0 0 var(--week-w); border-right: var(--border-xs) solid var(--border-emphasis); padding: 0 2px; }
+.Bar {
+    height: 17px;
+    border-radius: 2px;
+    color: #fff;
+    font-size: 10px;
+    line-height: 17px;
+    padding: 0 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0,0,0,.2);
+}
+.Bar.is-selected { outline: 2px solid var(--primary); outline-offset: -2px; }
+.Bar--unavailability {
+    background: repeating-linear-gradient(135deg, #d7d8df 0 5px, #eceded 5px 10px);
+    color: var(--text-default);
+}
+
+/* Slim availability strip */
+.SlimRow { display: flex; height: var(--slim-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
+.SlimCell { width: var(--week-w); flex: 0 0 var(--week-w); border-right: var(--border-xs) solid var(--border-emphasis); padding: 2px 1px; }
+.SlimCell i { display: block; height: 100%; border-radius: 1px; }
+
+/* Today marker */
+.Today {
+    position: absolute; top: 0; bottom: 0; width: 2px;
+    background: var(--today-marker);
+    z-index: 20;
+    pointer-events: none;
+}
+
+/* ============================================================
+   Settings menu
+   ============================================================ */
+.MenuLayer { position: fixed; inset: 0; z-index: 200; }
+.Menu {
+    position: absolute;
+    background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: var(--border-radius-default);
+    box-shadow: 0 6px 20px rgba(0,0,0,.16);
+    padding: 12px 0;
+    width: 190px;
+}
+.Menu-title {
+    padding: 0 22px 8px;
+    font-size: var(--font-size-medium);
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    line-height: 21px;
+}
+.Menu-title:not(:first-child) { padding-top: 14px; }
+.Menu-item {
+    padding: 7px 12px 7px 22px;
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    line-height: 20px;
+}
+.Menu-item:hover, .Menu-item.is-open { background: var(--surface-subtle-dark); }
+.Menu-item.is-static { cursor: default; color: var(--text-default); }
+.Menu-item.is-static:hover { background: transparent; }
+.Menu-item i.fa-chevron-right, .Menu-item i.fa-chevron-left { font-size: 9px; color: var(--icon-default); }
+.Menu-item i.fa-check { font-size: 11px; color: var(--icon-default); }
+.Menu-select {
+    margin: 0 22px 6px;
+    width: calc(100% - 44px);
+    height: 30px;
+    border: var(--border-xs) solid var(--border-emphasis);
+    border-radius: 3px;
+    padding: 0 8px;
+    font-family: inherit;
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    background: #fff;
+}
+
+.Flyout {
+    position: absolute;
+    background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: var(--border-radius-default);
+    box-shadow: 0 6px 20px rgba(0,0,0,.16);
+    padding: 14px 0;
+    width: 262px;
+}
+.Flyout-title {
+    padding: 0 22px 10px;
+    font-size: var(--font-size-medium);
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    line-height: 20px;
+}
+.Radio {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 22px;
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    cursor: pointer;
+}
+.Radio:hover { background: var(--surface-subtle-dark); }
+.Radio-dot {
+    width: 13px; height: 13px; flex: 0 0 13px;
+    border-radius: 50%;
+    border: var(--border-xs) solid var(--border-default);
+    background: #fff;
+    position: relative;
+}
+.Radio.is-checked .Radio-dot { border-color: var(--primary); border-width: 4px; }
+.Radio.is-disabled { color: var(--text-disabled); cursor: not-allowed; }
+.Radio.is-disabled:hover { background: transparent; }
+.Radio.is-disabled .Radio-dot { border-color: var(--border-emphasis); background: var(--surface-disabled); }
+.Radio-tag {
+    margin-left: auto;
+    font-size: var(--font-size-xsmall);
+    color: var(--text-subtle);
+    background: var(--surface-subtle-dark);
+    border-radius: 9px;
+    padding: 1px 7px;
+}
+.Checkbox {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 22px;
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    cursor: pointer;
+}
+.Checkbox:hover { background: var(--surface-subtle-dark); }
+.Checkbox-box {
+    width: 13px; height: 13px; flex: 0 0 13px;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: 2px;
+    background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 8px;
+}
+.Checkbox.is-checked .Checkbox-box { background: var(--primary); border-color: var(--primary); }
+
+.Seg { display: flex; margin: 8px 22px 4px; border: var(--border-xs) solid var(--border-subtle); border-radius: 3px; overflow: hidden; }
+.Seg button {
+    flex: 1; padding: 6px 0;
+    font-size: var(--font-size-medium);
+    border: 0; border-left: var(--border-xs) solid var(--border-subtle);
+    background: #fff; color: var(--text-default);
+    cursor: pointer;
+}
+.Seg button:first-child { border-left: 0; }
+.Seg button.is-active { background: var(--surface-emphasis); color: var(--text-inverse); }
+.Seg.is-disabled button { color: var(--text-disabled); cursor: not-allowed; background: #fff; }
+
+.Menu-note {
+    margin: 10px 22px 0;
+    padding: 8px 10px;
+    background: var(--surface-info-subtle);
+    border-radius: 3px;
+    font-size: var(--font-size-small);
+    color: var(--text-accent);
+    line-height: 1.45;
+}
+.Menu-note i { color: var(--primary); margin-right: 5px; }
+
+/* ============================================================
+   Multi-select side panel
+   ============================================================ */
+.Panel {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 274px;
+    background: var(--surface-default);
+    border-left: var(--border-xs) solid var(--border-subtle);
+    box-shadow: -4px 0 16px rgba(0,0,0,.08);
+    z-index: 150;
+    display: flex; flex-direction: column;
+}
+.Panel-tools {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 10px;
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+}
+.Panel-tools .Tbtn { min-width: 28px; justify-content: center; }
+.Panel-tools .Panel-close { margin-left: auto; }
+.Panel-head {
+    padding: 12px 14px;
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 15px; font-weight: 600;
+}
+.Panel-head button { border: 0; background: transparent; cursor: pointer; color: var(--icon-default); font-size: 14px; }
+.Panel-body { flex: 1; overflow: auto; }
+.Panel-sectionTitle { padding: 12px 14px 6px; font-weight: 600; font-size: var(--font-size-medium); }
+.Panel-field {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 14px;
+    font-size: var(--font-size-small);
+    color: var(--text-subtle);
+}
+.Panel-field i.lead { width: 14px; color: var(--icon-default); text-align: center; }
+.Panel-input {
+    flex: 1; height: 26px;
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: 3px;
+    background: var(--surface-subtle-light);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-disabled);
+}
+.Panel-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-medium);
+    cursor: pointer;
+}
+.Panel-row:hover { background: var(--surface-list-item-hover); }
+.Panel-row strong { font-weight: 600; }
+.Panel-row .muted { color: var(--text-subtle); font-weight: 400; }
+.Panel-row i.fa-chevron-right { font-size: 9px; color: var(--icon-default); }
+.Panel-list { padding: 0 14px 10px; }
+.Panel-listItem {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+}
+.Panel-listItem:last-child { border-bottom: 0; }
+.Panel-swatch { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 8px; }
+.Panel-listItem .hrs { margin-left: auto; color: var(--text-subtle); }
+
+/* ============================================================
+   Modal
+   ============================================================ */
+.Backdrop {
+    position: fixed; inset: 0;
+    background: var(--surface-overlay);
+    z-index: 300;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 20px;
+    overflow: auto;
+}
+.Modal {
+    background: var(--surface-default);
+    border-radius: 0.3rem;
+    width: 720px;
+    max-width: 100%;
+    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    display: flex; flex-direction: column;
+    max-height: calc(100vh - 80px);
+}
+.Modal-head {
+    display: flex; align-items: center; gap: 16px;
+    padding: var(--padding-md);
+    border-bottom: var(--border-xs) solid var(--border-default);
+}
+.Modal-head h2 { margin: 0; font-size: 18px; font-weight: 600; flex: 1; }
+.Modal-tabs { display: flex; gap: 18px; align-items: center; }
+.Modal-tab {
+    background: transparent; border: 0; border-bottom: 2px solid transparent;
+    padding: 4px 2px; font-size: var(--font-size-medium);
+    color: var(--text-subtle); cursor: pointer;
+}
+.Modal-tab.is-active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+.Modal-close { background: transparent; border: 0; font-size: 18px; color: var(--icon-default); cursor: pointer; }
+.Modal-body { padding: var(--padding-md); overflow: auto; }
+.Modal-foot {
+    padding: var(--padding-sm) var(--padding-md);
+    border-top: var(--border-xs) solid var(--border-default);
+    display: flex; align-items: center; gap: 8px;
+}
+.Modal-foot .spacer { flex: 1; }
+
+.Field { margin-bottom: 14px; }
+.Field-label {
+    display: block; font-size: var(--font-size-medium);
+    font-weight: 600; margin-bottom: 5px;
+}
+.Field-label .req { color: var(--text-danger); }
+.Field-row { display: flex; gap: 14px; }
+.Field-row > .Field { flex: 1; margin-bottom: 0; }
+.Input {
+    width: 100%; height: 35px;
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 0 9px;
+    font-family: inherit; font-size: var(--font-size-medium);
+    color: var(--text-default);
+    background: #fff;
+}
+.Input::placeholder { color: var(--text-disabled); }
+.InputGroup { display: flex; }
+.InputGroup .Input { border-radius: 3px 0 0 3px; }
+.InputGroup-append {
+    width: 35px; height: 35px;
+    display: flex; align-items: center; justify-content: center;
+    border: var(--border-xs) solid var(--border-subtle);
+    border-left: 0;
+    border-radius: 0 3px 3px 0;
+    background: var(--surface-subtle-light);
+    color: var(--text-subtle);
+    font-size: var(--font-size-medium);
+}
+.InputGroup-append.is-solid { background: var(--surface-emphasis); color: #fff; border-color: var(--surface-emphasis); cursor: pointer; }
+.InputGroup-append.is-primary { background: var(--primary); color: #fff; border-color: var(--primary); cursor: pointer; }
+
+.Effort { display: flex; align-items: center; gap: 10px; }
+.Effort .InputGroup { width: 118px; }
+.Effort .Input { text-align: left; }
+
+.Modal-section {
+    border-top: var(--border-xs) solid var(--border-subtle);
+    margin-top: 16px; padding-top: 14px;
+}
+.Modal-section h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+
+.Pills { display: flex; gap: 10px; flex-wrap: wrap; }
+.Pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 32px; padding: 0 14px;
+    border-radius: 16px;
+    border: var(--border-xs) solid var(--border-subtle);
+    background: #fff;
+    font-size: var(--font-size-medium);
+    color: var(--text-default);
+    cursor: pointer;
+}
+.Pill.is-active { background: var(--surface-subtle-dark); border-color: var(--border-emphasis); font-weight: 600; }
+.Pill-dot { width: 9px; height: 9px; border-radius: 50%; }
+
+.Toggle2 { display: flex; width: 324px; border: var(--border-xs) solid var(--border-subtle); border-radius: 3px; overflow: hidden; }
+.Toggle2 button {
+    flex: 1; height: 32px; border: 0; background: #fff;
+    font-size: var(--font-size-medium); color: var(--text-default); cursor: pointer;
+}
+.Toggle2 button.is-active { background: var(--surface-emphasis); color: #fff; }
+
+.Table { width: 100%; border-collapse: collapse; font-size: var(--font-size-medium); }
+.Table th, .Table td {
+    text-align: left; padding: 8px 10px;
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+}
+.Table th { background: var(--surface-subtle-light); font-weight: 600; font-size: var(--font-size-small); }
+.Table .empty { text-align: center; color: var(--text-subtle); padding: 22px; }
+.Badge-primary {
+    display: inline-block; padding: 1px 8px; border-radius: 9px;
+    background: var(--primary-subtle); color: var(--primary);
+    font-size: var(--font-size-xsmall); font-weight: 600;
+}
+
+.Chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: var(--font-size-medium);
+}
+.Chip button { border: var(--border-xs) solid var(--border-subtle); background: #fff; border-radius: 3px; width: 26px; height: 26px; cursor: pointer; color: var(--icon-default); }
+
+.Btn {
+    height: 35px; padding: 0 16px;
+    border: var(--border-xs) solid var(--border-emphasis);
+    border-radius: 3px;
+    background: #fff;
+    color: var(--text-default);
+    font-size: var(--font-size-medium);
+    cursor: pointer;
+}
+.Btn:hover { background: var(--surface-subtle-dark); }
+.Btn--primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.Btn--primary:hover { background: var(--primary-emphasis); }
+
+.Note {
+    display: flex; gap: 8px; align-items: flex-start;
+    margin-top: 14px; padding: 9px 11px;
+    background: var(--surface-info-subtle);
+    border-radius: 3px;
+    font-size: var(--font-size-small);
+    color: var(--text-accent);
+    line-height: 1.45;
+}
+.Note i { color: var(--primary); margin-top: 2px; }
+
+/* Toast */
+.Toast {
+    position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+    background: var(--surface-emphasis);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 3px;
+    font-size: var(--font-size-medium);
+    z-index: 400;
+    box-shadow: 0 6px 18px rgba(0,0,0,.24);
+}
+
+/* Tooltip */
+.Tip {
+    position: fixed;
+    z-index: 250;
+    background: #fff;
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: 3px;
+    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+    padding: 7px 10px;
+    font-size: var(--font-size-small);
+    color: var(--text-default);
+    max-width: 250px;
+    pointer-events: none;
+    line-height: 1.5;
+}
+.Tip b { font-weight: 600; }
+.Tip .muted { color: var(--text-subtle); }
+
+/* Bottom-right zoom cluster (visual parity with the product) */
+.Zoom {
+    position: absolute; right: 14px; bottom: 14px;
+    display: flex; gap: 4px;
+    z-index: 40;
+}
+.Zoom button {
+    width: 26px; height: 24px;
+    border: var(--border-xs) solid var(--border-emphasis);
+    background: #fff; border-radius: 3px;
+    color: var(--icon-default); font-size: 11px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div class="App">
+    <!-- ── Left nav rail ─────────────────────────────────────── -->
+    <nav class="Rail" aria-label="Primary">
+        <div class="Rail-logo"><i class="fa-solid fa-angles-right"></i></div>
+        <div class="Rail-icon"><i class="fa-regular fa-bell"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+        <div style="height:12px"></div>
+        <div class="Rail-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="Rail-icon is-active"><i class="fa-regular fa-calendar"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-table-columns"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-plus"></i></div>
+        <div class="Rail-icon"><i class="fa-regular fa-file-lines"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-sitemap"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <div class="Rail-icon"><i class="fa-regular fa-user"></i></div>
+        <div class="Rail-spacer"></div>
+        <div class="Rail-icon"><i class="fa-regular fa-circle-question"></i></div>
+        <div class="Rail-icon"><i class="fa-solid fa-right-from-bracket"></i></div>
+    </nav>
+
+    <div class="Main">
+        <!-- ── Toolbar ───────────────────────────────────────── -->
+        <div class="Toolbar">
+            <div class="Toolbar-row">
+                <button class="Tbtn is-primary Tbtn--wide">Schedule <i class="fa-solid fa-caret-down"></i></button>
+                <button class="Tbtn"><i class="fa-regular fa-folder"></i> <i class="fa-solid fa-caret-down"></i></button>
+                <button class="Tbtn"><i class="fa-regular fa-user"></i></button>
+                <button class="Tbtn"><i class="fa-solid fa-list"></i></button>
+                <div class="Toolbar-spacer"></div>
+                <div class="Toolbar-mode" id="modeIndicator"></div>
+            </div>
+            <div class="Toolbar-row">
+                <button class="Tbtn"><i class="fa-solid fa-filter"></i> <i class="fa-solid fa-caret-down"></i></button>
+                <div class="Tsearch">
+                    <input type="text" placeholder="Search G…" aria-label="Search resources" />
+                    <button aria-label="Clear search"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <button class="Tbtn" id="settingsBtn" aria-haspopup="true"><i class="fa-solid fa-gear"></i> <i class="fa-solid fa-caret-down"></i></button>
+                <button class="Tbtn"><i class="fa-solid fa-right-left"></i></button>
+            </div>
+        </div>
+
+        <!-- ── Gantt ─────────────────────────────────────────── -->
+        <div class="Gantt" id="gantt">
+            <div class="Gantt-inner" id="ganttInner"></div>
+            <div class="Zoom">
+                <button><i class="fa-solid fa-minus"></i></button>
+                <button><i class="fa-solid fa-magnifying-glass"></i></button>
+                <button><i class="fa-solid fa-plus"></i></button>
+                <button><i class="fa-solid fa-caret-down"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="overlays"></div>
+
+<script>
+/* ============================================================================
+   Gantt Resource Breakdown (aggregation) — prototype
+   DEVO-29502 / 29503 / 29675 / 29676
+   ========================================================================== */
+(function () {
+'use strict';
+
+// ── Calendar ───────────────────────────────────────────────────────────────
+var WEEK_COUNT = 12;
+var WEEK_W = 85;
+var DAY_W = WEEK_W / 5;
+
+function snapMonday(d) {
+    var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var dow = r.getDay();
+    r.setDate(r.getDate() + (dow === 0 ? -6 : 1 - dow));
+    return r;
+}
+function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+
+var FIRST_MONDAY = snapMonday(new Date(2026, 5, 1));   // w/c 1 June 2026
+var TODAY = addDays(FIRST_MONDAY, 8);                  // Tue of week 2
+
+var WEEKS = [];
+for (var w = 0; w < WEEK_COUNT; w++) WEEKS.push(addDays(FIRST_MONDAY, w * 7));
+
+var MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+function wcLabel(d) { return 'w.c. ' + pad2(d.getDate()) + '/' + pad2(d.getMonth() + 1); }
+
+// ── Dimensions ─────────────────────────────────────────────────────────────
+var DIMENSIONS = {
+    none:        { label: 'None' },
+    role:        { label: 'Role',                 field: 'role' },
+    bookingType: { label: 'Primary Booking Type', field: 'bookingType' },
+    phase:       { label: 'Phase',                field: 'phase', deferred: true },
+    req:         { label: 'Resource Requirement', field: 'req' }
+};
+
+var PHASE_ORDER  = ['Preparation', 'First Review', 'Second Review'];
+var PHASE_COLOUR = { 'Preparation': '#2398f2', 'First Review': '#2d7d46', 'Second Review': '#7b3fa0' };
+var ROLE_ORDER   = ['Partner', 'Principal', 'Senior Manager', 'Manager', 'Project Manager',
+                    'Senior Associate', 'Associate', 'Audit Assistant'];
+
+// ── Data ───────────────────────────────────────────────────────────────────
+// Engagement spec: [jobName, code, phase, role, bookingType, resourceRequirement,
+//                   startWeek, spanWeeks, hoursPerWeek]
+// null on a dimension means "no value" — those items fall into the Other row.
+var DATA = [
+    { dept: 'ACTUARIAL SERVICES', workers: [
+        { id: 'w-ferguson', name: 'Ferguson Abramam', grade: 'MAN', cap: 37.5, items: [
+            ['Audit of Angelo Co 18/19',      'ANCO1819-433', 'Preparation',   'Partner',          'Audit',              'MAN / Tax Community Clients / London', 0, 3, 13],
+            ['Audit of Angelo LP 16/17',      'ANLP1617-393', 'Preparation',   'Senior Manager',   'Audit',              'SRM / Tax Community Clients / London', 2, 4, 10],
+            ['Angelo Group tax planning',     'ANG-34',       'First Review',  'Principal',        'Tax Advisory',       'MAN / Tax Community Clients / London', 0, 2, 15],
+            ['Angelo SLP 21/22 sign-off',     'ANSLP2122-84', 'Second Review', 'Partner',          'Audit',              'MAN / Tax Community Clients / London', 1, 5, 12],
+            ['Firmwide QA sampling',          'QA-101',       'Second Review', null,               'Regulatory Review',  null,                                   4, 3, 6],
+            ['Annual leave',                  '',             null,            null,               null,                 null,                                   6, 1, 7.5, 'unavailability']
+        ]},
+        { id: 'w-hannah', name: "Hannah O'Brien", grade: 'MAN', cap: 37.5, link: true, items: [
+            ['Audit of Angelo Co 2021',       'ANCO2021-432', 'Preparation',   'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          0, 4, 10],
+            ['Hawksworth Energy Audit',       'HEA-4521',     'Preparation',   'Senior Associate', 'Audit',              'A3 / Corporate / Edinburgh',           1, 3, 26],
+            ['Hawksworth first review',       'HEA-4521',     'First Review',  'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          2, 3, 20],
+            ['Angelo LP 2016 review',         'ANLP16-236',   'Second Review', 'Senior Manager',   'Audit',              'SRM / Corporate / Edinburgh',          0, 6, 11],
+            ['Busy-season coaching',          'TRN-12',       'First Review',  'Manager',          'Training',           null,                                   5, 2, 4],
+            ['Study leave',                   '',             null,            null,               null,                 null,                                   3, 2, 7.5, 'unavailability']
+        ]},
+        { id: 'w-mariana', name: 'Mariana Abramamovh', grade: 'AM', cap: 37.5, items: [
+            ['Audit of Angelo SLP 16/17',     'ANSLP1617-238','Preparation',   'Senior Associate', 'Audit',              'A3 / Tax Community Clients / London',  0, 5, 10],
+            ['Angelo Co 2017 fieldwork',      'ANCO2017-124', 'Preparation',   'Associate',        'Audit',              'A2 / Tax Community Clients / London',  1, 4, 20],
+            ['Angelo Co 2017 first review',   'ANCO2017-124', 'First Review',  'Manager',          'Audit',              'MAN / Tax Community Clients / London', 2, 5, 10],
+            ['Maritime Consulting Review',    'MCR-7823',     'Second Review', 'Project Manager',  'Consulting',         'MAN / Advisory / London',              3, 4, 30],
+            ['Uncoded prep work',             'ANG-11',       'Preparation',   null,               null,                 null,                                   6, 3, 5]
+        ]}
+    ]},
+    { dept: 'INTERNAL CONTROLS', workers: [
+        { id: 'w-clarette', name: 'Clarette Absolon', grade: 'AM', cap: 37.5, items: [
+            ['Audit of Angelo Co 2021 (433)', 'ANCO2021-433', 'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     0, 2, 20],
+            ['Audit of Angelo LP 16/17 (55)', 'ANLP1617-55',  'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     0, 6, 19],
+            ['Audit of Angelo SLP 16/17',     'ANSLP1617-46', 'Preparation',   'Senior Associate', 'Audit',              'A3 / Internal Controls / London',      0, 8, 1],
+            ['Controls first review',         'AU-300',       'First Review',  'Senior Manager',   'Regulatory Review',  'SRM / Internal Controls / London',     1, 6, 8],
+            ['Risk Framework sign-off',       'AU-261',       'Second Review', 'Principal',        'Regulatory Review',  'PRI / Internal Controls / London',     2, 5, 5],
+            ['Public holiday',                '',             null,            null,               null,                 null,                                   4, 1, 7.5, 'unavailability']
+        ]}
+    ]},
+    { dept: 'CONSULTING', workers: [
+        { id: 'w-holden', name: 'Holden Absolon', grade: 'AM', cap: 37.5, items: [
+            ['Maritime Consulting Review',    'MCR-7823',     'Preparation',   'Manager',          'Consulting',         'MAN / Advisory / London',              0, 5, 10],
+            ['Maritime first review',         'MCR-7823',     'First Review',  'Manager',          'Consulting',         'MAN / Advisory / London',              1, 5, 20],
+            ['Angelo tax structuring',        'ANG-34',       'Second Review', 'Senior Associate', 'Tax Advisory',       'A3 / Advisory / London',               2, 5, 10],
+            ['Unassigned advisory support',   'MCR-7900',     'Preparation',   null,               'Consulting',         null,                                   5, 3, 10]
+        ]},
+        { id: 'w-stanislas', name: 'Stanislas Abramamovh', grade: 'AM', cap: 37.5, items: [
+            ['Angelo LP 2016 (337)',          'ANLP16-337',   'Preparation',   'Senior Associate', 'Audit',              'A3 / Advisory / London',               0, 6, 41],
+            ['Angelo LP 2016 first review',   'ANLP16-337',   'First Review',  'Manager',          'Audit',              'MAN / Advisory / London',              1, 5, 20],
+            ['Technology advisory scoping',   'TAS-88',       'Second Review', 'Associate',        'Consulting',         'A2 / Advisory / London',               0, 7, 10],
+            ['Internal training day',         'TRN-04',       null,            null,               'Training',           null,                                   4, 1, 7.5]
+        ]}
+    ]},
+    { dept: 'SOLUTIONS', workers: [
+        { id: 'w-karina', name: 'Karina Abramamovh', grade: 'AM', cap: 37.5, items: [
+            ['Financial advisory planning',   'FIN-220',      'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    0, 5, 20],
+            ['Financial advisory review',     'FIN-220',      'First Review',  'Senior Associate', 'Consulting',         'A3 / Financial Advisory / London',     1, 5, 10],
+            ['Angelo Co 2021 sign-off',       'ANCO2021-432', 'Second Review', 'Partner',          'Audit',              'MAN / Financial Advisory / London',    2, 4, 10],
+            ['Recruitment panel',             '',             null,            null,               null,                 null,                                   7, 1, 3.5, 'unavailability']
+        ]},
+        { id: 'w-donall', name: 'Donall Absolon', grade: 'A3', cap: 37.5, items: [
+            ['Angelo SLP 16/17 (239)',        'ANSLP1617-239','Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     0, 6, 10],
+            ['Angelo SLP 16/17 review',       'ANSLP1617-239','First Review',  'Senior Associate', 'Audit',              'A3 / Financial Advisory / London',     1, 5, 20],
+            ['Tax computations',              'ANG-34',       'Second Review', 'Associate',        'Tax Advisory',       'A2 / Financial Advisory / London',     2, 5, 10],
+            ['Ledger clean-up',               'FIN-301',      'Preparation',   'Associate',        null,                 'A2 / Financial Advisory / London',     6, 3, 6]
+        ]}
+    ]}
+];
+
+// Expand the compact spec into item objects with per-week hours.
+var ITEM_SEQ = 0;
+var WORKERS = [];
+DATA.forEach(function (group) {
+    group.workers.forEach(function (wk) {
+        wk.dept = group.dept;
+        wk.items = wk.items.map(function (spec) {
+            var cells = {};
+            for (var i = 0; i < spec[7]; i++) {
+                var wi = spec[6] + i;
+                if (wi < WEEK_COUNT) cells[wi] = spec[8];
+            }
+            return {
+                id: 'it-' + (++ITEM_SEQ),
+                job: spec[0], code: spec[1],
+                phase: spec[2], role: spec[3], bookingType: spec[4], req: spec[5],
+                startWeek: spec[6], span: Math.min(spec[7], WEEK_COUNT - spec[6]),
+                cells: cells,
+                kind: spec[9] || 'booking'
+            };
+        });
+        WORKERS.push(wk);
+    });
+});
+
+// ── State ──────────────────────────────────────────────────────────────────
+var state = {
+    breakdown: 'role',
+    showAvailability: false,
+    slimView: true,
+    grouping: 'day',
+    hoursMode: 'consumed',
+    tasksInGrey: false,
+    expandedRows: {},          // "workerId|rowKey" -> true
+    collapsedDepts: {},
+    selection: [],             // [{workerId, rowKey, week}]
+    menu: null                 // null | 'root'
+};
+
+function breakdownOn() { return state.breakdown !== 'none'; }
+
+// ── Aggregation ────────────────────────────────────────────────────────────
+function dimValueOf(item, dim) {
+    if (item.kind === 'unavailability') return null;
+    var field = DIMENSIONS[dim].field;
+    return item[field] || null;
+}
+
+function orderIndex(dim, value) {
+    if (dim === 'phase') return PHASE_ORDER.indexOf(value);
+    if (dim === 'role') { var i = ROLE_ORDER.indexOf(value); return i === -1 ? 999 : i; }
+    return 999;
+}
+
+/** Client-side aggregation of already-loaded Gantt data (DEVO-29503). */
+function buildBreakdownRows(worker, dim) {
+    if (dim === 'none') return null;
+    var map = {}, order = [], other = [];
+    worker.items.forEach(function (it) {
+        var v = dimValueOf(it, dim);
+        if (!v) { other.push(it); return; }
+        if (!map[v]) { map[v] = []; order.push(v); }
+        map[v].push(it);
+    });
+    order.sort(function (a, b) {
+        var d = orderIndex(dim, a) - orderIndex(dim, b);
+        return d !== 0 ? d : a.localeCompare(b);
+    });
+    var rows = order.map(function (v) {
+        return { key: v, label: v, items: map[v], accent: dim === 'phase' ? PHASE_COLOUR[v] : null };
+    });
+    // The Other row always renders, and merges unavailabilities with items that
+    // have no value for the chosen dimension (DEVO-29669).
+    rows.push({ key: '__other', label: 'Other', items: other, isOther: true });
+    return rows;
+}
+
+function cellHours(row, week) {
+    var total = 0;
+    row.items.forEach(function (it) { total += it.cells[week] || 0; });
+    return Math.round(total * 10) / 10;
+}
+function cellItems(row, week) {
+    return row.items.filter(function (it) { return it.cells[week]; });
+}
+function fmtHours(h) { return h ? (Math.round(h * 10) / 10) + ' h' : '0'; }
+
+function weekConsumed(worker, week) {
+    var total = 0;
+    worker.items.forEach(function (it) { total += it.cells[week] || 0; });
+    return total;
+}
+function slimColour(consumed, capacity) {
+    if (capacity <= 0) return '#aed6f1';
+    var p = consumed / capacity;
+    if (p === 0) return '#eceef3';
+    if (p < 0.25) return '#aed6f1';
+    if (p < 0.50) return '#a9dfbf';
+    if (p < 0.75) return '#52be80';
+    if (p <= 1.00) return '#1e8449';
+    return '#c0392b';
+}
+
+function rowExpanded(worker, row) { return !!state.expandedRows[worker.id + '|' + row.key]; }
+
+// ── DOM helpers ────────────────────────────────────────────────────────────
+function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+}
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+
+// ── Render ─────────────────────────────────────────────────────────────────
+var ganttInner = document.getElementById('ganttInner');
+var overlays = document.getElementById('overlays');
+
+function render() {
+    var scrollLeft = document.getElementById('gantt').scrollLeft;
+    ganttInner.innerHTML = '';
+    ganttInner.appendChild(buildHeader());
+    DATA.forEach(function (group) {
+        ganttInner.appendChild(buildGroupRow(group));
+        if (state.collapsedDepts[group.dept]) return;
+        group.workers.forEach(function (wk) { ganttInner.appendChild(buildWorkerRow(wk)); });
+    });
+    ganttInner.appendChild(buildTodayMarker());
+    document.getElementById('gantt').scrollLeft = scrollLeft;
+
+    var mi = document.getElementById('modeIndicator');
+    mi.innerHTML = 'Resource breakdown: <strong>' + esc(DIMENSIONS[state.breakdown].label) + '</strong>';
+    renderPanel();
+}
+
+function buildHeader() {
+    var head = el('div', 'Head');
+
+    // Month band — weeks grouped by the month their Monday falls in.
+    var mRow = el('div', 'Head-row');
+    mRow.appendChild(el('div', 'Head-left'));
+    var months = el('div', 'Head-months');
+    var run = null;
+    WEEKS.forEach(function (d) {
+        var key = d.getFullYear() + '-' + d.getMonth();
+        if (!run || run.key !== key) {
+            run = { key: key, label: MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear(), n: 0 };
+            months.appendChild(makeMonth(run));
+        }
+        run.n++;
+        run.node.style.width = (run.n * WEEK_W) + 'px';
+    });
+    mRow.appendChild(months);
+    head.appendChild(mRow);
+
+    // Week band
+    var wRow = el('div', 'Head-row');
+    wRow.appendChild(el('div', 'Head-left'));
+    var wks = el('div', 'Head-weeks');
+    WEEKS.forEach(function (d) { wks.appendChild(el('div', 'Head-week', wcLabel(d))); });
+    wRow.appendChild(wks);
+    head.appendChild(wRow);
+
+    // Day band
+    var dRow = el('div', 'Head-row');
+    var dLeft = el('div', 'Head-left');
+    dLeft.style.borderBottom = '1px solid var(--border-emphasis)';
+    dRow.appendChild(dLeft);
+    var days = el('div', 'Head-days');
+    WEEKS.forEach(function (d, wi) {
+        var set = el('div', 'Head-dayset');
+        for (var i = 1; i <= 5; i++) {
+            var cell = el('div', 'Head-day', String(i));
+            var date = addDays(d, i - 1);
+            if (date.toDateString() === TODAY.toDateString()) cell.classList.add('is-today');
+            set.appendChild(cell);
+        }
+        days.appendChild(set);
+    });
+    dRow.appendChild(days);
+    head.appendChild(dRow);
+    return head;
+}
+function makeMonth(run) {
+    var n = el('div', 'Head-month', run.label);
+    run.node = n;
+    return n;
+}
+
+function buildGroupRow(group) {
+    var row = el('div', 'Row GroupRow');
+    var left = el('div', 'Row-left');
+    var collapsed = !!state.collapsedDepts[group.dept];
+    left.innerHTML = '<i class="fa-solid fa-chevron-' + (collapsed ? 'right' : 'down') + '"></i>' + esc(group.dept);
+    left.addEventListener('click', function () {
+        state.collapsedDepts[group.dept] = !collapsed;
+        render();
+    });
+    var track = el('div', 'Row-track');
+    track.style.width = (WEEKS.length * WEEK_W) + 'px';
+    row.appendChild(left);
+    row.appendChild(track);
+    return row;
+}
+
+function buildWorkerRow(worker) {
+    var rows = buildBreakdownRows(worker, state.breakdown);
+    var row = el('div', 'Row WorkerRow');
+    row.dataset.worker = worker.id;
+
+    // ── Left panel ────────────────────────────────────────────────────────
+    var left = el('div', 'Row-left');
+
+    var name = el('div', 'Cell-name');
+    if (worker.link) name.innerHTML = '<i class="fa-solid fa-link"></i>';
+    var nameSpan = el('span', null, worker.name);
+    name.appendChild(nameSpan);
+    left.appendChild(name);
+
+    left.appendChild(el('div', 'Cell-grade', worker.grade));
+
+    var expandCell = el('div', 'Cell-expand');
+    if (rows) {
+        var allOpen = rows.every(function (r) { return rowExpanded(worker, r); });
+        var btn = el('button', 'Expander');
+        btn.innerHTML = '<i class="fa-solid fa-' + (allOpen ? 'minus' : 'plus') + '"></i>';
+        btn.title = allOpen ? 'Collapse all breakdown rows' : 'Expand all breakdown rows';
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            rows.forEach(function (r) { state.expandedRows[worker.id + '|' + r.key] = !allOpen; });
+            render();
+        });
+        expandCell.appendChild(btn);
+    }
+    left.appendChild(expandCell);
+
+    var dims = el('div', 'Cell-dims');
+    left.appendChild(dims);
+
+    // ── Timeline ──────────────────────────────────────────────────────────
+    var track = el('div', 'Row-track');
+    track.style.width = (WEEKS.length * WEEK_W) + 'px';
+    var weeksCol = el('div', 'Track-weeks');
+    weeksCol.style.width = '100%';
+    track.appendChild(weeksCol);
+
+    // Slim availability strip — top-level resource row only (DEVO-29673)
+    if (state.showAvailability) {
+        dims.appendChild(el('div', 'SlimGutter'));
+        var slim = el('div', 'SlimRow');
+        WEEKS.forEach(function (d, wi) {
+            var c = el('div', 'SlimCell');
+            var bar = document.createElement('i');
+            bar.style.background = slimColour(weekConsumed(worker, wi), worker.cap);
+            c.appendChild(bar);
+            c.title = Math.round(weekConsumed(worker, wi) * 10) / 10 + ' h of ' + worker.cap + ' h — ' + wcLabel(d);
+            slim.appendChild(c);
+        });
+        weeksCol.appendChild(slim);
+    }
+
+    if (!rows) {
+        // Breakdown off — flat resource row with individual bookings.
+        var flat = el('div', 'Track-subrow');
+        flat.style.height = '34px';
+        flat.style.position = 'relative';
+        WEEKS.forEach(function () { flat.appendChild(el('div', 'Cellw')); });
+        var bars = buildBars(worker, { key: '__flat', items: worker.items }, 3);
+        bars.style.position = 'absolute';
+        bars.style.inset = '0';
+        flat.appendChild(bars);
+        weeksCol.appendChild(flat);
+        dims.appendChild(el('div', 'DimLabel', ''));
+        dims.lastChild.style.height = '34px';
+    } else {
+        rows.forEach(function (r) {
+            var open = rowExpanded(worker, r);
+            var itemCount = open ? r.items.length : 0;
+            var h = 24 + (itemCount ? itemCount * 21 + 4 : 0);
+
+            // Left label
+            var lbl = el('div', 'DimLabel' + (r.isOther ? ' is-other' : '') + (open ? ' is-expanded' : ''));
+            lbl.style.height = h + 'px';
+            lbl.style.alignItems = 'flex-start';
+            lbl.style.paddingTop = '4px';
+            if (r.accent) {
+                var acc = el('div', 'DimLabel-accent');
+                acc.style.background = r.accent;
+                lbl.appendChild(acc);
+                lbl.style.paddingLeft = '9px';
+            }
+            lbl.appendChild(el('span', null, r.label));
+            lbl.title = r.isOther
+                ? 'Other — unavailabilities and items with no ' + DIMENSIONS[state.breakdown].label.toLowerCase()
+                : r.label;
+            lbl.style.cursor = r.items.length ? 'pointer' : 'default';
+            if (r.items.length) {
+                lbl.addEventListener('click', function () {
+                    state.expandedRows[worker.id + '|' + r.key] = !open;
+                    render();
+                });
+            }
+            dims.appendChild(lbl);
+
+            // Timeline sub-row
+            var sub = el('div', 'Track-subrow');
+            sub.style.height = h + 'px';
+            sub.style.flexDirection = 'column';
+            sub.style.position = 'relative';
+
+            var hoursRow = el('div');
+            hoursRow.style.display = 'flex';
+            hoursRow.style.height = '24px';
+            hoursRow.style.flex = '0 0 24px';
+            WEEKS.forEach(function (d, wi) {
+                hoursRow.appendChild(buildCell(worker, r, wi, d));
+            });
+            sub.appendChild(hoursRow);
+
+            if (open && r.items.length) {
+                var barBox = buildBars(worker, r, 0);
+                sub.appendChild(barBox);
+            }
+            weeksCol.appendChild(sub);
+        });
+    }
+
+    row.appendChild(left);
+    row.appendChild(track);
+    return row;
+}
+
+function buildCell(worker, row, wi, weekDate) {
+    var hours = cellHours(row, wi);
+    var items = cellItems(row, wi);
+    var c = el('div', 'Cellw' + (hours ? '' : ' is-zero'));
+    c.appendChild(gridLines());
+    c.appendChild(el('span', null, fmtHours(hours)));
+
+    var key = worker.id + '|' + row.key + '|' + wi;
+    if (isSelected(key)) c.classList.add('is-selected');
+    c.classList.add('is-clickable');
+
+    // Click selects only this cell's bookings — not the whole row (DEVO-29672).
+    c.addEventListener('click', function (e) {
+        if (!items.length) { state.selection = []; render(); return; }
+        if (e.metaKey || e.ctrlKey) {
+            if (isSelected(key)) state.selection = state.selection.filter(function (s) { return s.key !== key; });
+            else state.selection.push({ key: key, worker: worker, row: row, week: wi, items: items });
+        } else {
+            state.selection = [{ key: key, worker: worker, row: row, week: wi, items: items }];
+        }
+        render();
+    });
+
+    // Double-click opens the standard item creation modal, pre-filling whatever
+    // dimension value can be inferred (blank on the Other row).
+    c.addEventListener('dblclick', function (e) {
+        e.preventDefault();
+        state.selection = [];
+        openCreateModal(worker, row, weekDate);
+    });
+
+    c.addEventListener('mouseenter', function (e) { showTip(e, worker, row, wi, items, hours); });
+    c.addEventListener('mouseleave', hideTip);
+    return c;
+}
+
+function gridLines() {
+    var g = el('div', 'Cellw-grid');
+    for (var i = 0; i < 5; i++) g.appendChild(document.createElement('i'));
+    return g;
+}
+
+function buildBars(worker, row, topPad) {
+    var box = el('div', 'Track-bars');
+    box.style.position = 'relative';
+    box.style.height = (row.items.length * 21 + 4) + 'px';
+    box.style.paddingTop = (topPad || 2) + 'px';
+    row.items.forEach(function (it, idx) {
+        var bar = el('div', 'Bar' + (it.kind === 'unavailability' ? ' Bar--unavailability' : ''));
+        bar.style.position = 'absolute';
+        bar.style.left = (it.startWeek * WEEK_W + 2) + 'px';
+        bar.style.width = (it.span * WEEK_W - 5) + 'px';
+        bar.style.top = ((topPad || 2) + idx * 21) + 'px';
+        if (it.kind !== 'unavailability') {
+            bar.style.background = state.tasksInGrey ? '#9298b4' : (PHASE_COLOUR[it.phase] || '#4f4970');
+        }
+        var perWeek = it.cells[it.startWeek] || 0;
+        bar.textContent = perWeek + 'h ' + it.job;
+        bar.title = it.job + (it.code ? ' (' + it.code + ')' : '') + ' — ' + perWeek + ' h/week';
+        bar.addEventListener('click', function (e) {
+            e.stopPropagation();
+            state.selection = [{ key: 'bar|' + it.id, worker: worker, row: row, week: it.startWeek, items: [it] }];
+            render();
+        });
+        box.appendChild(bar);
+    });
+    return box;
+}
+
+function buildTodayMarker() {
+    var diff = Math.round((TODAY - FIRST_MONDAY) / 86400000);
+    var wi = Math.floor(diff / 7);
+    var di = diff % 7;
+    var m = el('div', 'Today');
+    m.style.left = (282 + wi * WEEK_W + Math.min(di, 4) * DAY_W + DAY_W / 2) + 'px';
+    return m;
+}
+
+function isSelected(key) {
+    return state.selection.some(function (s) { return s.key === key; });
+}
+
+// ── Tooltip ────────────────────────────────────────────────────────────────
+var tipNode = null;
+function showTip(e, worker, row, wi, items, hours) {
+    hideTip();
+    if (!items.length && !hours) return;
+    tipNode = el('div', 'Tip');
+    var lines = '<b>' + esc(row.label) + '</b> · ' + esc(wcLabel(WEEKS[wi])) + '<br>' +
+                '<span class="muted">' + esc(worker.name) + ' — ' + fmtHours(hours) + ' aggregated</span>';
+    if (items.length) {
+        lines += '<br>' + items.slice(0, 4).map(function (it) {
+            return '· ' + esc(it.job) + ' (' + it.cells[wi] + ' h)';
+        }).join('<br>');
+        if (items.length > 4) lines += '<br><span class="muted">+ ' + (items.length - 4) + ' more</span>';
+    }
+    tipNode.innerHTML = lines;
+    document.body.appendChild(tipNode);
+    var r = e.currentTarget.getBoundingClientRect();
+    tipNode.style.left = Math.min(r.left, window.innerWidth - 270) + 'px';
+    tipNode.style.top = (r.bottom + 6) + 'px';
+}
+function hideTip() { if (tipNode) { tipNode.remove(); tipNode = null; } }
+
+// ── Settings menu ──────────────────────────────────────────────────────────
+var settingsBtn = document.getElementById('settingsBtn');
+settingsBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    state.menu = state.menu ? null : 'root';
+    state.flyout = null;
+    renderMenu();
+});
+
+function renderMenu() {
+    var existing = document.getElementById('menuLayer');
+    if (existing) existing.remove();
+    settingsBtn.classList.toggle('is-active', !!state.menu);
+    if (!state.menu) return;
+
+    var layer = el('div', 'MenuLayer');
+    layer.id = 'menuLayer';
+    layer.addEventListener('click', function () { state.menu = null; state.flyout = null; renderMenu(); });
+
+    var anchor = settingsBtn.getBoundingClientRect();
+    var menu = el('div', 'Menu');
+    menu.style.left = anchor.left + 'px';
+    menu.style.top = (anchor.bottom + 4) + 'px';
+    menu.addEventListener('click', function (e) { e.stopPropagation(); });
+
+    menu.appendChild(el('div', 'Menu-title', 'Row Layout'));
+    var sel = el('select', 'Menu-select');
+    ['Business Unit', 'Location', 'Job Profile'].forEach(function (o) {
+        sel.appendChild(new Option(o, o));
+    });
+    menu.appendChild(sel);
+    menu.appendChild(staticItem('Resource Data'));
+    menu.appendChild(staticItem('Resource Sorting'));
+
+    var bd = el('div', 'Menu-item' + (state.flyout === 'breakdown' ? ' is-open' : ''));
+    bd.innerHTML = '<span>Resource Breakdown</span><i class="fa-solid fa-chevron-right"></i>';
+    bd.addEventListener('mouseenter', function () { state.flyout = 'breakdown'; renderMenu(); });
+    menu.appendChild(bd);
+
+    menu.appendChild(el('div', 'Menu-title', 'Time Settings'));
+    menu.appendChild(staticItem('Gantt Start Date'));
+    menu.appendChild(staticItem('Visible Time (Auto)'));
+
+    menu.appendChild(el('div', 'Menu-title', 'Availability Settings'));
+    var sa = el('div', 'Menu-item');
+    sa.innerHTML = '<span>Show Availability</span>' + (state.showAvailability ? '<i class="fa-solid fa-check"></i>' : '');
+    sa.addEventListener('click', function () { state.showAvailability = !state.showAvailability; renderMenu(); render(); });
+    menu.appendChild(sa);
+
+    var av = el('div', 'Menu-item' + (state.flyout === 'availability' ? ' is-open' : ''));
+    av.innerHTML = '<span>Availability Settings</span><i class="fa-solid fa-chevron-right"></i>';
+    av.addEventListener('mouseenter', function () { state.flyout = 'availability'; renderMenu(); });
+    menu.appendChild(av);
+
+    menu.appendChild(el('div', 'Menu-title', 'Other Settings'));
+    menu.appendChild(staticItem('Show Draft Bookings'));
+    menu.appendChild(staticItem('Show Draft Unavailability'));
+    menu.appendChild(staticItem('Show Debug Labels'));
+
+    menu.appendChild(el('div', 'Menu-title', 'Colour Scheme'));
+    var cs = el('select', 'Menu-select');
+    ['Trait Color', 'Phase Color', 'Engagement Color'].forEach(function (o) { cs.appendChild(new Option(o, o)); });
+    menu.appendChild(cs);
+
+    menu.appendChild(el('div', 'Menu-title', 'Resource Requirements'));
+    menu.appendChild(staticItem('Suitability Scoring'));
+
+    layer.appendChild(menu);
+
+    if (state.flyout === 'breakdown') layer.appendChild(breakdownFlyout(menu, bd));
+    if (state.flyout === 'availability') layer.appendChild(availabilityFlyout(menu, av));
+
+    overlays.appendChild(layer);
+}
+
+function staticItem(label) {
+    var n = el('div', 'Menu-item is-static');
+    n.appendChild(el('span', null, label));
+    return n;
+}
+
+function breakdownFlyout(menu, anchorEl) {
+    var f = el('div', 'Flyout');
+    var a = anchorEl.getBoundingClientRect();
+    f.style.left = (parseFloat(menu.style.left) + 190 + 4) + 'px';
+    f.style.top = (a.top - 8) + 'px';
+    f.addEventListener('click', function (e) { e.stopPropagation(); });
+    f.appendChild(el('div', 'Flyout-title', 'Resource Breakdown'));
+
+    ['none', 'role', 'bookingType', 'phase', 'req'].forEach(function (key) {
+        var def = DIMENSIONS[key];
+        var r = el('div', 'Radio' + (state.breakdown === key ? ' is-checked' : ''));
+        r.appendChild(el('div', 'Radio-dot'));
+        r.appendChild(el('span', null, def.label));
+        if (def.deferred) r.appendChild(el('span', 'Radio-tag', 'Deferred'));
+        r.addEventListener('click', function () {
+            state.breakdown = key;
+            if (breakdownOn()) state.slimView = true;
+            state.selection = [];
+            state.expandedRows = {};
+            state.menu = null; state.flyout = null;
+            renderMenu(); render();
+        });
+        f.appendChild(r);
+    });
+
+    var note = el('div', 'Menu-note');
+    note.innerHTML = '<i class="fa-solid fa-circle-info"></i>Single dimension at a time. Aggregation runs client-side on data the Gantt has already loaded.';
+    f.appendChild(note);
+    return f;
+}
+
+function availabilityFlyout(menu, anchorEl) {
+    var f = el('div', 'Flyout');
+    var a = anchorEl.getBoundingClientRect();
+    f.style.left = (parseFloat(menu.style.left) + 190 + 4) + 'px';
+    f.style.top = (a.top - 240) + 'px';
+    f.addEventListener('click', function (e) { e.stopPropagation(); });
+    f.appendChild(el('div', 'Flyout-title', 'Availability Display Settings'));
+
+    var slim = el('div', 'Radio is-checked' + (breakdownOn() ? ' is-disabled' : ''));
+    slim.appendChild(el('div', 'Radio-dot'));
+    slim.appendChild(el('span', null, 'Display Slim View'));
+    f.appendChild(slim);
+
+    var full = el('div', 'Radio is-disabled');
+    full.appendChild(el('div', 'Radio-dot'));
+    full.appendChild(el('span', null, 'Display Full View'));
+    f.appendChild(full);
+
+    var seg = el('div', 'Seg');
+    [['day', 'By Day'], ['week', 'By Week'], ['month', 'By Month']].forEach(function (g) {
+        var b = el('button', state.grouping === g[0] ? 'is-active' : '', g[1]);
+        b.addEventListener('click', function () { state.grouping = g[0]; renderMenu(); });
+        seg.appendChild(b);
+    });
+    f.appendChild(seg);
+
+    var hrs = el('div', 'Seg is-disabled');
+    hrs.appendChild(el('button', '', 'Consumed hours'));
+    hrs.appendChild(el('button', '', 'Available hours'));
+    f.appendChild(hrs);
+
+    f.appendChild(el('div', 'Flyout-title', 'Availability Colour Settings'));
+    var grey = el('div', 'Checkbox' + (state.tasksInGrey ? ' is-checked' : ''));
+    var box = el('div', 'Checkbox-box');
+    box.innerHTML = '<i class="fa-solid fa-check"></i>';
+    grey.appendChild(box);
+    grey.appendChild(el('span', null, 'Display tasks in grey'));
+    grey.addEventListener('click', function () { state.tasksInGrey = !state.tasksInGrey; renderMenu(); render(); });
+    f.appendChild(grey);
+
+    if (breakdownOn()) {
+        var note = el('div', 'Menu-note');
+        note.innerHTML = '<i class="fa-solid fa-lock"></i>Breakdown by <strong>' + esc(DIMENSIONS[state.breakdown].label) +
+            '</strong> forces Slim View and locks the hours toggle. Availability shows on the resource row only, not on breakdown rows.';
+        f.appendChild(note);
+    }
+    return f;
+}
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        if (document.getElementById('modalLayer')) { closeModal(); return; }
+        if (state.menu) { state.menu = null; state.flyout = null; renderMenu(); return; }
+        if (state.selection.length) { state.selection = []; render(); }
+    }
+});
+
+// ── Multi-select panel ─────────────────────────────────────────────────────
+function renderPanel() {
+    var old = document.getElementById('selPanel');
+    if (old) old.remove();
+    if (!state.selection.length) return;
+
+    var all = [];
+    state.selection.forEach(function (s) { s.items.forEach(function (it) { if (all.indexOf(it) === -1) all.push(it); }); });
+    if (!all.length) return;
+
+    var p = el('div', 'Panel');
+    p.id = 'selPanel';
+
+    var tools = el('div', 'Panel-tools');
+    ['fa-copy', 'fa-trash-can', 'fa-scissors', 'fa-rotate-left', 'fa-rotate-right'].forEach(function (ic) {
+        var b = el('button', 'Tbtn');
+        b.innerHTML = '<i class="fa-solid ' + ic + '"></i>';
+        tools.appendChild(b);
+    });
+    var close = el('button', 'Tbtn Panel-close');
+    close.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    close.addEventListener('click', function () { state.selection = []; render(); });
+    tools.appendChild(close);
+    p.appendChild(tools);
+
+    var head = el('div', 'Panel-head');
+    head.appendChild(el('span', null, all.length + (all.length === 1 ? ' Selected Booking' : ' Selected Bookings')));
+    var x = el('button');
+    x.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    x.addEventListener('click', function () { state.selection = []; render(); });
+    head.appendChild(x);
+    p.appendChild(head);
+
+    var body = el('div', 'Panel-body');
+
+    body.appendChild(el('div', 'Panel-sectionTitle', 'Schedule'));
+    body.appendChild(field('fa-regular fa-clock', ['--', '--'], true));
+    body.appendChild(field('fa-solid fa-left-right', ['--', '--']));
+    body.appendChild(field('fa-solid fa-hourglass-half', ['-- h', '-- m']));
+    body.appendChild(field('fa-solid fa-user', ['--']));
+
+    var s0 = state.selection[0];
+    var ctx = el('div', 'Panel-list');
+    ctx.style.padding = '10px 14px 4px';
+    ctx.style.fontSize = 'var(--font-size-small)';
+    ctx.style.color = 'var(--text-subtle)';
+    ctx.innerHTML = 'From <strong style="color:var(--text-default)">' + esc(s0.row.label) + '</strong>' +
+        (state.selection.length === 1 ? ' · ' + esc(wcLabel(WEEKS[s0.week])) : ' + ' + (state.selection.length - 1) + ' more cells') +
+        '<br>' + esc(s0.worker.name);
+    body.appendChild(ctx);
+
+    var list = el('div', 'Panel-list');
+    all.forEach(function (it) {
+        var li = el('div', 'Panel-listItem');
+        var sw = el('div', 'Panel-swatch');
+        sw.style.background = it.kind === 'unavailability' ? '#c8cad4' : (PHASE_COLOUR[it.phase] || '#4f4970');
+        li.appendChild(sw);
+        li.appendChild(el('span', null, it.job));
+        li.appendChild(el('span', 'hrs', (it.cells[s0.week] || Object.values(it.cells)[0]) + ' h'));
+        list.appendChild(li);
+    });
+    body.appendChild(list);
+
+    [['Resource Requirements', all.length, 'fa-filter'],
+     ['Traits', all.length * 2, 'fa-pen'],
+     ['Engagement', new Set(all.map(function (i) { return i.code; })).size, 'fa-filter'],
+     ['Economics', null, null, 'Recovery Rate 74%, Margin 56%'],
+     ['Location', null, null],
+     ['Notes', null, null, 'Note goes here']
+    ].forEach(function (row) {
+        var r = el('div', 'Panel-row');
+        var lbl = '<span><i class="fa-solid fa-chevron-right" style="margin-right:7px"></i><strong>' + esc(row[0]) + '</strong>';
+        if (row[1] != null) lbl += ' <span class="muted">(' + row[1] + ')</span>';
+        if (row[3]) lbl += ' <span class="muted">(' + esc(row[3]) + ')</span>';
+        lbl += '</span>';
+        r.innerHTML = lbl + (row[2] ? '<i class="fa-solid ' + row[2] + '" style="color:var(--icon-default)"></i>' : '');
+        body.appendChild(r);
+    });
+
+    p.appendChild(body);
+    overlays.appendChild(p);
+}
+
+function field(icon, values, lock) {
+    var f = el('div', 'Panel-field');
+    f.innerHTML = '<i class="lead ' + icon + '"></i>';
+    values.forEach(function (v, i) {
+        if (i) f.appendChild(el('span', null, '-'));
+        var b = el('div', 'Panel-input', v);
+        f.appendChild(b);
+    });
+    if (lock) {
+        var l = el('div', 'Panel-input');
+        l.style.flex = '0 0 26px';
+        l.style.background = 'var(--surface-emphasis)';
+        l.style.color = '#fff';
+        l.innerHTML = '<i class="fa-solid fa-lock" style="font-size:10px"></i>';
+        f.insertBefore(l, f.children[2]);
+    }
+    return f;
+}
+
+// ── Create booking modal (quick add) ───────────────────────────────────────
+function openCreateModal(worker, row, weekDate) {
+    closeModal();
+    var dim = state.breakdown;
+    var value = row.isOther || dim === 'none' ? null : row.label;
+
+    var layer = el('div', 'Backdrop');
+    layer.id = 'modalLayer';
+    layer.addEventListener('mousedown', function (e) { if (e.target === layer) closeModal(); });
+
+    var m = el('div', 'Modal');
+
+    var head = el('div', 'Modal-head');
+    head.innerHTML =
+        '<h2>Create a New Booking</h2>' +
+        '<div class="Modal-tabs">' +
+            '<button class="Modal-tab" data-tab="unavailability">Unavailability</button>' +
+            '<button class="Modal-tab is-active" data-tab="booking">Booking</button>' +
+        '</div>' +
+        '<button class="Modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>';
+    head.querySelector('.Modal-close').addEventListener('click', closeModal);
+    Array.prototype.forEach.call(head.querySelectorAll('.Modal-tab'), function (t) {
+        t.addEventListener('click', function () {
+            head.querySelectorAll('.Modal-tab').forEach(function (o) { o.classList.remove('is-active'); });
+            t.classList.add('is-active');
+        });
+    });
+    m.appendChild(head);
+
+    var body = el('div', 'Modal-body');
+    var from = pad2(weekDate.getDate()) + '/' + pad2(weekDate.getMonth() + 1) + '/' + String(weekDate.getFullYear()).slice(2) + ' 09:00AM';
+
+    var html = '';
+    html +=
+        '<div class="Field">' +
+            '<label class="Field-label">Engagement <span class="req">*</span></label>' +
+            '<div class="InputGroup">' +
+                '<input class="Input" placeholder="Search for engagement" />' +
+                '<div class="InputGroup-append is-primary"><i class="fa-solid fa-magnifying-glass"></i></div>' +
+            '</div>' +
+        '</div>';
+
+    if (dim === 'phase' && value) {
+        html +=
+            '<div class="Modal-section"><h3>Phase</h3><div class="Pills">' +
+            PHASE_ORDER.map(function (p) {
+                return '<button class="Pill' + (p === value ? ' is-active' : '') + '">' +
+                       '<span class="Pill-dot" style="background:' + PHASE_COLOUR[p] + '"></span>' + esc(p) + '</button>';
+            }).join('') +
+            '</div></div>';
+    }
+
+    html +=
+        '<div class="Modal-section"><h3>Scheduling Details</h3>' +
+            '<div class="Field-row">' +
+                '<div class="Field"><label class="Field-label">From</label>' +
+                    '<div class="InputGroup"><input class="Input" value="' + from + '" />' +
+                    '<div class="InputGroup-append is-solid"><i class="fa-regular fa-calendar"></i></div></div></div>' +
+                '<div class="Field"><label class="Field-label">To</label>' +
+                    '<div class="InputGroup"><input class="Input" placeholder="Select date and time" />' +
+                    '<div class="InputGroup-append is-solid"><i class="fa-regular fa-calendar"></i></div></div></div>' +
+            '</div>' +
+            '<div class="Field" style="margin-top:14px"><label class="Field-label">Effort</label>' +
+                '<div class="Effort">' +
+                    '<div class="InputGroup"><input class="Input" value="7" /><div class="InputGroup-append">m</div></div>' +
+                    '<div class="InputGroup"><input class="Input" value="30" /><div class="InputGroup-append">h</div></div>' +
+                    '<div class="InputGroup"><input class="Input" value="100" /><div class="InputGroup-append">%</div></div>' +
+                    '<label style="display:flex;gap:6px;align-items:center;font-size:var(--font-size-medium)"><input type="checkbox" /> Repeat</label>' +
+                '</div>' +
+            '</div>' +
+            '<div class="Field" style="margin-bottom:0"><label class="Field-label">Assign Resource</label>' +
+                '<div class="InputGroup"><input class="Input" value="(' + esc(worker.grade) + ') ' + esc(worker.name) + '" />' +
+                '<div class="InputGroup-append is-solid"><i class="fa-solid fa-user"></i></div></div></div>' +
+        '</div>';
+
+    if ((dim === 'role' || dim === 'req') && value) {
+        var grade = '', unit = '', location = '', engRole = '';
+        if (dim === 'role') {
+            engRole = value;
+        } else {
+            var parts = value.split(' / ');
+            grade = parts[0] || ''; unit = parts[1] || ''; location = parts[2] || '';
+        }
+        html +=
+            '<div class="Modal-section"><h3>Resource Requirement</h3>' +
+                '<div class="Toggle2"><button>Specific</button><button class="is-active">Flexible</button></div>' +
+                '<div class="Field-row" style="margin-top:14px">' +
+                    '<div class="Field"><label class="Field-label">Job Profile <span class="req">*</span></label>' +
+                        '<div class="InputGroup"><input class="Input" value="' + esc(grade) + '" placeholder="Search" />' +
+                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-id-badge"></i></div></div></div>' +
+                    '<div class="Field"><label class="Field-label">Engagement Role <span class="req">*</span></label>' +
+                        '<div class="InputGroup"><input class="Input" value="' + esc(engRole) + '" placeholder="Search" />' +
+                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-sitemap"></i></div></div></div>' +
+                '</div>' +
+                '<div class="Field-row" style="margin-top:14px">' +
+                    '<div class="Field"><label class="Field-label">Location <span class="req">*</span></label>' +
+                        '<div class="InputGroup"><input class="Input" value="' + esc(location) + '" placeholder="Search" />' +
+                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-location-dot"></i></div></div></div>' +
+                    '<div class="Field"><label class="Field-label">Business Unit <span class="req">*</span></label>' +
+                        '<div class="InputGroup"><input class="Input" value="' + esc(unit) + '" placeholder="Search" />' +
+                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-building"></i></div></div></div>' +
+                '</div>' +
+            '</div>';
+    }
+
+    html +=
+        '<div class="Modal-section"><h3>Booking Traits</h3>' +
+            '<button class="Btn" style="height:32px;margin-bottom:12px"><i class="fa-solid fa-plus" style="margin-right:6px"></i>Add Traits</button>' +
+            '<table class="Table"><thead><tr><th>Name</th><th>Primary</th><th style="text-align:right">Remove</th></tr></thead><tbody>' +
+            (dim === 'bookingType' && value
+                ? '<tr><td>' + esc(value) + '</td><td><span class="Badge-primary">Primary</span></td>' +
+                  '<td style="text-align:right"><i class="fa-solid fa-xmark" style="color:var(--icon-default)"></i></td></tr>'
+                : '<tr><td colspan="3" class="empty">Nothing to display</td></tr>') +
+            '</tbody></table>' +
+        '</div>';
+
+    var noteText;
+    if (row.isOther) {
+        noteText = 'Opened from the <strong>Other</strong> row, so no ' + esc(DIMENSIONS[dim].label.toLowerCase()) +
+                   ' is inferred — the practitioner picks the value.';
+    } else if (dim === 'none') {
+        noteText = 'No breakdown is active, so nothing beyond the resource and date is pre-filled.';
+    } else {
+        noteText = 'Pre-filled <strong>' + esc(DIMENSIONS[dim].label) + ' = ' + esc(value) + '</strong> from the row you opened, ' +
+                   'plus the resource and the week you double-clicked.';
+    }
+    var note = el('div', 'Note');
+    note.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span>' + noteText + '</span>';
+
+    body.innerHTML = html;
+    body.appendChild(note);
+    m.appendChild(body);
+
+    var foot = el('div', 'Modal-foot');
+    foot.innerHTML = '<div class="spacer"></div>';
+    var more = el('button', 'Btn', 'More Options');
+    var cancel = el('button', 'Btn', 'Cancel');
+    var create = el('button', 'Btn Btn--primary', 'Create');
+    cancel.addEventListener('click', closeModal);
+    create.addEventListener('click', function () {
+        closeModal();
+        toast('Booking created' + (value ? ' — ' + DIMENSIONS[dim].label + ': ' + value : ''));
+    });
+    foot.appendChild(more); foot.appendChild(cancel); foot.appendChild(create);
+    m.appendChild(foot);
+
+    layer.appendChild(m);
+    overlays.appendChild(layer);
+}
+
+function closeModal() {
+    var l = document.getElementById('modalLayer');
+    if (l) l.remove();
+}
+
+function toast(msg) {
+    var t = el('div', 'Toast', msg);
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 2600);
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────
+document.getElementById('gantt').addEventListener('click', function (e) {
+    if (e.target.closest('.Cellw') || e.target.closest('.Bar')) return;
+    if (state.selection.length) { state.selection = []; render(); }
+});
+
+render();
+})();
+</script>
+
+<script src="../config.js"></script>
+<script src="../shared/access.js"></script>
+<script src="../shared/feedback-store.js"></script>
+<script src="../shared/telemetry-store.js"></script>
+<script src="../shared/telemetry.js" defer></script>
+<script src="../shared/feedback.js" defer></script>
+</body>
+</html>
