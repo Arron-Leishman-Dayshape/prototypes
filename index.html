@@ -17,7 +17,6 @@
       --panel: #ffffff;
       --accent: #2f5d50;
       --accent-soft: #e8f0ed;
-      --warm: #c45c26;
     }
     * { box-sizing: border-box; }
     body {
@@ -81,20 +80,18 @@
       background: var(--panel);
       border: 1px solid var(--line);
       border-radius: 12px;
-      text-decoration: none;
       color: inherit;
-      transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .card:hover {
-      border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-      box-shadow: 0 10px 28px rgba(26, 29, 38, 0.08);
-      transform: translateY(-1px);
     }
     .card h2 {
       margin: 0 0 4px;
       font-size: 1.15rem;
       font-weight: 700;
     }
+    .card h2 a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .card h2 a:hover { color: var(--accent); }
     .card p {
       margin: 0;
       color: var(--muted);
@@ -123,14 +120,24 @@
       background: #f3efe8;
       color: #8a5a2b;
     }
-    .open {
+    .links {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .links a {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       font-weight: 600;
       color: var(--accent);
+      text-decoration: none;
       white-space: nowrap;
+      font-size: 0.95rem;
     }
+    .links a.secondary { color: var(--muted); font-weight: 600; }
+    .links a:hover { text-decoration: underline; }
     .empty, .err {
       padding: 28px 20px;
       border: 1px dashed var(--line);
@@ -152,7 +159,7 @@
     @media (max-width: 640px) {
       .wrap { width: calc(100% - 28px); padding-top: 36px; }
       .card { grid-template-columns: 1fr; }
-      .open { justify-self: start; }
+      .links { align-items: flex-start; flex-direction: row; flex-wrap: wrap; }
     }
   </style>
 </head>
@@ -160,10 +167,10 @@
   <main class="wrap">
     <h1 class="brand" id="siteName">Prototypes</h1>
     <p class="tagline" id="siteTagline">Click a mock, share the link, leave feedback.</p>
-    <div class="hint" aria-hidden="false">
+    <div class="hint">
       <span><i class="fa-solid fa-link"></i> Share any mock URL</span>
       <span><i class="fa-solid fa-rotate"></i> Push updates — links stay live</span>
-      <span><i class="fa-regular fa-comment-dots"></i> Feedback button on every page</span>
+      <span><i class="fa-regular fa-comment-dots"></i> Feedback is per prototype</span>
     </div>
     <ul class="list" id="mockList" aria-live="polite">
       <li class="empty">Loading mocks…</li>
@@ -173,9 +180,11 @@
     </footer>
   </main>
   <script src="config.js"></script>
+  <script src="shared/feedback-store.js"></script>
   <script>
     (function () {
       var cfg = window.PROTOTYPES_CONFIG || {};
+      var store = window.PrototypesFeedbackStore;
       if (cfg.siteName) {
         document.getElementById('siteName').textContent = cfg.siteName;
         document.title = cfg.siteName;
@@ -184,7 +193,6 @@
         document.getElementById('siteTagline').textContent = cfg.siteTagline;
       }
 
-      // Optional Clarity on the hub too
       var clarityId = (cfg.clarityId || '').trim();
       if (clarityId) {
         (function (c, l, a, r, i, t, y) {
@@ -209,22 +217,34 @@
             var status = (item.status || 'active').toLowerCase();
             var pillClass = status === 'draft' ? 'pill is-draft' : 'pill';
             var updated = item.updated ? ('Updated ' + item.updated) : '';
+            var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id);
             return (
-              '<li>' +
-                '<a class="card" href="' + escapeAttr(item.path) + '">' +
-                  '<div>' +
-                    '<h2>' + escapeHtml(item.title || item.id) + '</h2>' +
-                    '<p>' + escapeHtml(item.description || '') + '</p>' +
-                    '<div class="meta">' +
-                      '<span class="' + pillClass + '">' + escapeHtml(status) + '</span>' +
-                      (updated ? '<span>' + escapeHtml(updated) + '</span>' : '') +
-                    '</div>' +
+              '<li class="card" data-prototype-id="' + escapeAttr(item.id) + '">' +
+                '<div>' +
+                  '<h2><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h2>' +
+                  '<p>' + escapeHtml(item.description || '') + '</p>' +
+                  '<div class="meta">' +
+                    '<span class="' + pillClass + '">' + escapeHtml(status) + '</span>' +
+                    (updated ? '<span>' + escapeHtml(updated) + '</span>' : '') +
+                    '<span class="fb-count" data-count-for="' + escapeAttr(item.id) + '">Feedback…</span>' +
                   '</div>' +
-                  '<span class="open">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>' +
-                '</a>' +
+                '</div>' +
+                '<div class="links">' +
+                  '<a href="' + escapeAttr(item.path) + '">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>' +
+                  '<a class="secondary" href="' + feedbackHref + '"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback</a>' +
+                '</div>' +
               '</li>'
             );
           }).join('');
+
+          items.forEach(function (item) {
+            store.count(item.id).then(function (result) {
+              var el = document.querySelector('[data-count-for="' + cssEscape(item.id) + '"]');
+              if (!el) return;
+              var n = result.count || 0;
+              el.textContent = n === 1 ? '1 comment' : n + ' comments';
+            });
+          });
         })
         .catch(function () {
           list.innerHTML = '<li class="err">Couldn’t load <code>manifest.json</code>. Serve this folder over HTTP (not as a file:// page).</li>';
@@ -238,8 +258,11 @@
           .replace(/"/g, '&quot;');
       }
       function escapeAttr(s) { return escapeHtml(s).replace(/'/g, '&#39;'); }
+      function cssEscape(s) {
+        if (window.CSS && CSS.escape) return CSS.escape(s);
+        return String(s).replace(/"/g, '\\"');
+      }
     })();
   </script>
-  <script src="shared/feedback.js" defer></script>
 </body>
 </html>

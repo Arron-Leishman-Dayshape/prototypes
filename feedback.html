@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root {
+      --ink: #1a1d26;
+      --muted: #5c6378;
+      --line: #e4e6ee;
+      --paper: #f7f6f2;
+      --panel: #ffffff;
+      --accent: #2f5d50;
+      --accent-soft: #e8f0ed;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, #dde8e4 0%, transparent 55%),
+        linear-gradient(180deg, var(--paper) 0%, #efece6 100%);
+    }
+    .wrap {
+      width: min(720px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 80px;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .back:hover { color: var(--accent); }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 28px;
+    }
+    .actions a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+    }
+    .banner {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #fff6e8;
+      border: 1px solid #f0d9b5;
+      color: #6b4a1e;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    .banner code {
+      font-size: 0.85em;
+      background: rgba(255,255,255,0.7);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .thread { display: grid; gap: 12px; }
+    .item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .item-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      align-items: baseline;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .item-name { font-weight: 700; color: var(--ink); font-size: 0.95rem; }
+    .stars { color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
+    .item-body {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 1rem;
+    }
+    .empty {
+      padding: 36px 20px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> All prototypes</a>
+    <h1 id="title">Feedback</h1>
+    <p class="sub" id="subtitle">Loading…</p>
+    <div class="actions" id="actions" hidden>
+      <a class="btn-primary" id="openMock" href="#"><i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Open prototype</a>
+      <a class="btn-ghost" href="index.html">Back to hub</a>
+    </div>
+    <div class="banner" id="localBanner" hidden>
+      Showing notes saved in <strong>this browser</strong> only. Add free Supabase keys in <code>config.js</code> so every reviewer shares one thread per prototype.
+    </div>
+    <div class="thread" id="thread" aria-live="polite">
+      <div class="empty">Loading feedback…</div>
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="shared/feedback-store.js"></script>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var id = (params.get('id') || '').trim();
+      var titleEl = document.getElementById('title');
+      var subEl = document.getElementById('subtitle');
+      var thread = document.getElementById('thread');
+      var actions = document.getElementById('actions');
+      var openMock = document.getElementById('openMock');
+      var banner = document.getElementById('localBanner');
+      var store = window.PrototypesFeedbackStore;
+      var cfg = window.PROTOTYPES_CONFIG || {};
+
+      if (cfg.siteName) document.title = 'Feedback · ' + cfg.siteName;
+
+      if (!id) {
+        titleEl.textContent = 'Pick a prototype';
+        subEl.textContent = 'Feedback is stored per prototype. Open one from the hub.';
+        thread.innerHTML = '<div class="empty"><a href="index.html">Go to the hub</a> and choose Feedback on a mock.</div>';
+        return;
+      }
+
+      fetch('manifest.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (items) {
+          var item = (items || []).find(function (m) { return m.id === id; });
+          var title = item ? item.title : id;
+          titleEl.textContent = title;
+          subEl.textContent = 'Feedback thread for this prototype only';
+          document.title = 'Feedback · ' + title;
+          if (item && item.path) {
+            openMock.href = item.path;
+            actions.hidden = false;
+          }
+        })
+        .catch(function () {
+          titleEl.textContent = id;
+          subEl.textContent = 'Feedback thread for this prototype only';
+        });
+
+      store.list(id).then(function (result) {
+        banner.hidden = !!result.shared;
+        var items = result.items || [];
+        if (!items.length) {
+          thread.innerHTML = '<div class="empty">No feedback yet. Open the prototype and use the Feedback button.</div>';
+          return;
+        }
+        thread.innerHTML = items.map(function (item) {
+          var when = formatWhen(item.createdAt);
+          var stars = item.rating
+            ? '<span class="stars" aria-label="Rating ' + escapeHtml(item.rating) + ' of 5">' +
+                '★'.repeat(Number(item.rating) || 0) +
+                '<span style="opacity:0.25">' + '★'.repeat(Math.max(0, 5 - (Number(item.rating) || 0))) + '</span>' +
+              '</span>'
+            : '';
+          return (
+            '<article class="item">' +
+              '<div class="item-head">' +
+                '<span class="item-name">' + escapeHtml(item.name || 'Anonymous') + '</span>' +
+                stars +
+                '<span>' + escapeHtml(when) + '</span>' +
+              '</div>' +
+              '<p class="item-body">' + escapeHtml(item.message) + '</p>' +
+            '</article>'
+          );
+        }).join('');
+      });
+
+      function formatWhen(iso) {
+        if (!iso) return '';
+        try {
+          var d = new Date(iso);
+          return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+        } catch (e) {
+          return String(iso);
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -118,10 +118,19 @@
 
 .ProtoFeedback-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   padding-top: 4px;
 }
+.ProtoFeedback-inbox-link {
+  margin-right: auto;
+  font: 600 13px/1 "Open Sans", system-ui, sans-serif;
+  color: #4f3fa0;
+  text-decoration: none;
+}
+.ProtoFeedback-inbox-link:hover { text-decoration: underline; }
 .ProtoFeedback-actions button {
   height: 36px;
   padding: 0 14px;

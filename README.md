@@ -1,6 +1,6 @@
 # Prototypes hub
 
-Static site for HTML mocks: one landing page, shareable URLs, live updates via git deploy, and a feedback button on every mock.
+Static site for HTML mocks: one landing page, shareable URLs, live updates via git deploy, and **feedback stored per prototype** (no email).
 
 ## Quick start (local)
 
@@ -9,19 +9,70 @@ cd ~/Desktop/prototypes
 npx --yes serve .
 ```
 
-Open the URL it prints (usually `http://localhost:3000`). Don’t open `index.html` as `file://` — the manifest fetch needs HTTP.
+Open the URL it prints. Don’t use `file://` — the manifest needs HTTP.
+
+## How feedback works
+
+- Each mock has its own thread (`feedback.html?id=practitioner-kanban`).
+- Reviewers use the floating **Feedback** button on that mock only.
+- On the hub, every card links to **Open** and that prototype’s **Feedback** inbox.
+- Notes never mix across prototypes.
+
+## Feedback store (shared across reviewers)
+
+Static HTML can’t keep a shared inbox by itself. Use a free [Supabase](https://supabase.com) project (takes ~5 minutes):
+
+1. Create a project → **SQL** → run:
+
+```sql
+create table feedback (
+  id uuid primary key default gen_random_uuid(),
+  prototype_id text not null,
+  prototype_title text,
+  name text,
+  rating text,
+  message text not null,
+  page_url text,
+  page_path text,
+  created_at timestamptz default now()
+);
+
+create index on feedback (prototype_id, created_at desc);
+
+alter table feedback enable row level security;
+create policy "Anyone can read feedback" on feedback for select using (true);
+create policy "Anyone can add feedback" on feedback for insert with check (true);
+```
+
+2. **Project Settings → API** → copy **Project URL** and **anon public** key into `config.js`:
+
+```js
+supabaseUrl: 'https://xxxx.supabase.co',
+supabaseAnonKey: 'eyJhbGciOi...',
+```
+
+3. Commit, push, redeploy.
+
+Until those keys are set, feedback still saves **per prototype in that browser only** (fine for your own testing).
 
 ## Add a mock
 
-1. Drop the HTML file in `mocks/` (e.g. `mocks/my-flow.html`).
-2. At the end of that file’s `<body>`, before `</body>`, add:
+1. Put the HTML in `mocks/` (e.g. `mocks/my-flow.html`).
+2. On the root `<html>` tag:
+
+```html
+<html lang="en-GB" data-prototype-id="my-flow" data-prototype-title="My flow">
+```
+
+3. Before `</body>`:
 
 ```html
 <script src="../config.js"></script>
+<script src="../shared/feedback-store.js"></script>
 <script src="../shared/feedback.js" defer></script>
 ```
 
-3. Register it in `manifest.json`:
+4. Register in `manifest.json` (the `id` must match `data-prototype-id`):
 
 ```json
 {
@@ -34,45 +85,22 @@ Open the URL it prints (usually `http://localhost:3000`). Don’t open `index.ht
 }
 ```
 
-4. Commit and push — the live site updates; existing share links keep working.
+5. Push — share links keep working.
 
 ## Deploy (free)
 
-### Cloudflare Pages (recommended)
+### Cloudflare Pages
 
-1. Create a GitHub repo and push this folder.
+1. Push this repo to GitHub (already: `arronleishman/prototypes`).
 2. [Cloudflare Pages](https://pages.cloudflare.com) → Connect repo.
-3. Build settings: **Framework preset** None · **Build command** empty · **Output directory** `/` (or leave blank for root).
-4. You’ll get a URL like `https://your-project.pages.dev`.
+3. Framework: **None** · Build command: empty · Output directory: `/` or blank.
 
 ### Netlify
 
-1. Push to GitHub.
-2. [Netlify](https://app.netlify.com) → Add new site → Import from Git.
-3. Publish directory: `.` (repo root). No build command.
-
-### GitHub Pages
-
-Works if the site is at the repo root (or `/docs`). Enable Pages in repo Settings. Note: Paths stay relative, so this folder layout works as-is.
-
-## Feedback emails (Formspree)
-
-1. Sign up at [formspree.io](https://formspree.io) (free tier is enough).
-2. Create a form → copy the ID from `https://formspree.io/f/XXXX`.
-3. Put that ID in `config.js` as `formspreeId: 'XXXX'`.
-4. Redeploy.
-
-Until Formspree is set, feedback still works: it’s stored in the reviewer’s browser `localStorage` (useful for demos, not for collecting remote comments).
-
-## Heatmaps (optional Clarity)
-
-1. Create a project at [clarity.microsoft.com](https://clarity.microsoft.com).
-2. Paste the project ID into `config.js` as `clarityId`.
-3. Redeploy — Clarity loads on the hub and every mock that includes `feedback.js`.
+Publish directory: `.` · No build command.
 
 ## Share with reviewers
 
 - Hub: `https://your-site.pages.dev/`
-- One mock: `https://your-site.pages.dev/mocks/practitioner-kanban.html`
-
-They open the page, use the floating **Feedback** button, and you get the note (+ page URL, rating, optional name) via Formspree.
+- One mock: `…/mocks/practitioner-kanban.html`
+- That mock’s feedback: `…/feedback.html?id=practitioner-kanban`

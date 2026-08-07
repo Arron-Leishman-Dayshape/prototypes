@@ -4,7 +4,13 @@
   window.__protoFeedbackLoaded = true;
 
   var cfg = window.PROTOTYPES_CONFIG || {};
+  var store = window.PrototypesFeedbackStore;
   var rating = '';
+  var prototypeId = store ? store.resolvePrototypeId() : '';
+  var prototypeTitle = store ? store.resolvePrototypeTitle(prototypeId) : document.title;
+
+  // Only on prototype pages (not hub / inbox)
+  if (!prototypeId || /\/feedback\.html$/i.test(location.pathname)) return;
 
   function pageMeta() {
     return {
@@ -36,10 +42,15 @@
   function resolveShared(file) {
     var scripts = document.querySelectorAll('script[src*="feedback.js"]');
     var src = scripts.length ? scripts[scripts.length - 1].getAttribute('src') : '';
-    if (src) {
-      return src.replace(/feedback\.js(?:\?.*)?$/, file);
-    }
+    if (src) return src.replace(/feedback\.js(?:\?.*)?$/, file);
     return '/shared/' + file;
+  }
+
+  function hubFeedbackUrl() {
+    var scripts = document.querySelectorAll('script[src*="feedback.js"]');
+    var src = scripts.length ? scripts[scripts.length - 1].getAttribute('src') : '';
+    var base = src ? src.replace(/shared\/feedback\.js(?:\?.*)?$/, '') : '/';
+    return base + 'feedback.html?id=' + encodeURIComponent(prototypeId);
   }
 
   function mount() {
@@ -61,8 +72,9 @@
     panel.innerHTML =
       '<div class="ProtoFeedback-head">' +
         '<div>' +
-          '<p class="ProtoFeedback-title">Send feedback</p>' +
-          '<p class="ProtoFeedback-sub">' + escapeHtml(cfg.feedbackIntro || 'What’s working, what’s confusing, what’s missing?') + '</p>' +
+          '<p class="ProtoFeedback-title">Feedback on this prototype</p>' +
+          '<p class="ProtoFeedback-sub">' + escapeHtml(prototypeTitle) + ' — ' +
+            escapeHtml(cfg.feedbackIntro || 'What’s working, what’s confusing, what’s missing?') + '</p>' +
         '</div>' +
         '<button type="button" class="ProtoFeedback-close" id="protoFeedbackClose" aria-label="Close">&times;</button>' +
       '</div>' +
@@ -84,6 +96,7 @@
         '</label>' +
         '<p class="ProtoFeedback-status" id="protoFeedbackStatus" aria-live="polite"></p>' +
         '<div class="ProtoFeedback-actions">' +
+          '<a class="ProtoFeedback-inbox-link" id="protoFeedbackInbox" href="' + hubFeedbackUrl() + '">View thread</a>' +
           '<button type="button" class="ProtoFeedback-cancel" id="protoFeedbackCancel">Cancel</button>' +
           '<button type="submit" class="ProtoFeedback-submit" id="protoFeedbackSubmit">Send</button>' +
         '</div>' +
@@ -145,32 +158,28 @@
       return;
     }
 
-    var payload = Object.assign(pageMeta(), {
+    var meta = pageMeta();
+    var payload = {
+      prototypeId: prototypeId,
+      prototypeTitle: prototypeTitle,
       name: name || 'Anonymous',
       rating: rating || '',
       message: message,
-      site: cfg.siteName || 'Prototypes',
-    });
+      pageUrl: meta.pageUrl,
+      pagePath: meta.pagePath,
+      createdAt: meta.timestamp,
+    };
 
     var submitBtn = document.getElementById('protoFeedbackSubmit');
     submitBtn.disabled = true;
-    setStatus('Sending…');
+    setStatus('Saving…');
 
-    var formspreeId = (cfg.formspreeId || '').trim();
-    var chain = formspreeId
-      ? fetch('https://formspree.io/f/' + formspreeId, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify(payload),
-        }).then(function (res) {
-          if (!res.ok) throw new Error('Formspree error');
-          return res.json().catch(function () { return {}; });
-        })
-      : Promise.resolve(saveLocal(payload));
-
-    chain
-      .then(function () {
-        setStatus(formspreeId ? 'Thanks — feedback sent.' : 'Saved locally on this browser (add Formspree to email it).', 'ok');
+    store.add(payload)
+      .then(function (result) {
+        var okMsg = result.shared
+          ? 'Saved to this prototype’s thread.'
+          : 'Saved on this browser for this prototype. Add Supabase in config.js so everyone shares one thread.';
+        setStatus(okMsg, 'ok');
         document.getElementById('protoFeedbackMessage').value = '';
         document.getElementById('protoFeedbackName').value = '';
         rating = '';
@@ -180,23 +189,14 @@
         setTimeout(function () {
           document.getElementById('protoFeedbackPanel').hidden = true;
           setStatus('');
-        }, 1600);
+        }, 1800);
       })
       .catch(function () {
-        setStatus('Couldn’t send. Try again, or copy your note.', 'err');
+        setStatus('Couldn’t save. Try again.', 'err');
       })
       .finally(function () {
         submitBtn.disabled = false;
       });
-  }
-
-  function saveLocal(payload) {
-    var key = 'prototypes.feedback';
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { list = []; }
-    list.unshift(payload);
-    localStorage.setItem(key, JSON.stringify(list.slice(0, 200)));
-    return payload;
   }
 
   function loadClarity() {
