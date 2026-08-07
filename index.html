@@ -273,6 +273,55 @@
           list.innerHTML = '<li class="err">Couldn’t load <code>manifest.json</code>. Serve this folder over HTTP (not as a file:// page).</li>';
         });
 
+      list.addEventListener('click', function (e) {
+        var btn = e.target.closest('.share-btn');
+        if (!btn) return;
+        e.preventDefault();
+        sharePrototype(btn);
+      });
+
+      function sharePrototype(btn) {
+        var url = btn.getAttribute('data-share-url') || '';
+        var title = btn.getAttribute('data-share-title') || 'Prototype';
+        var label = btn.querySelector('.share-label');
+
+        function markCopied() {
+          btn.classList.add('is-copied');
+          if (label) label.textContent = 'Copied!';
+          setTimeout(function () {
+            btn.classList.remove('is-copied');
+            if (label) label.textContent = 'Share';
+          }, 1600);
+        }
+
+        function copyFallback() {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(url).then(markCopied);
+          }
+          var input = document.createElement('input');
+          input.value = url;
+          input.setAttribute('readonly', '');
+          input.style.position = 'fixed';
+          input.style.opacity = '0';
+          document.body.appendChild(input);
+          input.select();
+          try { document.execCommand('copy'); markCopied(); } catch (err) { window.prompt('Copy this link:', url); }
+          input.remove();
+          return Promise.resolve();
+        }
+
+        if (navigator.share) {
+          navigator.share({ title: title, text: 'Have a look at this prototype and leave feedback:', url: url })
+            .then(markCopied)
+            .catch(function (err) {
+              if (err && err.name === 'AbortError') return;
+              copyFallback();
+            });
+          return;
+        }
+        copyFallback();
+      }
+
       function isGroup(item) {
         return Array.isArray(item.children) && item.children.length > 0;
       }
