@@ -227,11 +227,21 @@
         apikey: cfg().supabaseAnonKey.trim(),
         Authorization: 'Bearer ' + cfg().supabaseAnonKey.trim(),
       },
+      cache: 'no-store',
     }).then(function (res) {
       if (!res.ok) throw new Error('Supabase load failed (' + res.status + ')');
       return res.json();
     }).then(function (rows) {
-      var merged = filterDeleted(prototypeId, mergeById(rows, local));
+      // Remote is source of truth so deletes sync for everyone.
+      // Only keep local-only pending items (offline fallback ids) that never reached Supabase.
+      var remote = (rows || []).map(normalize);
+      var remoteIds = {};
+      remote.forEach(function (item) { remoteIds[item.id] = true; });
+      var pendingLocal = local.filter(function (item) {
+        return !remoteIds[item.id] && String(item.id).indexOf('f_') === 0;
+      });
+      var merged = filterDeleted(prototypeId, remote.concat(pendingLocal))
+        .sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); });
       writeLocal(prototypeId, merged);
       return { items: merged, shared: true };
     }).catch(function () {

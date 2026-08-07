@@ -800,8 +800,16 @@
             renderThread(threadItems);
             exportBtn.disabled = !threadItems.length;
             if (result && result.remoteFailed) {
-              window.alert('Deleted here, but Supabase blocked remote delete. Run the delete policy SQL so it syncs for everyone.');
+              window.alert('Deleted on this browser only. Remote delete failed — check the Supabase delete policy.');
+              return;
             }
+            // Re-fetch so this browser cache matches what everyone else will see
+            return store.list(id).then(function (fresh) {
+              threadItems = fresh.items || [];
+              renderThread(threadItems);
+              exportBtn.disabled = !threadItems.length;
+              banner.hidden = !!fresh.shared;
+            });
           }).catch(function () {
             delBtn.disabled = false;
             window.alert('Couldn’t delete that comment. Try again.');
