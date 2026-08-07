@@ -1,0 +1,3216 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-prototype-id="demand-profile-templates" data-prototype-title="Demand profile templates">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dayshape — Demand profile templates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+/* ============================================================
+   Dayshape design tokens
+   ============================================================ */
+:root {
+  --primary: #4f3fa0;
+  --primary-emphasis: #403577;
+  --primary-strong: #322862;
+  --primary-subtle: #f0effb;
+  --primary-accent: #dedaf4;
+
+  --surface-primary: #4f3fa0;
+  --surface-primary-emphasis: #403577;
+  --surface-primary-accent: #dedaf4;
+  --surface-accent: #e2e3e9;
+  --surface-default: #fff;
+  --surface-subtle-light: #f8f8f8;
+  --surface-subtle-dark: #f1f1f4;
+  --surface-list-item-hover: #f1f1f4;
+  --surface-list-item-selected-light: #f0effb;
+  --surface-container-default: #f1f1f4;
+  --surface-container-hover: #e2e3e9;
+  --surface-eng-01: #0295b2;
+  --surface-data-secondary: #6881c5;
+  --surface-success: #078138;
+  --surface-success-strong: #07602b;
+  --surface-success-subtle: #e1faeb;
+  --surface-danger: #a3003c;
+  --surface-danger-strong: #7a002d;
+  --surface-danger-subtle: #feecf2;
+  --surface-warning: #fff0e0;
+  --surface-warning-subtle: #fff0e0;
+  --surface-info-subtle: #edf0f8;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+  --surface-inverse-divider: rgba(255, 255, 255, 0.3);
+  --focus-ring-primary: rgba(79, 63, 160, 0.12);
+  --focus-ring-success: rgba(7, 129, 56, 0.14);
+  --shadow-xs: 0 1px 2px rgba(39, 35, 61, 0.04);
+  --shadow-footer: 0 -4px 10px rgba(39, 35, 61, 0.08);
+
+  /* Phase trait colours copied from the current templating mock */
+  --phase-depreciation: #ff8d6c;
+  --phase-gather-organize: #0295b2;
+  --phase-roll-binder: #7c3aed;
+  --phase-ext-prepare: #16a34a;
+  --phase-ext-review: #ea580c;
+  --phase-ext-signer-approval: #db2777;
+  --phase-gcc-prepare: #0891b2;
+  --phase-gcc-review: #ca8a04;
+  --phase-intl-prepare: #6366f1;
+  --phase-intl-review: #14b8a6;
+  --phase-prep-trait: #dc2626;
+  --phase-tax-detailed-review: #9333ea;
+  --phase-tax-prep: #0d9488;
+  --phase-tax-project-leader: #d97706;
+  --phase-tax-signer-approval: #2563eb;
+  --phase-tax-technical-review: #64748b;
+  /* Legacy seeded examples retain their existing planning colours. */
+  --phase-prep: #ff8d6c;
+  --phase-first-review: #0295b2;
+  --phase-second-review: #6881c5;
+  --phase-specialist-review: #167983;
+  --phase-partner-review: #4c5172;
+  --phase-client-delivery: #4f3fa0;
+  --phase-planning: #9a6fb0;
+  --phase-fieldwork: #2f8f6b;
+  --text-default: #222430;
+  --text-accent: #4c5172;
+  --text-emphasis: #3d425c;
+  --text-subtle: #6a708f;
+  --text-primary: #4f3fa0;
+  --text-link-color: #7059e8;
+  --text-inverse: #fff;
+  --text-success: #078138;
+  --text-success-dark: #07602b;
+  --text-danger: #a3003c;
+  --text-warning-strong: #804003;
+  --text-info-dark: #293b6b;
+
+  --icon-subtle: #6a708f;
+  --icon-size-default: 12px;
+  --border-subtle: #e2e3e9;
+  --border-default: #babfd1;
+  --border-primary: #4f3fa0;
+  --border-primary-subtle: #dedaf4;
+  --border-primary-accent: #9b8bf0;
+  --border-primary-focus: #9b8bf0;
+  --border-success: #078138;
+  --border-success-subtle: #c9efd8;
+  --border-danger: #a3003c;
+  --border-danger-subtle: #fdd9e6;
+  --border-warning-subtle: #ffd9ad;
+  --border-info-subtle: #dae0f1;
+
+  --deep-black: #27233d;
+  --neutral-deep-grey-14: #dad8e5;
+  --neutral-grey-d3: #898da4;
+
+  --font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-family-body: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-family-heading: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-size-medium: 0.875rem;
+  --font-size-small: 0.75rem;
+  --font-size-extra-small: 0.6875rem;
+  --font-size-h1: 1.5rem;
+  --font-size-h2: 1.25rem;
+  --font-size-h3: 0.875rem;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --padding-xxs: 0.25rem;
+  --padding-xs: 0.5rem;
+  --padding-sm: 0.75rem;
+  --padding-md: 1rem;
+  --padding-lg: 1.5rem;
+
+  --border-radius-default: 4px;
+  --border-radius-lg: 8px;
+  --border-radius-circle: 100px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-medium);
+  color: var(--text-default);
+  background: var(--surface-subtle-light);
+}
+button, input, select { font-family: inherit; }
+a { color: var(--text-link-color); text-decoration: none; }
+
+/* ---- App shell ---- */
+.App { display: flex; min-height: 100vh; }
+.NavBar {
+  width: 48px; flex: 0 0 48px; background: var(--deep-black);
+  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: clip;
+}
+.NavBar-logoWrapper { height: 42px; margin: 5px 5px 24px; display: flex; align-items: center; justify-content: center; }
+.NavBar-dayshapeIcon { background: var(--surface-default); border-radius: 2px; height: 38px; width: 38px; object-fit: cover; }
+.NavBar-mainMenuContent { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1 1 auto; }
+.NavBar-li { min-height: 42px; border-left: solid 3px transparent; position: relative; }
+.NavBar-li:hover, .NavBar-li.is-active { border-left-color: var(--text-inverse); }
+.NavBar-menuLink {
+  height: 40px; padding: 12px 10px; color: var(--text-inverse);
+  display: flex; align-items: center; cursor: pointer; text-decoration: none;
+}
+.NavBar-menuLink:hover { color: var(--text-inverse); text-decoration: none; }
+.NavBar-menuIcon { width: 1.25rem; text-align: center; font-size: 1.1rem; }
+.NavBar-li:hover .NavBar-menuIcon, .NavBar-li.is-active .NavBar-menuIcon { font-weight: 900; }
+.NavBar-hr { border: 0; border-top: solid 1px var(--neutral-grey-d3); margin: 12px 8px; opacity: .6; }
+.NavBar-menuBottom { display: flex; flex-direction: column; align-items: flex-end; padding-bottom: 12px; }
+.NavBar-expandButton {
+  background: var(--neutral-deep-grey-14); height: 31px; width: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 5px 0 0 5px; border: 0; cursor: pointer; color: var(--deep-black);
+}
+.NavBar-li[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute; left: 52px; top: 50%; transform: translateY(-50%);
+  background: var(--deep-black); color: var(--text-inverse); font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold); padding: 6px 10px;
+  border-radius: var(--border-radius-default); white-space: nowrap;
+  opacity: 0; visibility: hidden; pointer-events: none; z-index: 200;
+}
+.NavBar-li:hover[data-tooltip]::after { opacity: 1; visibility: visible; }
+
+.Main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.TopBar {
+  background: var(--surface-default); border-bottom: 1px solid var(--border-subtle);
+  padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-md);
+  position: sticky; top: 0; z-index: 30;
+}
+.TopBar-title { font-size: var(--font-size-h1); font-weight: var(--font-weight-semibold); margin: 0; }
+.TopBar-spacer { flex: 1 1 auto; }
+.TopBar-mode { display: none; align-items: center; gap: var(--padding-sm); }
+.TopBar-mode.is-visible { display: inline-flex; }
+.TopBar-modeLabel {
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); color: var(--text-subtle);
+}
+
+.Btn {
+  font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
+  border-radius: var(--border-radius-default); border: 1px solid var(--border-default);
+  padding: 7px 14px; min-height: 35px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+  line-height: 1.2; background: var(--surface-default); color: var(--text-accent); white-space: nowrap;
+}
+.Btn:hover { background: var(--surface-subtle-dark); }
+.Btn--primary { background: var(--surface-primary); color: var(--text-inverse); border-color: var(--surface-primary); }
+.Btn--primary:hover { background: var(--primary-emphasis); }
+.Btn--primary:disabled, .Btn:disabled { opacity: .45; cursor: not-allowed; }
+.Btn--sm { padding: 4px 10px; font-size: var(--font-size-small); min-height: 28px; }
+.Btn-iconOnly {
+  width: 35px; height: 35px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; background: transparent; border-radius: var(--border-radius-default);
+  color: var(--icon-subtle); cursor: pointer;
+}
+.Btn-iconOnly:hover { background: var(--surface-list-item-hover); color: var(--text-accent); }
+.Btn-iconOnly:disabled { opacity: .45; cursor: not-allowed; }
+.Btn-iconOnly.is-locked {
+  color: var(--text-primary); background: var(--surface-list-item-selected-light);
+  border-color: var(--border-primary-subtle);
+}
+
+.Page { padding: var(--padding-lg); flex: 1 1 auto; }
+.Page--narrow { width: 100%; max-width: none; }
+#screen-catalogue { width: 100%; }
+#screen-wizard { padding-bottom: calc(60px + var(--padding-lg)); }
+
+.Pill {
+  display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px;
+  border-radius: var(--border-radius-circle); font-size: var(--font-size-small); font-weight: var(--font-weight-semibold);
+  border: 1px solid transparent; white-space: nowrap;
+}
+.Pill--neutral { background: var(--surface-subtle-dark); color: var(--text-accent); border-color: var(--border-subtle); }
+.Pill--success { background: var(--surface-success-subtle); color: var(--text-success-dark); border-color: var(--border-success-subtle); }
+.Pill--warning { background: var(--surface-warning-subtle); color: var(--text-warning-strong); border-color: var(--border-warning-subtle); }
+.Pill--secondary { background: var(--primary-subtle); color: var(--text-primary); border-color: var(--border-primary-subtle); }
+
+.Field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.Field-label { font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default); }
+.Field-hint { font-size: var(--font-size-small); color: var(--text-subtle); line-height: 1.4; }
+.Field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 900px) { .Field-row { grid-template-columns: 1fr; } }
+.Input, .Select {
+  border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+  background: var(--surface-default); padding: 0 12px; min-height: 35px;
+  font-size: var(--font-size-medium); color: var(--text-default); width: 100%; outline: none;
+}
+.Input:focus, .Select:focus { border-color: var(--border-primary); box-shadow: 0 0 0 3px var(--focus-ring-primary); }
+.Select {
+  appearance: none; padding-right: 30px; cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%236a708f' d='M2 4l4 4 4-4z'/></svg>");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+.input-group { display: flex; flex-wrap: nowrap; align-items: stretch; width: auto; max-width: none; }
+.input-group .Input {
+  border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+  border-right: 0; width: 72px; max-width: 72px; flex: 0 0 72px;
+  padding: 0 12px; text-align: left; color: var(--text-emphasis);
+}
+.input-group-text {
+  display: flex; align-items: center; justify-content: center;
+  width: 35px; min-width: 35px; min-height: 35px; padding: 0;
+  font-size: var(--font-size-medium); font-weight: var(--font-weight-regular);
+  background: var(--surface-subtle-dark);
+  border: 1px solid var(--border-default); border-left: 0;
+  border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+  color: var(--text-emphasis); flex: 0 0 35px;
+}
+.SegRow .input-group { width: 107px; }
+.SegRow .input-group .Input { width: 72px; max-width: 72px; flex: 0 0 72px; }
+
+/* Dayshape TreeInput — grade / role pickers */
+.TreeInput { position: relative; width: 100%; min-width: 180px; }
+.TreeInput .input-group { max-width: none; width: 100%; }
+.TreeInput .input-group .Input {
+  width: auto; max-width: none; flex: 1 1 auto; min-width: 0;
+}
+.TreeInput-append {
+  display: flex; align-items: center; justify-content: center;
+  min-width: 35px; min-height: 35px; padding: 0 10px;
+  border: 1px solid var(--border-default); border-left: 0;
+  border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+  background: var(--surface-subtle-dark); color: var(--icon-subtle); cursor: pointer;
+  flex: 0 0 auto;
+}
+.TreeInput-append:hover { background: var(--surface-list-item-hover); color: var(--text-accent); }
+.TreeInput-append:not(:last-child) { border-radius: 0; }
+.TreeInput-clear {
+  background: var(--surface-default); color: var(--icon-subtle);
+}
+.TreeInput-status {
+  background: var(--surface-default); color: var(--text-success);
+  cursor: default;
+}
+.TreeInput-status:hover { background: var(--surface-default); color: var(--text-success); }
+.TreeInput.is-open { z-index: 90; }
+.TreeInput.is-open .Input {
+  border-color: var(--border-primary);
+  box-shadow: 0 0 0 3px var(--focus-ring-primary);
+}
+.TreeInput.is-open .TreeInput-append { border-color: var(--border-primary); }
+.TreeInput.is-valid .Input {
+  border-color: var(--border-success);
+  box-shadow: 0 0 0 3px var(--focus-ring-success);
+}
+.TreeInput.is-valid .TreeInput-append { border-color: var(--border-success); }
+.TreeInput-treeView {
+  display: none; position: absolute; left: 0; right: 0; top: calc(100% + 2px);
+  max-height: 220px; overflow-y: auto; z-index: 80;
+  background: var(--surface-default); border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-default); box-shadow: var(--shadow-footer);
+}
+.TreeInput-treeView.is-visible { display: block; }
+.TreeInput-node {
+  display: flex; align-items: center; gap: var(--padding-xs);
+  width: 100%; min-height: 35px; padding: 6px 12px; border: 0;
+  background: transparent; color: var(--text-default); text-align: left;
+  font-family: inherit; font-size: var(--font-size-medium); cursor: pointer;
+}
+.TreeInput-node:hover { background: var(--surface-list-item-hover); }
+.TreeInput-node.is-selected {
+  font-weight: var(--font-weight-semibold);
+  background: var(--surface-list-item-selected-light); color: var(--text-primary);
+}
+.TreeInput-node i { color: var(--icon-subtle); width: 1rem; text-align: center; }
+.TreeInput[data-picker-type="grade"] .TreeInput-node {
+  min-height: 42px; padding-left: var(--padding-lg);
+}
+.TreeInput-empty {
+  padding: 10px 12px; color: var(--text-subtle); font-size: var(--font-size-small);
+}
+.ValidIcon { color: var(--text-success); margin-left: var(--padding-xxs); }
+.BtnGroup {
+  display: inline-flex; align-items: stretch; width: auto;
+  border: 1px solid var(--surface-primary-emphasis);
+  border-radius: var(--border-radius-default); overflow: hidden; background: var(--surface-default);
+}
+.BtnGroup > button {
+  appearance: none; flex: 0 0 auto; border: 0; margin: 0; min-height: 35px; padding: 0 14px;
+  background: transparent; color: var(--text-accent); font: inherit;
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); cursor: pointer;
+}
+.BtnGroup > button + button { border-left: 1px solid var(--surface-primary-emphasis); }
+.BtnGroup > button:hover { background: var(--surface-subtle-dark); }
+.BtnGroup > button.is-active {
+  background: var(--surface-primary-emphasis); color: var(--text-inverse);
+}
+.BtnGroup > button.is-active:hover { background: var(--surface-primary-emphasis); }
+.StructureTimeline {
+  margin-bottom: var(--padding-md); padding: var(--padding-md);
+  border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
+  background: var(--surface-subtle-light);
+}
+.StructureTimeline-title {
+  margin: 0 0 var(--padding-sm); font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-semibold);
+}
+
+.Range {
+  width: 100%; accent-color: var(--primary); cursor: pointer; height: 35px;
+}
+.Range:disabled { opacity: .45; cursor: not-allowed; }
+
+.u-table {
+  width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface-default);
+  font-size: var(--font-size-medium); box-shadow: var(--shadow-xs);
+  border-radius: var(--border-radius-default); overflow: hidden;
+}
+.u-table thead th {
+  background: var(--surface-subtle-light); text-align: left; font-weight: var(--font-weight-semibold);
+  color: var(--text-emphasis); padding: 10px 12px;
+  border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle); white-space: nowrap;
+}
+.u-table thead th:first-child { border-left: 1px solid var(--border-subtle); }
+.u-table tbody td {
+  padding: 10px 12px; border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle); vertical-align: middle;
+}
+.u-table tbody td:first-child { border-left: 1px solid var(--border-subtle); }
+.u-table.table-hover tbody tr { cursor: pointer; }
+.u-table.table-hover tbody tr:hover td { background: var(--surface-list-item-hover); }
+.cell-name { font-weight: var(--font-weight-semibold); color: var(--text-default); }
+.cell-muted { color: var(--text-subtle); }
+
+.Panel {
+  background: var(--surface-default); border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default); padding: var(--padding-md);
+}
+.Panel--quiet { background: var(--surface-subtle-light); border-color: var(--border-subtle); }
+.Wizard-stepTitle {
+  margin: 0 0 var(--padding-xxs); font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold); color: var(--text-default);
+}
+.Wizard-stepIntro {
+  margin: 0 0 var(--padding-lg);
+  color: var(--text-subtle);
+  line-height: 1.45;
+}
+.Wizard-footer {
+  position: fixed; left: 48px; right: 0; bottom: 0; z-index: 40;
+  margin: 0;
+  padding: var(--padding-sm) var(--padding-lg);
+  border-top: 1px solid var(--border-default); min-height: 60px;
+  background: var(--surface-default); box-shadow: var(--shadow-footer);
+}
+.Wizard-footerInner {
+  display: flex; align-items: center; gap: var(--padding-sm);
+  width: 100%; max-width: 1224px; margin: 0 auto;
+}
+.Wizard-footerActions { display: flex; align-items: center; gap: var(--padding-sm); margin-left: auto; }
+.Wizard-footerSummary { font-size: var(--font-size-small); color: var(--text-subtle); }
+
+.Banner {
+  display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px;
+  border-radius: var(--border-radius-default); border: 1px solid transparent; margin-bottom: 16px;
+}
+.Banner--info { background: var(--surface-info-subtle); border-color: var(--border-info-subtle); color: var(--text-info-dark); }
+.Banner--success { background: var(--surface-success-subtle); border-color: var(--border-success-subtle); color: var(--text-success-dark); }
+.Banner--danger { background: var(--surface-danger-subtle); border-color: var(--border-danger-subtle); color: var(--text-danger); }
+.Banner--warn { background: var(--surface-warning-subtle); border-color: var(--border-warning-subtle); color: var(--text-warning-strong); }
+
+.Toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.Toolbar-spacer { flex: 1 1 auto; }
+.Search {
+  display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-default); padding: 0 10px;
+  background: var(--surface-default); height: 35px; min-width: 240px;
+}
+.Search input { border: 0; outline: none; flex: 1; font-size: var(--font-size-medium); }
+.Search i { color: var(--icon-subtle); }
+
+/* ============================================================
+   Daylight Stepper — vertical wizard navigation
+   ============================================================ */
+.Stepper {
+  display: flex; list-style: none; margin: 0; padding: 0;
+}
+.Wizard-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 960px);
+  gap: var(--padding-lg);
+  align-items: start;
+  justify-content: center;
+  width: 100%;
+  max-width: 1224px;
+  margin: 0 auto;
+}
+.Wizard-sidebar {
+  position: sticky;
+  top: 84px;
+  padding: var(--padding-md);
+  background: var(--surface-default);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+}
+.Wizard-content { min-width: 0; width: 100%; }
+.Stepper--vertical {
+  flex-direction: column;
+  width: 100%;
+}
+.Stepper-step { display: flex; min-width: 0; }
+.Stepper--vertical .Stepper-step {
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr);
+  column-gap: var(--padding-sm);
+  min-height: 96px;
+  border-radius: var(--border-radius-default);
+}
+.Stepper--vertical .Stepper-step--current,
+.Stepper--vertical .Stepper-step--done {
+  cursor: pointer;
+}
+.Stepper--vertical .Stepper-step--done:hover {
+  background: var(--surface-list-item-hover);
+}
+.Stepper-step[role="button"]:focus-visible {
+  outline: 2px solid var(--border-primary-focus);
+  outline-offset: var(--padding-xs);
+}
+.Stepper-rail {
+  display: flex; flex-direction: row; align-items: center; justify-content: center;
+  gap: var(--padding-sm); width: 100%; flex-shrink: 0;
+}
+.Stepper--vertical .Stepper-rail {
+  grid-column: 1;
+  grid-row: 1;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--padding-xs);
+  width: 27px;
+  height: 100%;
+}
+.Stepper-marker {
+  box-sizing: border-box; width: 27px; height: 27px; border-radius: var(--border-radius-circle);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); line-height: 1;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+.Stepper-marker:hover { transform: scale(1.06); }
+.Stepper-marker:focus-visible { outline: 2px solid var(--border-primary-focus); outline-offset: 3px; }
+.Stepper-marker--current { background: var(--surface-primary); color: var(--text-inverse); }
+.Stepper-marker--future { background: var(--surface-container-default); color: var(--text-emphasis); }
+.Stepper-marker--current:hover { background: var(--surface-primary-emphasis); }
+.Stepper-marker--done { background: var(--surface-success); color: var(--text-inverse); }
+.Stepper-marker--done:hover { background: var(--surface-success-strong); }
+.Stepper-marker--error { background: var(--surface-danger); color: var(--text-inverse); }
+.Stepper-number { display: block; text-align: center; }
+.Stepper-check, .Stepper-errorIcon { font-size: var(--icon-size-default); line-height: 1; color: var(--text-inverse); }
+.Stepper-line {
+  position: relative; overflow: hidden; flex: 1 1 auto; min-width: 0; min-height: 0;
+  background-color: var(--border-subtle);
+}
+.Stepper-line::after {
+  position: absolute; inset: 0; background-color: var(--border-subtle); content: "";
+}
+.Stepper-line--horizontal { height: 2px; width: auto; align-self: center; }
+.Stepper-line--horizontal::after { transform-origin: left; }
+.Stepper-line--vertical { width: 2px; min-height: 28px; flex: 1 1 auto; }
+.Stepper-line--vertical::after { transform-origin: top; }
+.Stepper-lineSpacer { flex: 1 1 auto; min-width: 0; height: 2px; }
+.Stepper-line--active::after { background-color: var(--border-primary-accent); }
+.Stepper-line--inactive::after { background-color: var(--border-subtle); }
+.Stepper-line--success::after { background-color: var(--border-success); }
+.Stepper-line--error::after { background-color: var(--border-danger); }
+.Stepper-info { display: flex; flex-direction: column; gap: var(--padding-xxs); flex: 1 1 auto; min-width: 0; }
+.Stepper-info--centered { align-items: center; text-align: center; }
+.Stepper--vertical .Stepper-info {
+  grid-column: 2;
+  grid-row: 1;
+  align-items: flex-start;
+  text-align: left;
+  padding: 3px 0 var(--padding-md);
+}
+.Stepper-title {
+  margin: 0; font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold);
+  line-height: normal; color: var(--text-emphasis);
+}
+.Stepper-step--current .Stepper-title { color: var(--text-primary); }
+.Stepper-step--done .Stepper-title { color: var(--text-success); }
+.Stepper-step--error .Stepper-title { color: var(--text-danger); }
+.Stepper-description {
+  margin: 0; font-size: var(--font-size-medium); font-weight: var(--font-weight-regular);
+  line-height: 21px; color: var(--text-accent);
+}
+
+/* Details layout + shape preview */
+.DetailsWorkspace {
+  display: grid; grid-template-columns: minmax(0, 1fr);
+  gap: var(--padding-lg); align-items: start;
+}
+.Wizard-metaFields { max-width: 620px; }
+.DetailsMain { min-width: 0; }
+.ShapePreview {
+  min-width: 0; padding: var(--padding-md); position: static; order: -1;
+  background: var(--surface-subtle-light); border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+}
+.ShapePreview-title {
+  margin: 0 0 var(--padding-md); font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-semibold); color: var(--text-default);
+}
+.ShapePreview-head {
+  display: flex; align-items: center; gap: var(--padding-sm);
+  margin-bottom: var(--padding-md);
+}
+.ShapePreview-head .ShapePreview-title { margin: 0; flex: 1 1 auto; }
+.ShapeTimeline { display: flex; flex-direction: column; gap: var(--padding-sm); margin: 0; }
+.ShapeLabels {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: var(--padding-xs);
+  min-width: 0; font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+  color: var(--text-subtle);
+}
+.ShapeLabels span { min-width: 0; white-space: normal; line-height: 1.25; }
+.ShapeLabels span:nth-child(2) { color: var(--text-primary); text-align: center; }
+.ShapeLabels span:last-child { color: var(--text-default); text-align: right; }
+.ShapeBarWrap { position: relative; min-width: 0; }
+.ShapeBar {
+  display: flex; width: 100%; height: 48px; border-radius: var(--border-radius-default); overflow: hidden;
+  background: var(--surface-subtle-dark); border: 1px solid var(--border-subtle);
+}
+.ShapeSeg {
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  color: var(--text-inverse); font-size: var(--font-size-small); font-weight: var(--font-weight-semibold);
+  border-right: 1px solid var(--surface-inverse-divider); min-width: 0;
+  cursor: pointer;
+}
+.ShapeSeg:last-child { border-right: 0; }
+.ShapeSeg:focus-visible { outline: 2px solid var(--border-primary); outline-offset: -2px; z-index: 1; }
+.ShapeSegPopover {
+  position: fixed; z-index: 1200; min-width: 168px; max-width: 260px;
+  padding: 10px 12px; background: var(--surface-default);
+  border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+  box-shadow: 0 4px 16px rgba(39, 35, 61, 0.12);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translate(-50%, calc(-100% - 10px));
+}
+.ShapeSegPopover.is-open { opacity: 1; visibility: visible; }
+.ShapeSegPopover-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
+  color: var(--text-default); margin: 0 0 6px;
+}
+.ShapeSegPopover-title .fa-clock { color: var(--icon-subtle); font-size: 12px; width: 14px; text-align: center; }
+.ShapeSegPopover-rows { display: flex; flex-direction: column; gap: 4px; }
+.ShapeSegPopover-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  font-size: var(--font-size-small); color: var(--text-subtle);
+}
+.ShapeSegPopover-row strong { color: var(--text-default); font-weight: var(--font-weight-semibold); }
+.ShapeSegPopover-arrow {
+  position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px;
+  background: var(--surface-default); border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  transform: translateX(-50%) rotate(45deg);
+}
+.ShapeLegend { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.ShapeLegend-item {
+  display: inline-flex; align-items: center; gap: 6px; font-size: var(--font-size-small); color: var(--text-subtle);
+}
+.ShapeLegend-swatch { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+.ReviewMeta {
+  display: flex; align-items: center; gap: var(--padding-md);
+  padding: var(--padding-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+  background: var(--surface-subtle-light);
+}
+.ReviewMeta-copy { min-width: 0; flex: 1 1 auto; }
+.ReviewMeta-title {
+  margin: 0 0 var(--padding-xxs);
+  font-size: var(--font-size-h2); font-weight: var(--font-weight-semibold);
+}
+.ReviewMeta-detail { color: var(--text-subtle); }
+.ReviewSection {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+  overflow: hidden;
+  background: var(--surface-default);
+}
+.ReviewSection-head {
+  display: flex; align-items: center; gap: var(--padding-sm);
+  padding: 10px var(--padding-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-subtle-light);
+}
+.ReviewSection-title { flex: 1 1 auto; font-weight: var(--font-weight-semibold); }
+.ReviewPhase {
+  display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
+  gap: var(--padding-md); padding: var(--padding-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ReviewPhase:last-child { border-bottom: 0; }
+.ReviewPhase-name {
+  display: flex; align-items: flex-start; gap: var(--padding-xs);
+  font-weight: var(--font-weight-semibold);
+}
+.ReviewSlots { display: flex; flex-direction: column; gap: var(--padding-xs); }
+.ReviewSlot { color: var(--text-accent); }
+
+.Input[aria-invalid="true"], .Select[aria-invalid="true"] {
+  border-color: var(--border-danger);
+  box-shadow: 0 0 0 3px var(--surface-danger-subtle);
+}
+
+/* Segment rows — quiet list rows, not coloured cards */
+.SegList { display: flex; flex-direction: column; gap: 0; min-height: 120px; border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default); overflow: hidden; background: var(--surface-default); }
+.SegRow {
+  display: grid; grid-template-columns: 20px minmax(180px, 230px) 107px 1fr 107px 35px 35px;
+  gap: 8px; align-items: center; padding: 6px 12px; min-height: 48px;
+  border-bottom: 1px solid var(--border-subtle); background: var(--surface-default);
+}
+.SegRow-handle {
+  display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 28px; color: var(--icon-subtle); cursor: grab;
+  background: none; border: 0; padding: 0;
+}
+.SegRow-handle:hover { color: var(--text-accent); }
+.SegRow-handle:active { cursor: grabbing; }
+.SegRow-handleSpacer { width: 20px; }
+.SegRow.is-dragging { opacity: .5; }
+.SegRow.is-dropTarget { box-shadow: inset 0 2px 0 0 var(--border-primary); }
+.SegRow-phaseIdentity {
+  display: grid; grid-template-columns: 24px 10px minmax(0, 1fr);
+  gap: 10px; align-items: center; min-width: 0;
+}
+.SegRow-number {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 24px; padding: 0 4px;
+  border-radius: var(--border-radius-circle); background: var(--surface-accent);
+  color: var(--text-accent); font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold); font-variant-numeric: tabular-nums;
+}
+.SegRow-phaseSelect {
+  height: 35px; min-height: 35px; padding: 0 26px 0 8px;
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold);
+}
+.SegRow-phaseSelect[aria-invalid="true"] { border-color: var(--border-danger); }
+.SegRow--buffer { background: var(--surface-subtle-light); }
+.SegRow--buffer .SegRow-name { color: var(--text-accent); font-weight: var(--font-weight-regular); }
+.ShapeSeg--buffer {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface-accent),
+    var(--surface-accent) 4px,
+    var(--surface-subtle-dark) 4px,
+    var(--surface-subtle-dark) 8px
+  ) !important;
+  color: var(--text-default) !important;
+}
+.AddMenu { position: relative; display: inline-flex; }
+.AddMenu-panel {
+  display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
+  min-width: 180px; padding: 4px; background: var(--surface-default);
+  border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+  box-shadow: var(--shadow-xs);
+}
+.AddMenu.is-open .AddMenu-panel { display: flex; flex-direction: column; gap: 2px; }
+.AddMenu-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 10px; border: 0; background: transparent; text-align: left;
+  color: var(--text-default); font-size: var(--font-size-medium); cursor: pointer;
+  border-radius: var(--border-radius-default);
+}
+.AddMenu-item:hover { background: var(--surface-list-item-hover); }
+.CheckLine {
+  display: flex; align-items: center; gap: var(--padding-xs);
+  min-height: 35px; margin-top: var(--padding-sm); cursor: pointer;
+  font-size: var(--font-size-medium); color: var(--text-default);
+}
+.CheckLine input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.SegRow:last-child { border-bottom: 0; }
+.SegRow:hover { background: var(--surface-list-item-hover); }
+.SegRow.is-locked { background: var(--surface-subtle-light); }
+.SegRow-name {
+  display: flex; align-items: center; gap: 8px; font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-medium); min-width: 0; color: var(--text-default);
+}
+.SegRow-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
+.SegRow-bufferIcon {
+  flex: 0 0 auto; width: 14px; text-align: center;
+  color: var(--icon-subtle); font-size: 12px;
+}
+.SegEmpty {
+  padding: 24px 16px; text-align: center; color: var(--text-subtle); background: var(--surface-default);
+}
+.SegEmpty + .SegRow { border-top: 1px solid var(--border-subtle); }
+
+.PhaseCard {
+  border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
+  background: var(--surface-default); overflow: visible;
+}
+.PhaseCard-head {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: var(--surface-subtle-light); border-bottom: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-default) var(--border-radius-default) 0 0;
+  flex-wrap: wrap;
+}
+.PhaseCard-body { padding: 0; overflow: visible; }
+.PhaseCard-title { font-weight: var(--font-weight-semibold); flex: 1; min-width: 0; }
+.SlotReuseNote {
+  display: flex; align-items: center; gap: 8px;
+  min-width: 0; font-size: var(--font-size-extra-small); color: var(--text-subtle);
+  line-height: 1.35;
+}
+.SlotReuseNote-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.SlotReuseNote-text { min-width: 0; }
+.SlotReuseNote-text strong { color: var(--text-default); font-weight: var(--font-weight-semibold); }
+.SlotReuseNote-unlink {
+  margin-left: auto; flex: 0 0 auto; border: 0; background: transparent;
+  color: var(--text-primary); font-size: var(--font-size-extra-small);
+  font-weight: var(--font-weight-semibold); cursor: pointer; padding: 0;
+}
+.SlotReuseNote-unlink:hover { text-decoration: underline; }
+.TreeInput-groupLabel {
+  padding: 8px 10px 4px; font-size: var(--font-size-extra-small);
+  font-weight: var(--font-weight-semibold); color: var(--text-subtle);
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.TreeInput-node--reuse {
+  display: flex; align-items: center; gap: 8px;
+}
+.TreeInput-node--reuse .SegRow-dot { flex: 0 0 auto; }
+.SlotTable tr.is-linked { background: var(--surface-list-item-selected-light); }
+.SlotTable tr.is-linked td { border-bottom-color: transparent; vertical-align: middle; }
+.SlotTable tr.is-linked .TreeInput-text:disabled {
+  opacity: 1; color: var(--text-emphasis); background: var(--surface-default); cursor: default;
+}
+.SlotTable tr.SlotLinkRow td {
+  padding: 0 8px 8px; background: var(--surface-list-item-selected-light);
+  border-bottom: 1px solid var(--border-subtle); vertical-align: middle;
+}
+.SlotTable { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: var(--font-size-small); }
+.SlotTable th {
+  text-align: left; color: var(--text-subtle); font-weight: var(--font-weight-semibold);
+  padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);
+}
+.SlotTable td { padding: 6px 8px; border-bottom: 1px solid var(--border-subtle); vertical-align: middle; }
+.SlotTable th:nth-child(1), .SlotTable td:nth-child(1) { width: 28%; }
+.SlotTable th:nth-child(2), .SlotTable td:nth-child(2) { width: 32%; }
+.SlotTable th:nth-child(3), .SlotTable td:nth-child(3) { width: 80px; }
+.SlotTable th:nth-child(4), .SlotTable td:nth-child(4) { width: 110px; }
+.SlotTable th:nth-child(5), .SlotTable td:nth-child(5) { width: 40px; }
+.SlotTable .Input, .SlotTable .Select { height: 35px; min-height: 35px; padding: 0 8px; font-size: var(--font-size-small); }
+.SlotTable .TreeInput .input-group { width: 100%; max-width: none; }
+.SlotTable .TreeInput .input-group .Input {
+  width: auto; max-width: none; flex: 1 1 auto; min-width: 0;
+}
+
+.hidden { display: none !important; }
+.screen { display: none; }
+.screen.is-active { display: block; animation: fadeIn .18s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.InlineError { color: var(--text-danger); font-size: var(--font-size-small); margin-top: 4px; }
+.Muted { color: var(--text-subtle); }
+.Strong { font-weight: var(--font-weight-semibold); }
+.Stack { display: flex; flex-direction: column; gap: 12px; }
+.RowActions { text-align: center; }
+.Toast {
+  position: fixed; bottom: var(--padding-lg); left: 50%; z-index: 2000;
+  transform: translateX(-50%); max-width: 90%; padding: 10px var(--padding-md);
+  border-radius: var(--border-radius-default); background: var(--deep-black);
+  color: var(--text-inverse); font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-semibold); text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.SectionTitle {
+  margin: 18px 0 8px; font-size: var(--font-size-extra-small); font-weight: var(--font-weight-bold);
+  letter-spacing: .04em; text-transform: uppercase; color: var(--text-subtle);
+}
+@media (max-width: 860px) {
+  .Wizard-layout { grid-template-columns: 1fr; max-width: 760px; }
+  .Wizard-sidebar { position: static; }
+  .DetailsWorkspace { grid-template-columns: 1fr; }
+  .ShapePreview { position: static; order: -1; }
+}
+@media (max-width: 620px) {
+  .Page { padding: var(--padding-md); }
+  .Stepper-description { display: none; }
+  .Stepper--horizontal .Stepper-step { gap: var(--padding-xs); }
+  .Stepper-rail { gap: var(--padding-xs); }
+  .SegRow {
+    grid-template-columns: minmax(110px, 1fr) 107px 107px 35px 35px;
+    gap: var(--padding-xs); padding: 8px;
+  }
+  .SegRow-handle, .SegRow-handleSpacer { display: none; }
+  .SegRow .Range { grid-column: 1 / -1; grid-row: 2; }
+  .ShapeLabels { font-size: 10px; }
+  .ReviewMeta { align-items: flex-start; flex-wrap: wrap; }
+  .ReviewPhase { grid-template-columns: 1fr; gap: var(--padding-xs); }
+  .Wizard-footer {
+    flex-wrap: wrap; margin: 0;
+    padding-left: var(--padding-md); padding-right: var(--padding-md);
+  }
+  .Wizard-footerInner { flex-wrap: wrap; }
+  #screen-wizard { padding-bottom: 108px; }
+  .Wizard-footerSummary { width: 100%; order: -1; }
+  .SlotTable { min-width: 620px; }
+  .PhaseCard-body { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+<div class="App">
+  <nav class="NavBar" aria-label="Main">
+    <div class="NavBar-logoWrapper">
+      <img class="NavBar-dayshapeIcon" src="data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNzEuOTUgMTcxLjQ4Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmNTkzYjt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTExLjczLDUzLjYzYTczLjA3LDczLjA3LDAsMCwxLDAsNjUuMzRDMTIxLjE1LDExMS4yMSwxMjgsOTkuNDYsMTI4LDg2LjNTMTIxLjE1LDYxLjM5LDExMS43Myw1My42M1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03OS40OCw0NC44OWE3NCw3NCwwLDAsMSwwLDgzLjM4LDQyLjMxLDQyLjMxLDAsMCwwLDAtODMuMzhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNTIuMDUsNDRoLS4xNnY4NC4zNWguMTZDNzEuMzQsMTI4LjM0LDg3LDEwOS40Niw4Nyw4Ni4xNlM3MS4zNCw0NCw1Mi4wNSw0NFoiLz48L3N2Zz4=" alt="Dayshape" />
+    </div>
+    <ul class="NavBar-mainMenuContent">
+      <li class="NavBar-li" data-tooltip="Notifications"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-bell"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Search"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-magnifying-glass"></i></a></li>
+      <li><hr class="NavBar-hr" /></li>
+      <li class="NavBar-li" data-tooltip="Dashboard"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-chart-line"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Schedule"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-calendar"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Portfolios"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-folder-open"></i></a></li>
+      <li class="NavBar-li is-active" data-tooltip="Demand templates">
+        <a class="NavBar-menuLink" href="#" onclick="showScreen('catalogue'); return false;" title="Demand templates">
+          <i class="NavBar-menuIcon fa-solid fa-clipboard-list"></i>
+        </a>
+      </li>
+      <li class="NavBar-li" data-tooltip="Create"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-plus"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Reports"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-file-lines"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Referential data"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-folder-tree"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Configuration"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-wrench"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Profile"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-user"></i></a></li>
+      <li><hr class="NavBar-hr" /></li>
+      <li class="NavBar-li" data-tooltip="Help"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-circle-question"></i></a></li>
+      <li class="NavBar-li" data-tooltip="Log out"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-right-from-bracket"></i></a></li>
+    </ul>
+    <div class="NavBar-menuBottom">
+      <button class="NavBar-expandButton" type="button" aria-label="Expand navigation"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+  </nav>
+
+  <div class="Main">
+    <header class="TopBar">
+      <h1 class="TopBar-title" id="topTitle">Demand profile templates</h1>
+      <div class="TopBar-spacer"></div>
+      <div class="TopBar-mode" id="topBarMode" aria-label="Template type">
+        <span class="TopBar-modeLabel">Template type</span>
+        <div class="BtnGroup" role="group" aria-label="Template type">
+          <button type="button" id="modePhases" class="is-active" onclick="setPhaseWorld(true)">With phases</button>
+          <button type="button" id="modeFlat" onclick="setPhaseWorld(false)">Without phases</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Catalogue -->
+    <div class="Page screen is-active" id="screen-catalogue">
+      <div class="Toolbar">
+        <div class="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="catalogueSearch" type="search" placeholder="Search demand profiles…" oninput="renderCatalogue()" />
+        </div>
+        <div class="Toolbar-spacer"></div>
+        <button class="Btn Btn--primary" type="button" onclick="openWizard(true)">
+          <i class="fa-solid fa-plus"></i> Create demand template
+        </button>
+      </div>
+      <table class="u-table table-hover">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Return type</th>
+            <th>Status</th>
+            <th>Shape</th>
+            <th style="width:90px"></th>
+          </tr>
+        </thead>
+        <tbody id="catalogueBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Wizard -->
+    <div class="Page Page--narrow screen" id="screen-wizard">
+      <div class="Wizard-layout">
+        <aside class="Wizard-sidebar" aria-label="Create demand template steps">
+          <ol class="Stepper Stepper--vertical" id="wizardStepper" data-test="Stepper"></ol>
+        </aside>
+
+        <div class="Wizard-content">
+          <!-- Step 1: Details -->
+          <div id="wizard-step-1" class="Panel">
+            <h2 class="Wizard-stepTitle">Details</h2>
+            <p class="Wizard-stepIntro">Set the template name and optional return type.</p>
+
+            <div class="Field-row Wizard-metaFields">
+              <div class="Field">
+                <label class="Field-label" for="wp-name">Name *</label>
+                <input class="Input" id="wp-name" type="text" placeholder="Corporate Return demand profile"
+                  aria-describedby="nameError"
+                  oninput="this.setAttribute('aria-invalid','false'); document.getElementById('nameError').classList.add('hidden')" />
+                <p class="InlineError hidden" id="nameError">Enter a template name.</p>
+              </div>
+              <div class="Field">
+                <label class="Field-label" for="wp-return">Return type</label>
+                <select class="Select" id="wp-return" aria-describedby="returnHint" onchange="onReturnTypeChange(this.value)">
+                  <option value="">Not set</option>
+                  <option value="Corporate">Corporate</option>
+                  <option value="1040">1040</option>
+                  <option value="1065">1065</option>
+                  <option value="Trust">Trust</option>
+                </select>
+                <span class="Field-hint" id="returnHint">Optional. Stored for search and reporting; it does not decide the phases.</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Timeline (+ resource requests) -->
+          <div id="wizard-step-timeline" class="Panel hidden">
+            <h2 class="Wizard-stepTitle">Timeline</h2>
+            <p class="Wizard-stepIntro" id="timelineIntro">Build the shape and the resource demand it implies.</p>
+
+            <div class="Stack">
+              <div class="StructureTimeline">
+                <div class="Toolbar" style="margin-bottom:8px;">
+                  <strong class="StructureTimeline-title" style="margin:0;">Timeline &amp; buffers</strong>
+                  <div class="Toolbar-spacer"></div>
+                  <div class="AddMenu" id="addWizardTimelineMenu">
+                    <button class="Btn Btn--sm" type="button" onclick="toggleWizardTimelineMenu(event)">
+                      <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                    <div class="AddMenu-panel" role="menu" id="wizardTimelineAddMenuPanel"></div>
+                  </div>
+                </div>
+                <p class="Field-hint" id="timelineHint" style="margin-bottom:8px;">Drag to reorder. Weight % shares demand hours; buffers add quiet time. Each segment seeds its resource requests below.</p>
+                <div class="ShapeTimeline" id="wizardTimelineShape"></div>
+                <div class="SegList" id="wizardTimelineRows" style="margin-top:12px;"></div>
+              </div>
+              <div id="slotEditor" class="Stack"></div>
+            </div>
+          </div>
+
+          <!-- Review -->
+          <div id="wizard-step-review" class="Panel hidden">
+            <h2 class="Wizard-stepTitle">Review</h2>
+            <p class="Wizard-stepIntro">Check the shape and demand before publishing this version.</p>
+            <div id="reviewSummary" class="Stack"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="Wizard-footer">
+        <div class="Wizard-footerInner">
+          <button class="Btn" type="button" onclick="showScreen('catalogue')">Cancel</button>
+          <span class="Wizard-footerSummary" id="wizardFooterSummary"></span>
+          <div class="Wizard-footerActions">
+            <button class="Btn hidden" type="button" id="wizardBack" onclick="wizardNav(-1)">Back</button>
+            <button class="Btn Btn--primary" type="button" id="wizardNext" onclick="wizardNav(1)">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="shapeSegPopover" class="ShapeSegPopover" role="tooltip" aria-hidden="true"><div class="ShapeSegPopover-arrow"></div><div class="ShapeSegPopover-content"></div></div>
+<div class="Toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const GRADES = [
+  'Partner',
+  'Principal',
+  'Senior Manager',
+  'Global Team - Senior Manager',
+  'Manager',
+  'Global Team - Manager',
+  'Director',
+  'Senior',
+  'Junior',
+  'Associate'
+];
+const ROLES = ['Tax Analyst', 'Senior Tax Analyst', 'Tax Manager', 'Tax Partner'];
+/* Phase traits and colours copied from the current Templating mock. */
+const PHASE_LIBRARY = {
+  '.Depreciation': 'var(--phase-depreciation)',
+  '.Gather/Organize': 'var(--phase-gather-organize)',
+  '.Roll Binder': 'var(--phase-roll-binder)',
+  'Ext - Prepare': 'var(--phase-ext-prepare)',
+  'Ext - Review': 'var(--phase-ext-review)',
+  'Ext - Signer Approval': 'var(--phase-ext-signer-approval)',
+  'GCC - Prepare': 'var(--phase-gcc-prepare)',
+  'GCC - Review': 'var(--phase-gcc-review)',
+  'Intl - Prepare': 'var(--phase-intl-prepare)',
+  'Intl - Review': 'var(--phase-intl-review)',
+  'Prep': 'var(--phase-prep-trait)',
+  'Tax Detailed Review': 'var(--phase-tax-detailed-review)',
+  'Tax Prep': 'var(--phase-tax-prep)',
+  'Tax Project Leader': 'var(--phase-tax-project-leader)',
+  'Tax Signer Approval': 'var(--phase-tax-signer-approval)',
+  'Tax Technical Review': 'var(--phase-tax-technical-review)'
+};
+const UNNAMED_PHASE_COLOR = '';
+const BUFFER_COLOR = 'var(--surface-accent)';
+const DEFAULT_PHASE_WEEKS = 1;
+function isPhaseWorld(d = state.draft) {
+  return !d || d.phaseWorld !== false;
+}
+
+function wizardSteps() {
+  return [
+    { id: 'details', title: 'Details', description: 'Template setup' },
+    { id: 'timeline', title: 'Timeline', description: 'Shape & demand' },
+    { id: 'review', title: 'Review', description: 'Publish' }
+  ];
+}
+
+function currentWizardPanel() {
+  const steps = wizardSteps();
+  return steps[Math.min(Math.max(state.wizardStep, 1), steps.length) - 1]?.id || 'timeline';
+}
+
+function panelStepIndex(panelId) {
+  const idx = wizardSteps().findIndex(s => s.id === panelId);
+  return idx >= 0 ? idx + 1 : 1;
+}
+
+function phaseColor(name) {
+  return PHASE_LIBRARY[name] || '';
+}
+
+let uid = 1;
+const id = (p = 'id') => `${p}-${uid++}`;
+
+const state = {
+  screen: 'catalogue',
+  wizardStep: 1,
+  catalogue: [
+    {
+      id: 'dpt-corp',
+      name: 'Corporate Return demand profile',
+      version: 4,
+      status: 'published',
+      returnType: 'Corporate',
+      phaseWorld: true,
+      phases: [
+        {
+          id: 'ph-prep', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          weight: 55, durationWeeks: 2, locked: false,
+          slots: [
+            { id: 's1', grade: 'Senior', role: 'Senior Tax Analyst', count: 2, sharePercent: 80 },
+            { id: 's2', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: 20 }
+          ]
+        },
+        { id: 'bf-1', kind: 'buffer', durationWeeks: 1 },
+        {
+          id: 'ph-fr', kind: 'phase', name: 'First Review', color: 'var(--phase-first-review)',
+          weight: 25, durationWeeks: 1, locked: false,
+          slots: [{ id: 's3', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: 100 }]
+        },
+        { id: 'bf-2', kind: 'buffer', durationWeeks: 1 },
+        {
+          id: 'ph-sr', kind: 'phase', name: 'Second Review', color: 'var(--phase-second-review)',
+          weight: 20, durationWeeks: 1, locked: false,
+          slots: [{ id: 's4', grade: 'Director', role: 'Tax Partner', count: 1, sharePercent: 100 }]
+        }
+      ]
+    },
+    {
+      id: 'dpt-1040',
+      name: '1040 Personal Return demand profile',
+      version: 2,
+      status: 'published',
+      returnType: '1040',
+      phaseWorld: true,
+      phases: [
+        {
+          id: 'ph-a', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          weight: 50, durationWeeks: 1, locked: false,
+          slots: [{ id: 's5', grade: 'Senior', role: 'Senior Tax Analyst', count: 1, sharePercent: null }]
+        },
+        { id: 'bf-a', kind: 'buffer', durationWeeks: 1 },
+        {
+          id: 'ph-b', kind: 'phase', name: 'First Review', color: 'var(--phase-first-review)',
+          weight: 50, durationWeeks: 1, locked: false,
+          slots: [{ id: 's6', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: null }]
+        }
+      ]
+    },
+    {
+      id: 'dpt-draft',
+      name: 'Trust return — draft shape',
+      version: 1,
+      status: 'draft',
+      returnType: 'Trust',
+      phaseWorld: true,
+      phases: [
+        {
+          id: 'ph-d', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          weight: 100, durationWeeks: 2, locked: false,
+          slots: [{ id: 's7', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: null }]
+        }
+      ]
+    },
+    {
+      id: 'dpt-consulting',
+      name: 'Large-scale consulting engagement',
+      version: 3,
+      status: 'published',
+      returnType: '',
+      phaseWorld: false,
+      phases: [],
+      items: [
+        { id: 'rq-1', kind: 'request', grade: 'Manager', role: '', count: 1, weight: 25, durationWeeks: 1, locked: false },
+        { id: 'rq-2', kind: 'request', grade: 'Senior', role: '', count: 3, weight: 42, durationWeeks: 3, locked: false },
+        { id: 'rq-3', kind: 'request', grade: 'Junior', role: '', count: 2, weight: 18, durationWeeks: 3, locked: false },
+        { id: 'bf-c', kind: 'buffer', durationWeeks: 1 },
+        { id: 'rq-4', kind: 'request', grade: 'Partner', role: '', count: 1, weight: 15, durationWeeks: 1, locked: false }
+      ]
+    }
+  ],
+  draft: null
+};
+
+function showScreen(name) {
+  state.screen = name;
+  document.querySelectorAll('.screen').forEach(el => el.classList.toggle('is-active', el.id === `screen-${name}`));
+  document.getElementById('topTitle').textContent =
+    name === 'wizard' ? 'Create demand template' : 'Demand profile templates';
+  document.getElementById('topBarMode')?.classList.toggle('is-visible', name === 'wizard');
+  if (name === 'catalogue') renderCatalogue();
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { el.style.opacity = '0'; }, 2600);
+}
+
+/* ---------- Catalogue ---------- */
+function renderCatalogue() {
+  const q = (document.getElementById('catalogueSearch').value || '').toLowerCase();
+  const body = document.getElementById('catalogueBody');
+  const rows = state.catalogue.filter(t =>
+    !q || t.name.toLowerCase().includes(q) || (t.returnType || '').toLowerCase().includes(q)
+  );
+  body.innerHTML = rows.map(t => `
+    <tr onclick="editProfile('${t.id}')">
+      <td class="cell-name">${esc(t.name)}</td>
+      <td>v${t.version}</td>
+      <td>${esc(t.returnType || '—')}</td>
+      <td>${statusPill(t.status)}</td>
+      <td>${catalogueShapeLabel(t)}</td>
+      <td class="RowActions" onclick="event.stopPropagation()">
+        <button class="Btn Btn--sm" type="button" onclick="editProfile('${t.id}')">Edit</button>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="6" class="cell-muted">No demand profiles match.</td></tr>`;
+}
+
+function catalogueShapeLabel(t) {
+  if (t.phaseWorld === false) {
+    const n = (t.items || []).filter(i => i.kind === 'request').length;
+    return `${n} request${n === 1 ? '' : 's'}`;
+  }
+  const n = (t.phases || []).filter(p => !p.kind || p.kind === 'phase').length;
+  return `${n} phase${n === 1 ? '' : 's'}`;
+}
+
+function statusPill(s) {
+  if (s === 'published') return '<span class="Pill Pill--success">Published</span>';
+  if (s === 'draft') return '<span class="Pill Pill--warning">Draft</span>';
+  return '<span class="Pill Pill--neutral">Archived</span>';
+}
+
+function editProfile(pid) {
+  const t = state.catalogue.find(x => x.id === pid);
+  if (!t) return;
+  state.draft = JSON.parse(JSON.stringify(t));
+  state.draft._editing = true;
+  if (state.draft.phaseWorld == null) state.draft.phaseWorld = true;
+  if (!Array.isArray(state.draft.phases)) state.draft.phases = [];
+  if (!Array.isArray(state.draft.items)) state.draft.items = [];
+  openWizard(false);
+}
+
+/* ---------- Segments / lock redistribute ---------- */
+function isPhaseItem(p) {
+  return !p.kind || p.kind === 'phase';
+}
+
+function effortPhases(d = state.draft) {
+  return (d.phases || []).filter(isPhaseItem);
+}
+
+function getSegments(d = state.draft) {
+  // Weight redistribution only includes effort phases (not buffers).
+  return effortPhases(d).map(p => ({
+    key: p.id, kind: 'phase', name: p.name, color: p.color,
+    weight: Number(p.weight) || 0, locked: !!p.locked,
+    durationWeeks: Number(p.durationWeeks) || DEFAULT_PHASE_WEEKS
+  }));
+}
+
+function applySegments(segs) {
+  const d = state.draft;
+  segs.forEach(s => {
+    const p = d.phases.find(x => x.id === s.key);
+    if (p && isPhaseItem(p)) {
+      p.weight = Math.round(s.weight);
+      p.locked = s.locked;
+    }
+  });
+}
+
+function redistribute(segs, targetKey, newWeight) {
+  const target = segs.find(s => s.key === targetKey);
+  if (!target || target.locked) return segs;
+
+  const lockedSum = segs.filter(s => s.locked).reduce((a, s) => a + s.weight, 0);
+  const maxForTarget = Math.max(0, 100 - lockedSum);
+  const clamped = Math.min(Math.max(0, Math.round(newWeight)), maxForTarget);
+  const unlockedPeers = segs.filter(s => !s.locked && s.key !== targetKey);
+  const oldPeerSum = unlockedPeers.reduce((a, s) => a + s.weight, 0);
+  const remainder = 100 - lockedSum - clamped;
+
+  target.weight = clamped;
+
+  if (unlockedPeers.length === 0) {
+    target.weight = 100 - lockedSum;
+    return segs;
+  }
+
+  if (oldPeerSum <= 0) {
+    const each = Math.floor(remainder / unlockedPeers.length);
+    let rem = remainder - each * unlockedPeers.length;
+    unlockedPeers.forEach((s, i) => {
+      s.weight = each + (i === unlockedPeers.length - 1 ? rem : 0);
+    });
+  } else {
+    let allocated = 0;
+    unlockedPeers.forEach((s, i) => {
+      if (i === unlockedPeers.length - 1) {
+        s.weight = Math.max(0, remainder - allocated);
+      } else {
+        const w = Math.round(remainder * (s.weight / oldPeerSum));
+        s.weight = Math.max(0, w);
+        allocated += s.weight;
+      }
+    });
+  }
+  return segs;
+}
+
+function setSegmentWeight(key, weight) {
+  const segs = redistribute(getSegments(), key, weight);
+  applySegments(segs);
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+function previewSegmentWeight(key, weight) {
+  if (weight === '' || weight == null) return;
+  const segs = redistribute(getSegments(), key, weight);
+  applySegments(segs);
+
+  segs.forEach(s => {
+    document.querySelectorAll(`.SegRow[data-seg-key="${s.key}"]`).forEach(row => {
+      const range = row.querySelector('.Range');
+      const pct = row.querySelector('.SegRow-pctInput');
+      if (range) range.value = s.weight;
+      if (pct && document.activeElement !== pct) pct.value = s.weight;
+      else if (pct && s.key === key) pct.value = s.weight;
+    });
+  });
+  if (currentWizardPanel() === 'timeline') renderShapeTimeline('wizardTimelineShape');
+  else renderShapeTimeline();
+  updateFooterSummary();
+}
+
+function commitSegmentWeight(key, weight) {
+  const input = document.querySelector(`.SegRow[data-seg-key="${key}"] .SegRow-pctInput`);
+  if (weight === '' || weight == null) {
+    const current = effortPhases().find(p => p.id === key);
+    if (input && current) input.value = current.weight;
+    return;
+  }
+  previewSegmentWeight(key, weight);
+}
+
+function toggleLock(key) {
+  const segs = getSegments();
+  const seg = segs.find(s => s.key === key);
+  if (!seg) return;
+  const wouldLock = !seg.locked;
+  if (wouldLock) {
+    const unlockedOthers = segs.filter(s => s.key !== key && !s.locked);
+    if (unlockedOthers.length === 0) {
+      toast('Keep at least one phase unlocked');
+      return;
+    }
+  }
+  seg.locked = wouldLock;
+  applySegments(segs);
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+function timelineList(d = state.draft) {
+  if (!isPhaseWorld(d)) return d.items || [];
+  return d.phases || [];
+}
+
+function timelineWeeks(d = state.draft) {
+  return timelineList(d).reduce((a, p) => a + (Number(p.durationWeeks) || 0), 0);
+}
+
+function requestItems(d = state.draft) {
+  return (d.items || []).filter(i => i.kind === 'request');
+}
+
+function detailsSummaryText() {
+  const d = state.draft;
+  if (!d) return '';
+  if (!isPhaseWorld(d)) {
+    const reqs = requestItems(d);
+    const buffers = (d.items || []).filter(p => p.kind === 'buffer').length;
+    const weeks = timelineWeeks(d);
+    const bits = [`${reqs.length} request${reqs.length === 1 ? '' : 's'}`];
+    if (buffers) bits.push(`${buffers} buffer${buffers === 1 ? '' : 's'}`);
+    if (weeks) bits.push(`${weeks}w`);
+    return bits.join(' · ');
+  }
+  const phases = effortPhases(d);
+  if (!phases.length && !(d.phases || []).length) return '';
+  const n = phases.length;
+  const weeks = timelineWeeks(d);
+  const buffers = (d.phases || []).filter(p => p.kind === 'buffer').length;
+  const bits = [`${n} phase${n === 1 ? '' : 's'}`];
+  if (buffers) bits.push(`${buffers} buffer${buffers === 1 ? '' : 's'}`);
+  if (weeks) bits.push(`${weeks}w`);
+  return bits.join(' · ');
+}
+
+function updateFooterSummary() {
+  const summary = document.getElementById('wizardFooterSummary');
+  if (!summary || !state.draft) return;
+  const panel = currentWizardPanel();
+  if (panel === 'details' || panel === 'timeline') {
+    summary.textContent = detailsSummaryText();
+  }
+}
+
+function shapeSumOk() {
+  if (!isPhaseWorld()) {
+    const reqs = requestItems();
+    const sum = reqs.reduce((a, p) => a + (Number(p.weight) || 0), 0);
+    return sum === 100 && reqs.length > 0;
+  }
+  const phases = effortPhases();
+  const sum = phases.reduce((a, p) => a + (Number(p.weight) || 0), 0);
+  return sum === 100 && phases.length > 0;
+}
+
+/* ---------- Wizard ---------- */
+function blankDraft() {
+  return {
+    id: id('dpt'),
+    name: '',
+    version: 1,
+    status: 'draft',
+    returnType: '',
+    phaseWorld: true,
+    _editing: false,
+    phases: [],
+    items: []
+  };
+}
+
+function openWizard(fresh = true) {
+  if (fresh || !state.draft) state.draft = blankDraft();
+  if (state.draft.phaseWorld == null) state.draft.phaseWorld = true;
+  if (!Array.isArray(state.draft.phases)) state.draft.phases = [];
+  if (!Array.isArray(state.draft.items)) state.draft.items = [];
+  state.wizardStep = 1;
+  showScreen('wizard');
+  syncWizardForm();
+  syncModeToggle();
+  renderWizard();
+}
+
+function syncModeToggle() {
+  const phase = isPhaseWorld();
+  document.getElementById('modePhases')?.classList.toggle('is-active', phase);
+  document.getElementById('modeFlat')?.classList.toggle('is-active', !phase);
+}
+
+function setPhaseWorld(on) {
+  if (!state.draft) return;
+  const next = !!on;
+  if (state.draft.phaseWorld === next) return;
+  readWizardForm();
+  state.draft.phaseWorld = next;
+  if (next) {
+    state.draft.items = [];
+    if (!state.draft.phases.length) state.draft.phases = [];
+  } else {
+    state.draft.phases = [];
+    if (!state.draft.items.length) {
+      state.draft.items = [
+        { id: id('rq'), kind: 'request', grade: 'Senior', role: '', count: 1, weight: 100, durationWeeks: 1, locked: false }
+      ];
+    }
+  }
+  state.wizardStep = 1;
+  syncModeToggle();
+  toast(next ? 'Switched to with phases' : 'Switched to without phases');
+  renderWizard();
+}
+
+function syncWizardForm() {
+  const d = state.draft;
+  document.getElementById('wp-name').value = d.name;
+  document.getElementById('wp-return').value = d.returnType || '';
+}
+
+function readWizardForm() {
+  const d = state.draft;
+  d.name = document.getElementById('wp-name').value.trim();
+  d.returnType = document.getElementById('wp-return').value;
+}
+
+function onReturnTypeChange(value) {
+  state.draft.returnType = value;
+}
+
+function toggleAddMenu(event) {
+  event.stopPropagation();
+  const menu = document.getElementById('addTimelineMenu');
+  menu.classList.toggle('is-open');
+}
+
+function closeAddMenu() {
+  document.getElementById('addTimelineMenu')?.classList.remove('is-open');
+}
+
+
+
+function newPhase(weight) {
+  return {
+    id: id('ph'),
+    kind: 'phase',
+    name: '',
+    color: UNNAMED_PHASE_COLOR,
+    weight,
+    durationWeeks: DEFAULT_PHASE_WEEKS,
+    locked: false,
+    slots: [{ id: id('sl'), grade: 'Senior', role: '', count: 1, sharePercent: null }]
+  };
+}
+
+function newBuffer(weeks = 1) {
+  return { id: id('bf'), kind: 'buffer', durationWeeks: weeks };
+}
+
+function addPhase() {
+  const d = state.draft;
+  if (!isPhaseWorld(d)) return;
+  const phases = effortPhases(d);
+
+  if (phases.length === 0) {
+    d.phases.push(newPhase(100));
+    refreshTimelineEditors();
+    updateFooterSummary();
+    focusLastPhaseSelect();
+    return;
+  }
+
+  const unlocked = getSegments().filter(s => !s.locked);
+  if (unlocked.length === 0) {
+    toast('Unlock a phase before adding another');
+    return;
+  }
+  const unlockedSum = unlocked.reduce((a, s) => a + s.weight, 0);
+  const starter = Math.min(20, Math.max(5, Math.floor(unlockedSum / (unlocked.length + 1))));
+
+  const phase = newPhase(0);
+  d.phases.push(phase);
+  applySegments(redistribute(getSegments(), phase.id, starter));
+  refreshTimelineEditors();
+  updateFooterSummary();
+  focusLastPhaseSelect();
+}
+
+function addBuffer() {
+  if (isPhaseWorld()) {
+    state.draft.phases.push(newBuffer(1));
+  } else {
+    state.draft.items.push(newBuffer(1));
+  }
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+function focusLastPhaseSelect() {
+  const selects = document.querySelectorAll('.SegRow-phaseSelect');
+  selects[selects.length - 1]?.focus();
+}
+
+function setPhaseName(phaseId, name) {
+  const phase = state.draft.phases.find(p => p.id === phaseId);
+  if (!phase || !isPhaseItem(phase)) return;
+  phase.name = name;
+  phase.color = name ? phaseColor(name) : UNNAMED_PHASE_COLOR;
+  refreshTimelineEditors();
+}
+
+function removePhase(phaseId) {
+  const d = state.draft;
+  const index = d.phases.findIndex(p => p.id === phaseId);
+  if (index === -1) return;
+  const removed = d.phases.splice(index, 1)[0];
+  d.phases.forEach(p => {
+    if (!p.slots) return;
+    p.slots.forEach(s => {
+      if (s.sameAs && s.sameAs.phaseId === phaseId) s.sameAs = null;
+    });
+  });
+
+  if (isPhaseItem(removed)) {
+    const segs = getSegments();
+    const unlocked = segs.filter(s => !s.locked);
+    if (unlocked.length && removed.weight) {
+      const give = removed.weight || 0;
+      const base = unlocked.reduce((a, s) => a + s.weight, 0) || unlocked.length;
+      let allocated = 0;
+      unlocked.forEach((s, i) => {
+        if (i === unlocked.length - 1) s.weight += give - allocated;
+        else {
+          const add = Math.round(give * (s.weight / base || 1 / unlocked.length));
+          s.weight += add;
+          allocated += add;
+        }
+      });
+      applySegments(segs);
+    }
+    if (effortPhases(d).length) normaliseTo100();
+  }
+
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+/* ---------- Phase reordering ---------- */
+const dragState = { phaseId: null };
+
+function phaseDragArm(event) {
+  event.target.closest('.SegRow')?.setAttribute('draggable', 'true');
+}
+
+function phaseDragDisarm(event) {
+  event.target.closest('.SegRow')?.setAttribute('draggable', 'false');
+}
+
+function onPhaseDragStart(event, phaseId) {
+  dragState.phaseId = phaseId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', phaseId);
+  event.currentTarget.classList.add('is-dragging');
+}
+
+function onPhaseDragOver(event, phaseId) {
+  if (!dragState.phaseId || dragState.phaseId === phaseId) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('is-dropTarget');
+}
+
+function onPhaseDragLeave(event) {
+  event.currentTarget.classList.remove('is-dropTarget');
+}
+
+function onPhaseDrop(event, targetId) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('is-dropTarget');
+  const phases = state.draft.phases;
+  const from = phases.findIndex(p => p.id === dragState.phaseId);
+  const to = phases.findIndex(p => p.id === targetId);
+  dragState.phaseId = null;
+  if (from === -1 || to === -1 || from === to) return;
+  phases.splice(to, 0, phases.splice(from, 1)[0]);
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+function onPhaseDragEnd(event) {
+  dragState.phaseId = null;
+  event.currentTarget.classList.remove('is-dragging');
+  event.currentTarget.setAttribute('draggable', 'false');
+  document.querySelectorAll('.SegRow.is-dropTarget').forEach(el => el.classList.remove('is-dropTarget'));
+}
+
+function normaliseTo100() {
+  const segs = getSegments();
+  const sum = segs.reduce((a, s) => a + s.weight, 0);
+  if (sum === 100 || !segs.length) return;
+  const unlocked = segs.filter(s => !s.locked);
+  const drift = 100 - sum;
+  if (unlocked.length) {
+    unlocked[unlocked.length - 1].weight = Math.max(0, unlocked[unlocked.length - 1].weight + drift);
+  } else {
+    segs[segs.length - 1].weight = Math.max(0, segs[segs.length - 1].weight + drift);
+  }
+  applySegments(segs);
+}
+
+function renderWizard() {
+  syncModeToggle();
+  const steps = wizardSteps();
+  if (state.wizardStep > steps.length) state.wizardStep = steps.length;
+  if (state.wizardStep < 1) state.wizardStep = 1;
+  renderStepper();
+  const panel = currentWizardPanel();
+  document.getElementById('wizard-step-1').classList.toggle('hidden', panel !== 'details');
+  document.getElementById('wizard-step-timeline').classList.toggle('hidden', panel !== 'timeline');
+  document.getElementById('wizard-step-review').classList.toggle('hidden', panel !== 'review');
+  document.getElementById('wizardBack').classList.toggle('hidden', state.wizardStep === 1);
+  document.getElementById('wizardNext').textContent = panel === 'review'
+    ? (state.draft._editing ? 'Save as new version' : 'Publish')
+    : 'Continue';
+
+  const summary = document.getElementById('wizardFooterSummary');
+  if (panel === 'review') {
+    summary.textContent = 'Publishing creates a new version — existing engagements are unchanged.';
+  } else if (panel === 'details' || panel === 'timeline') {
+    summary.textContent = detailsSummaryText();
+  } else {
+    summary.textContent = '';
+  }
+
+  if (panel === 'details') renderDetails();
+  if (panel === 'timeline') renderTimeline();
+  if (panel === 'review') renderReview();
+}
+
+function renderStepper() {
+  const current = state.wizardStep;
+  const steps = wizardSteps().map((s, i) => {
+    const n = i + 1;
+    let status = 'future';
+    if (n < current) status = 'done';
+    else if (n === current) status = 'current';
+    return { ...s, stepNumber: n, status, isLast: n === wizardSteps().length };
+  });
+
+  document.getElementById('wizardStepper').innerHTML = steps.map(step => {
+    const connectorStatus = horizontalConnectorStatus(steps, step.stepNumber);
+    const isReachable = step.status === 'current' || step.status === 'done';
+    const stepInteraction = isReachable
+      ? `role="button" tabindex="0" onclick="onStepperClick(${step.stepNumber})"
+          onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onStepperClick(${step.stepNumber})}"`
+      : '';
+    const markerInner = step.status === 'done'
+      ? '<i class="Stepper-check fas fa-check" aria-hidden="true"></i>'
+      : step.status === 'error'
+        ? '<i class="Stepper-errorIcon fas fa-triangle-exclamation" aria-hidden="true"></i>'
+        : `<span class="Stepper-number">${step.stepNumber}</span>`;
+
+    return `
+      <li class="Stepper-step Stepper-step--${step.status}${step.isLast ? ' Stepper-step--last' : ''}"
+          data-test="Stepper-step-${step.stepNumber}"
+          ${stepInteraction}
+          ${step.status === 'current' || step.status === 'error' ? 'aria-current="step"' : ''}>
+        <div class="Stepper-rail" data-test="Stepper-rail">
+          <div class="Stepper-marker Stepper-marker--${step.status}" data-test="Stepper-marker">
+            ${markerInner}
+          </div>
+          ${!step.isLast
+            ? `<div class="Stepper-line Stepper-line--vertical Stepper-line--after Stepper-line--${connectorStatus}" aria-hidden="true"></div>`
+            : ''}
+        </div>
+        <div class="Stepper-info">
+          <p class="Stepper-title" data-test="Stepper-title">${esc(step.title)}</p>
+          <p class="Stepper-description" data-test="Stepper-description">${esc(step.description)}</p>
+        </div>
+      </li>`;
+  }).join('');
+}
+
+function horizontalConnectorStatus(steps, afterStepNumber) {
+  const left = steps[afterStepNumber - 1];
+  const right = steps[afterStepNumber];
+  if (right && right.status === 'error') return 'error';
+  if (left && left.status === 'done') return 'success';
+  if (left && left.status === 'current') return 'active';
+  return 'inactive';
+}
+
+function onStepperClick(n) {
+  // Jump only to completed or current steps
+  if (n <= state.wizardStep) {
+    state.wizardStep = n;
+    renderWizard();
+  }
+}
+
+function renderDetails() {
+  renderShapeTimeline();
+  renderSegList();
+}
+
+function shapeTimelineMarkup(d) {
+  const items = [];
+  const list = timelineList(d);
+  list.forEach(p => {
+    const weeks = Number(p.durationWeeks) || 0;
+    if (weeks <= 0) return;
+    if (p.kind === 'buffer') {
+      items.push({ kind: 'buffer', name: 'Buffer', weeks, color: BUFFER_COLOR });
+    } else if (p.kind === 'request') {
+      const name = [p.grade, p.role].filter(Boolean).join(' / ') || 'Resource request';
+      items.push({
+        kind: 'request',
+        name,
+        weeks,
+        weight: p.weight,
+        color: ''
+      });
+    } else {
+      items.push({
+        kind: 'phase',
+        name: p.name || 'Unnamed phase',
+        weeks,
+        weight: p.weight,
+        color: p.color || UNNAMED_PHASE_COLOR
+      });
+    }
+  });
+
+  const total = items.reduce((a, s) => a + s.weeks, 0) || 1;
+  const emptyLabel = isPhaseWorld(d) ? 'Add phases to build the shape' : 'Add resource requests to build the shape';
+
+  const bar = items.map((s, index) => {
+    const width = (s.weeks / total) * 100;
+    const label = `${s.name} · ${s.weeks}w`;
+    const cls = s.kind === 'buffer' ? ' ShapeSeg--buffer' : '';
+    const hasColor = s.kind !== 'buffer' && Boolean(s.color);
+    const bg = hasColor ? `background:${s.color};` : '';
+    const textColor = hasColor ? 'var(--text-inverse)' : 'var(--text-default)';
+    const payload = encodeURIComponent(JSON.stringify({
+      kind: s.kind,
+      name: s.name,
+      weeks: s.weeks,
+      weight: s.weight,
+      color: s.color || ''
+    }));
+    return `<div class="ShapeSeg${cls}" style="width:${width}%;${bg}color:${textColor};"
+      tabindex="0" role="button" aria-label="${esc(label)}"
+      data-shape-popover="${payload}"
+      onmouseenter="showShapeSegPopover(event)"
+      onmouseleave="hideShapeSegPopover()"
+      onfocus="showShapeSegPopover(event)"
+      onblur="hideShapeSegPopover()">${width >= 8 ? esc(width >= 14 ? label : `${s.weeks}w`) : ''}</div>`;
+  }).join('') || `<div class="ShapeSeg" style="width:100%; background:var(--surface-subtle-dark); color:var(--text-subtle);">${esc(emptyLabel)}</div>`;
+
+  return `
+    <div class="ShapeLabels">
+      <span>Start</span>
+      <span>${total} week${total === 1 ? '' : 's'}</span>
+      <span>Deadline</span>
+    </div>
+    <div class="ShapeBarWrap">
+      <div class="ShapeBar">${bar}</div>
+    </div>
+  `;
+}
+
+
+function ensureShapeSegPopover() {
+  return document.getElementById('shapeSegPopover');
+}
+
+function shapeSegPopoverHtml(data) {
+  if (data.kind === 'buffer') {
+    return `<div class="ShapeSegPopover-title"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>Buffer</span></div>
+      <div class="ShapeSegPopover-rows">
+        <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
+      </div>`;
+  }
+  const shareLabel = data.kind === 'request' ? 'Project share' : 'Demand share';
+  return `<div class="ShapeSegPopover-title"><span class="SegRow-dot" style="background:${data.color || UNNAMED_PHASE_COLOR}" aria-hidden="true"></span><span>${esc(data.name)}</span></div>
+    <div class="ShapeSegPopover-rows">
+      <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
+      <div class="ShapeSegPopover-row"><span>${shareLabel}</span><strong>${data.weight != null ? `${data.weight}%` : '—'}</strong></div>
+    </div>`;
+}
+
+function showShapeSegPopover(event) {
+  const el = event.currentTarget;
+  const raw = el.getAttribute('data-shape-popover');
+  if (!raw) return;
+  let data;
+  try { data = JSON.parse(decodeURIComponent(raw)); } catch (e) { return; }
+  const pop = ensureShapeSegPopover();
+  if (!pop) return;
+  pop.querySelector('.ShapeSegPopover-content').innerHTML = shapeSegPopoverHtml(data);
+  pop.classList.add('is-open');
+  pop.setAttribute('aria-hidden', 'false');
+  const rect = el.getBoundingClientRect();
+  const left = rect.left + rect.width / 2;
+  let top = rect.top;
+  pop.style.left = `${left}px`;
+  pop.style.top = `${top}px`;
+  // Flip below if clipped
+  requestAnimationFrame(() => {
+    const popRect = pop.getBoundingClientRect();
+    if (popRect.top < 8) {
+      pop.style.top = `${rect.bottom + 10}px`;
+      pop.style.transform = 'translate(-50%, 0)';
+      pop.querySelector('.ShapeSegPopover-arrow').style.display = 'none';
+    } else {
+      pop.style.transform = 'translate(-50%, calc(-100% - 10px))';
+      pop.querySelector('.ShapeSegPopover-arrow').style.display = '';
+    }
+  });
+}
+
+function hideShapeSegPopover() {
+  const pop = ensureShapeSegPopover();
+  if (!pop) return;
+  pop.classList.remove('is-open');
+  pop.setAttribute('aria-hidden', 'true');
+}
+
+function renderShapeTimeline(targetId = 'shapeTimeline') {
+  const el = document.getElementById(targetId);
+  if (el) el.innerHTML = shapeTimelineMarkup(state.draft);
+}
+
+function refreshTimelineEditors() {
+  const panel = currentWizardPanel();
+  if (panel === 'details') {
+    renderDetails();
+  } else if (panel === 'timeline') {
+    renderTimeline();
+  } else if (panel === 'review') {
+    renderReview();
+  }
+}
+
+function phaseOptionsMarkup(selected) {
+  const used = new Set(effortPhases().map(p => p.name).filter(Boolean));
+  const names = Object.keys(PHASE_LIBRARY);
+  if (selected && !names.includes(selected)) names.unshift(selected);
+  const options = names.map(name => {
+    const disabled = used.has(name) && name !== selected;
+    return `<option value="${esc(name)}" ${name === selected ? 'selected' : ''} ${disabled ? 'disabled' : ''}>${esc(name)}</option>`;
+  }).join('');
+  return `<option value="" ${selected ? '' : 'selected'}>Select phase…</option>${options}`;
+}
+
+function durationCell(itemId, weeks, label) {
+  return `<div class="input-group" title="${esc(label)} duration">
+    <input class="Input" type="number" min="1" max="52" value="${weeks}"
+      aria-label="${esc(label)} duration in weeks"
+      oninput="setItemDuration('${itemId}', this.value)" />
+    <span class="input-group-text">w</span>
+  </div>`;
+}
+
+function timelineRowMarkup(item, phaseNumber) {
+  const isPhase = isPhaseItem(item);
+  const isBuffer = item.kind === 'buffer';
+  const weeks = Number(item.durationWeeks) || 1;
+
+  let nameCell;
+  if (isPhase) {
+    nameCell = `<div class="SegRow-phaseIdentity">
+         <span class="SegRow-number" aria-label="Phase ${phaseNumber}">${phaseNumber}</span>
+         <span class="SegRow-dot" style="background:${item.color}" aria-hidden="true"></span>
+         <select class="Select SegRow-phaseSelect" aria-label="Phase ${phaseNumber} trait"
+           ${item.name ? '' : 'aria-invalid="true"'}
+           onchange="setPhaseName('${item.id}', this.value)">${phaseOptionsMarkup(item.name)}</select>
+       </div>`;
+  } else {
+    nameCell = `<div class="SegRow-name">
+         <i class="fa-regular fa-clock SegRow-bufferIcon" aria-hidden="true"></i>
+         <span>Buffer</span>
+       </div>`;
+  }
+
+  const weightCells = isPhase
+    ? `<input class="Range" type="range" min="0" max="100" value="${item.weight}"
+        aria-label="${esc(item.name || 'Phase')} share"
+        ${item.locked ? 'disabled' : ''}
+        oninput="previewSegmentWeight('${item.id}', this.value)" />
+      <div class="input-group">
+        <input class="Input SegRow-pctInput" type="number" min="0" max="100" value="${item.weight}"
+          aria-label="${esc(item.name || 'Phase')} share percent"
+          ${item.locked ? 'disabled' : ''}
+          oninput="previewSegmentWeight('${item.id}', this.value)"
+          onchange="commitSegmentWeight('${item.id}', this.value)" />
+        <span class="input-group-text">%</span>
+      </div>
+      <button class="Btn-iconOnly ${item.locked ? 'is-locked' : ''}" type="button"
+        title="${item.locked ? 'Unlock' : 'Lock'}"
+        onclick="toggleLock('${item.id}')">
+        <i class="fa-solid fa-${item.locked ? 'lock' : 'lock-open'}"></i>
+      </button>`
+    : `<span></span>
+      <span></span>
+      <span></span>`;
+
+  return `
+    <div class="SegRow ${isBuffer ? 'SegRow--buffer' : ''} ${item.locked ? 'is-locked' : ''}"
+      data-seg-key="${item.id}" draggable="false"
+      ondragstart="onPhaseDragStart(event, '${item.id}')"
+      ondragover="onPhaseDragOver(event, '${item.id}')"
+      ondragleave="onPhaseDragLeave(event)"
+      ondrop="onPhaseDrop(event, '${item.id}')"
+      ondragend="onPhaseDragEnd(event)">
+      <button class="SegRow-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder"
+        onmousedown="phaseDragArm(event)" onmouseup="phaseDragDisarm(event)">
+        <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+      </button>
+      ${nameCell}
+      ${durationCell(item.id, weeks, isPhase ? (item.name || 'Phase') : 'Buffer')}
+      ${weightCells}
+      <button class="Btn-iconOnly" type="button" title="${isBuffer ? 'Remove buffer' : 'Remove phase'}"
+        onclick="removePhase('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>`;
+}
+
+
+function findTimelineItem(itemId) {
+  return timelineList().find(p => p.id === itemId) || null;
+}
+
+function setItemDuration(itemId, value) {
+  const item = findTimelineItem(itemId);
+  if (!item) return;
+  item.durationWeeks = Math.max(1, Math.min(52, Math.round(Number(value) || 1)));
+  if (currentWizardPanel() === 'timeline') {
+    renderShapeTimeline('wizardTimelineShape');
+    updateFooterSummary();
+    return;
+  }
+  renderShapeTimeline();
+  updateFooterSummary();
+}
+
+
+function renderSegList(targetId = 'segList') {
+  const d = state.draft;
+  let phaseNumber = 0;
+  const rows = (d.phases || []).map(item => {
+    if (isPhaseItem(item)) phaseNumber += 1;
+    return timelineRowMarkup(item, phaseNumber);
+  });
+
+  const empty = d.phases.length ? '' : `
+    <div class="SegEmpty">
+      <div class="Strong" style="margin-bottom:4px;">No phases yet</div>
+      <div>Add a phase for demand, or a buffer for quiet time between handoffs.</div>
+    </div>`;
+
+  const el = document.getElementById(targetId);
+  if (el) el.innerHTML = empty + rows.join('');
+}
+
+/* ---------- Structure ---------- */
+function phaseUsesShares(slots) {
+  return slots.some(s => s.sharePercent != null && s.sharePercent !== '');
+}
+
+function equaliseShares(slots) {
+  if (!slots.length) return;
+  const each = Math.floor(100 / slots.length);
+  let rem = 100 - each * slots.length;
+  slots.forEach((s, i) => {
+    s.sharePercent = each + (i === slots.length - 1 ? rem : 0);
+  });
+}
+
+function redistributeShares(slots, targetIndex, newWeight) {
+  if (!slots.length) return slots;
+  if (slots.length === 1) {
+    slots[0].sharePercent = 100;
+    return slots;
+  }
+
+  const target = slots[targetIndex];
+  if (!target) return slots;
+
+  // First value in a blank phase: seed equal shares, then apply the edit
+  if (!phaseUsesShares(slots)) equaliseShares(slots);
+
+  const clamped = Math.min(100, Math.max(0, Math.round(Number(newWeight) || 0)));
+  const peers = slots.filter((_, i) => i !== targetIndex);
+  const oldPeerSum = peers.reduce((a, s) => a + (Number(s.sharePercent) || 0), 0);
+  const remainder = 100 - clamped;
+
+  target.sharePercent = clamped;
+
+  if (oldPeerSum <= 0) {
+    const each = Math.floor(remainder / peers.length);
+    let rem = remainder - each * peers.length;
+    peers.forEach((s, i) => {
+      s.sharePercent = each + (i === peers.length - 1 ? rem : 0);
+    });
+  } else {
+    let allocated = 0;
+    peers.forEach((s, i) => {
+      if (i === peers.length - 1) {
+        s.sharePercent = Math.max(0, remainder - allocated);
+      } else {
+        const w = Math.round(remainder * ((Number(s.sharePercent) || 0) / oldPeerSum));
+        s.sharePercent = Math.max(0, w);
+        allocated += s.sharePercent;
+      }
+    });
+  }
+  return slots;
+}
+
+function syncShareInputs(pi, activeSi) {
+  const slots = state.draft.phases[pi].slots;
+  document.querySelectorAll(`.SlotShareInput[data-pi="${pi}"]`).forEach(input => {
+    const si = Number(input.dataset.si);
+    if (si === activeSi) return;
+    const val = slots[si]?.sharePercent;
+    input.value = val == null ? '' : val;
+  });
+}
+
+const TREE_PICKERS = {
+  grade: {
+    field: 'grade',
+    options: () => GRADES,
+    icon: 'fas fa-graduation-cap',
+    placeholder: 'Choose grade',
+    empty: 'No grades match',
+    noun: 'grades'
+  },
+  role: {
+    field: 'role',
+    options: () => ROLES,
+    icon: 'fas fa-briefcase',
+    placeholder: 'Choose role',
+    empty: 'No roles match',
+    noun: 'roles'
+  }
+};
+
+function treePickerMarkup(type, pi, si, value, linked = false) {
+  const cfg = TREE_PICKERS[type];
+  const selected = value || '';
+  const touched = !!(state.draft.phases[pi].slots[si][`${cfg.field}Touched`]);
+  const showSuccess = !linked && touched && Boolean(selected);
+  const key = `${type}-${pi}-${si}`;
+  const disabled = linked ? 'disabled' : '';
+  return `
+    <div class="TreeInput${showSuccess ? ' is-valid' : ''}${linked ? ' is-linked' : ''}" data-tree-picker="${key}" data-picker-type="${type}" data-pi="${pi}" data-si="${si}">
+      <div class="input-group">
+        <input class="Input TreeInput-text"
+          type="text"
+          autocomplete="off"
+          placeholder="${esc(cfg.placeholder)}"
+          value="${esc(selected)}"
+          data-test="TreeInput-textInput"
+          ${disabled}
+          ${linked ? 'readonly' : ''}
+          onfocus="${linked ? '' : `openTreePicker('${type}',${pi},${si})`}"
+          oninput="${linked ? '' : `filterTreePicker('${type}',${pi},${si}, this.value)`}"
+          onkeydown="${linked ? '' : `treePickerKeydown(event, '${type}',${pi},${si})`}"
+          onblur="${linked ? '' : `blurTreePicker('${type}',${pi},${si})`}" />
+        ${linked ? (
+          type === 'grade'
+            ? `<span class="TreeInput-append" title="${esc(linkSourceLabel(state.draft.phases[pi].slots[si]))}">
+            <i class="fa-solid fa-link" aria-hidden="true"></i>
+          </span>`
+            : `<span class="TreeInput-append" title="Linked with grade">
+            <i class="${cfg.icon}" aria-hidden="true"></i>
+          </span>`
+        ) : showSuccess ? `
+          <button class="TreeInput-append TreeInput-clear" type="button" title="Clear ${esc(cfg.field)}"
+            onmousedown="event.preventDefault()"
+            onclick="clearTreePickerValue('${type}',${pi},${si})">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+          </button>
+          <span class="TreeInput-append TreeInput-status" title="Valid ${esc(cfg.field)}">
+            <i class="far fa-circle-check" aria-hidden="true"></i>
+          </span>
+        ` : `
+          <button class="TreeInput-append" type="button" data-test="TreeInput-entityTypeIcon"
+            title="${esc(cfg.placeholder)}"
+            onmousedown="event.preventDefault()"
+            onclick="toggleTreePicker('${type}',${pi},${si})">
+            <i class="${cfg.icon}" aria-hidden="true"></i>
+          </button>
+        `}
+      </div>
+      ${linked ? '' : `<div class="TreeInput-treeView" data-test="TreeInput-treeView" onmousedown="event.preventDefault()">
+        ${treePickerOptionsMarkup(type, selected, '', pi, si)}
+      </div>`}
+    </div>`;
+}
+
+function treePickerOptionsMarkup(type, selected, query, pi = null, si = null) {
+  const cfg = TREE_PICKERS[type];
+  const q = (query || '').trim().toLowerCase();
+  const reuse = (type === 'grade' && pi != null) ? reuseFromPreviousMarkup(pi, si, q) : '';
+  const options = cfg.options().filter(o => !q || o.toLowerCase().includes(q));
+  const list = options.length
+    ? options.map(o => `
+    <button class="TreeInput-node${o === selected ? ' is-selected' : ''}" type="button"
+      data-test="TreePicker-node-${esc(o)}"
+      data-value="${esc(o)}"
+      onclick="selectTreePickerValue('${type}', this.closest('.TreeInput').dataset.pi, this.closest('.TreeInput').dataset.si, this.dataset.value)">
+      ${type === 'grade' ? '' : `<i class="${cfg.icon}" aria-hidden="true"></i>`}
+      <span>${esc(o)}</span>
+    </button>
+  `).join('')
+    : (reuse ? '' : `<div class="TreeInput-empty">${esc(cfg.empty)}</div>`);
+  if (!reuse && !options.length) return `<div class="TreeInput-empty">${esc(cfg.empty)}</div>`;
+  return `${reuse}${reuse && options.length ? `<div class="TreeInput-groupLabel">All ${esc(cfg.noun)}</div>` : ''}${list}`;
+}
+
+function reuseFromPreviousMarkup(pi, si, query = '') {
+  const phase = state.draft.phases[pi];
+  const prev = previousEffortPhase(phase);
+  if (!prev || !prev.slots.length) return '';
+  const q = (query || '').trim().toLowerCase();
+  const complete = prev.slots.filter(s => !!(s.grade && String(s.grade).trim()));
+  const items = complete.filter(s => {
+    const who = `${s.grade || ''} ${s.role || ''}`.toLowerCase();
+    return !q || who.includes(q) || (prev.name || '').toLowerCase().includes(q);
+  });
+
+  if (!complete.length) {
+    // Previous phase exists but nothing reusable yet — guide, don't offer a blank link.
+    if (q) return '';
+    return `
+      <div class="TreeInput-groupLabel">Reuse from ${esc(prev.name || 'previous phase')}</div>
+      <div class="TreeInput-empty">Add a grade on ${esc(prev.name || 'the previous phase')} first</div>`;
+  }
+  if (!items.length) return '';
+
+  return `
+    <div class="TreeInput-groupLabel">Reuse from ${esc(prev.name || 'previous phase')}</div>
+    ${items.map(s => {
+      const who = [s.grade, s.role].filter(Boolean).join(' / ');
+      return `<button class="TreeInput-node TreeInput-node--reuse" type="button"
+        onclick="linkSlotToPrevious(${pi}, ${si}, '${prev.id}', '${s.id}')">
+        <span class="SegRow-dot" style="background:${prev.color}" aria-hidden="true"></span>
+        <span>${esc(who)}</span>
+      </button>`;
+    }).join('')}
+  `;
+}
+
+function slotReuseNoteMarkup(pi, si) {
+  const slot = state.draft.phases[pi].slots[si];
+  if (!slotIsLinked(slot)) return '';
+  const sourcePhase = findPhaseById(slot.sameAs.phaseId);
+  const sourceSlot = findSlot(slot.sameAs.phaseId, slot.sameAs.slotId);
+  if (!sourcePhase || !sourceSlot) return '';
+  const who = [sourceSlot.grade, sourceSlot.role].filter(Boolean).join(' / ') || 'resource';
+  return `
+    <div class="SlotReuseNote">
+      <span class="SlotReuseNote-dot" style="background:${sourcePhase.color}" aria-hidden="true"></span>
+      <span class="SlotReuseNote-text">Same as <strong>${esc(sourcePhase.name)}</strong> · ${esc(who)}</span>
+      <button class="SlotReuseNote-unlink" type="button" onclick="unlinkSlot(${pi}, ${si})">Unlink</button>
+    </div>`;
+}
+
+function linkSlotToPrevious(pi, si, phaseId, slotId) {
+  pi = Number(pi); si = Number(si);
+  const slot = state.draft.phases[pi].slots[si];
+  const source = findSlot(phaseId, slotId);
+  if (!slot || !source) return;
+  if (!(source.grade && String(source.grade).trim())) {
+    toast('Set a grade on the previous phase before reusing it');
+    return;
+  }
+  slot.sameAs = { phaseId, slotId };
+  applySlotLink(slot, source);
+  closeAllTreePickers();
+  renderSlotEditor();
+}
+
+function unlinkSlot(pi, si) {
+  const slot = state.draft.phases[pi]?.slots?.[si];
+  if (!slot) return;
+  slot.sameAs = null;
+  renderSlotEditor();
+}
+
+function closeAllTreePickers(exceptKey) {
+  document.querySelectorAll('.TreeInput[data-tree-picker]').forEach(el => {
+    if (exceptKey && el.dataset.treePicker === exceptKey) return;
+    el.classList.remove('is-open');
+    const view = el.querySelector('.TreeInput-treeView');
+    if (view) view.classList.remove('is-visible');
+  });
+}
+
+function openTreePicker(type, pi, si) {
+  const key = `${type}-${pi}-${si}`;
+  closeAllTreePickers(key);
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${key}"]`);
+  if (!root) return;
+  root.classList.add('is-open');
+  const view = root.querySelector('.TreeInput-treeView');
+  const input = root.querySelector('.TreeInput-text');
+  const field = TREE_PICKERS[type].field;
+  const selected = state.draft.phases[pi].slots[si][field] || '';
+  view.innerHTML = treePickerOptionsMarkup(type, selected, input.value === selected ? '' : input.value, pi, si);
+  view.classList.add('is-visible');
+}
+
+function toggleTreePicker(type, pi, si) {
+  const key = `${type}-${pi}-${si}`;
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${key}"]`);
+  if (!root) return;
+  if (root.classList.contains('is-open')) {
+    closeAllTreePickers();
+    return;
+  }
+  openTreePicker(type, pi, si);
+  root.querySelector('.TreeInput-text')?.focus();
+}
+
+function filterTreePicker(type, pi, si, query) {
+  openTreePicker(type, pi, si);
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${type}-${pi}-${si}"]`);
+  if (!root) return;
+  const field = TREE_PICKERS[type].field;
+  const selected = state.draft.phases[pi].slots[si][field] || '';
+  root.querySelector('.TreeInput-treeView').innerHTML = treePickerOptionsMarkup(type, selected, query, pi, si);
+}
+
+function selectTreePickerValue(type, pi, si, value) {
+  pi = Number(pi); si = Number(si);
+  const slot = state.draft.phases[pi].slots[si];
+  if (slotIsLinked(slot)) return;
+  const field = TREE_PICKERS[type].field;
+  slot[`${field}Touched`] = true;
+  // Manual edit breaks any stale link
+  slot.sameAs = null;
+  updateSlot(pi, si, field, value);
+  renderSlotEditor();
+}
+
+function clearTreePickerValue(type, pi, si) {
+  pi = Number(pi); si = Number(si);
+  const slot = state.draft.phases[pi].slots[si];
+  if (slotIsLinked(slot)) return;
+  const field = TREE_PICKERS[type].field;
+  slot[`${field}Touched`] = true;
+  updateSlot(pi, si, field, '');
+  renderSlotEditor();
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${type}-${pi}-${si}"]`);
+  root?.querySelector('.TreeInput-text')?.focus();
+}
+
+function blurTreePicker(type, pi, si) {
+  setTimeout(() => {
+    const root = document.querySelector(`.TreeInput[data-tree-picker="${type}-${pi}-${si}"]`);
+    if (!root || !root.classList.contains('is-open')) return;
+    const input = root.querySelector('.TreeInput-text');
+    const field = TREE_PICKERS[type].field;
+    const current = state.draft.phases[pi].slots[si][field] || '';
+    if (input) input.value = current;
+    closeAllTreePickers();
+  }, 120);
+}
+
+function treePickerKeydown(event, type, pi, si) {
+  const field = TREE_PICKERS[type].field;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.target.value = state.draft.phases[pi].slots[si][field] || '';
+    closeAllTreePickers();
+    event.target.blur();
+  } else if (event.key === 'Enter') {
+    event.preventDefault();
+    const root = document.querySelector(`.TreeInput[data-tree-picker="${type}-${pi}-${si}"]`);
+    const first = root?.querySelector('.TreeInput-node');
+    const label = first?.dataset.value || first?.querySelector('span')?.textContent?.trim();
+    if (label) selectTreePickerValue(type, pi, si, label);
+  }
+}
+
+document.addEventListener('mousedown', (event) => {
+  if (!event.target.closest('.TreeInput[data-tree-picker]')) closeAllTreePickers();
+});
+
+function previousEffortPhase(phase) {
+  const phases = effortPhases();
+  const idx = phases.findIndex(p => p.id === phase.id);
+  return idx > 0 ? phases[idx - 1] : null;
+}
+
+function findPhaseById(phaseId) {
+  return (state.draft.phases || []).find(p => p.id === phaseId);
+}
+
+function findSlot(phaseId, slotId) {
+  const phase = findPhaseById(phaseId);
+  return phase?.slots?.find(s => s.id === slotId) || null;
+}
+
+function slotIsLinked(slot) {
+  return !!(slot && slot.sameAs && slot.sameAs.phaseId && slot.sameAs.slotId);
+}
+
+function applySlotLink(target, source) {
+  target.grade = source.grade || '';
+  target.role = source.role || '';
+  if (source.grade) target.gradeTouched = true;
+  if (source.role) target.roleTouched = true;
+}
+
+function syncSlotLinksFrom(phaseId, slotId, seen = new Set()) {
+  const key = `${phaseId}:${slotId}`;
+  if (seen.has(key)) return;
+  seen.add(key);
+  const source = findSlot(phaseId, slotId);
+  if (!source) return;
+  const sourceReady = !!(source.grade && String(source.grade).trim());
+  effortPhases().forEach(p => {
+    p.slots.forEach(s => {
+      if (s.sameAs?.phaseId === phaseId && s.sameAs?.slotId === slotId) {
+        if (!sourceReady) {
+          // Source lost its grade — drop the link rather than sync blanks.
+          s.sameAs = null;
+          return;
+        }
+        applySlotLink(s, source);
+        syncSlotLinksFrom(p.id, s.id, seen);
+      }
+    });
+  });
+}
+
+function hasSlotLinkDependents(phaseId, slotId) {
+  return effortPhases().some(p =>
+    p.slots.some(s => s.sameAs?.phaseId === phaseId && s.sameAs?.slotId === slotId)
+  );
+}
+
+function linkSourceLabel(slot) {
+  if (!slotIsLinked(slot)) return '';
+  const sourcePhase = findPhaseById(slot.sameAs.phaseId);
+  const sourceSlot = findSlot(slot.sameAs.phaseId, slot.sameAs.slotId);
+  if (!sourcePhase || !sourceSlot) return 'Linked';
+  const who = [sourceSlot.grade, sourceSlot.role].filter(Boolean).join(' / ') || 'resource';
+  return `${sourcePhase.name} · ${who}`;
+}
+
+function toggleWizardTimelineMenu(event) {
+  event.stopPropagation();
+  document.getElementById('addWizardTimelineMenu')?.classList.toggle('is-open');
+}
+
+function closeWizardTimelineMenu() {
+  document.getElementById('addWizardTimelineMenu')?.classList.remove('is-open');
+}
+
+function timelineAddMenuMarkup() {
+  if (isPhaseWorld()) {
+    return `
+      <button class="AddMenu-item" type="button" role="menuitem" onclick="addPhase(); closeWizardTimelineMenu();">
+        <i class="fa-solid fa-layer-group"></i> Phase
+      </button>
+      <button class="AddMenu-item" type="button" role="menuitem" onclick="addBuffer(); closeWizardTimelineMenu();">
+        <i class="fa-regular fa-clock"></i> Buffer
+      </button>`;
+  }
+  return `
+    <button class="AddMenu-item" type="button" role="menuitem" onclick="addRequest(); closeWizardTimelineMenu();">
+      <i class="fa-solid fa-user"></i> Resource request
+    </button>
+    <button class="AddMenu-item" type="button" role="menuitem" onclick="addBuffer(); closeWizardTimelineMenu();">
+      <i class="fa-regular fa-clock"></i> Buffer
+    </button>`;
+}
+
+function renderTimeline() {
+  const intro = document.getElementById('timelineIntro');
+  const hint = document.getElementById('timelineHint');
+  const addPanel = document.getElementById('wizardTimelineAddMenuPanel');
+  if (addPanel) addPanel.innerHTML = timelineAddMenuMarkup();
+
+  if (isPhaseWorld()) {
+    if (intro) intro.textContent = 'Add phases and buffers, then set the resource requests each handoff needs.';
+    if (hint) hint.textContent = 'Drag to reorder. Weight % shares demand hours; buffers add quiet time. Adding a phase seeds its resource requests below.';
+    renderShapeTimeline('wizardTimelineShape');
+    renderSegList('wizardTimelineRows');
+    renderSlotEditor();
+  } else {
+    if (intro) intro.textContent = 'Add resource requests and buffers. Project weights and grades live on the same step.';
+    if (hint) hint.textContent = 'Drag to reorder. Weight % shares demand across the project; buffers add quiet time. Adding a request seeds grade, role, and count below.';
+    renderShapeTimeline('wizardTimelineShape');
+    renderFlatSegList();
+    renderRequestCards();
+  }
+}
+
+function newRequest(weight = 0) {
+  return {
+    id: id('rq'),
+    kind: 'request',
+    grade: 'Senior',
+    role: '',
+    count: 1,
+    weight,
+    durationWeeks: DEFAULT_PHASE_WEEKS,
+    locked: false
+  };
+}
+
+function getRequestSegments(d = state.draft) {
+  return requestItems(d).map(p => ({
+    key: p.id, kind: 'request', name: p.grade || 'Request',
+    weight: Number(p.weight) || 0, locked: !!p.locked,
+    durationWeeks: Number(p.durationWeeks) || DEFAULT_PHASE_WEEKS
+  }));
+}
+
+function applyRequestSegments(segs) {
+  segs.forEach(s => {
+    const p = state.draft.items.find(x => x.id === s.key);
+    if (p && p.kind === 'request') {
+      p.weight = Math.round(s.weight);
+      p.locked = s.locked;
+    }
+  });
+}
+
+function setRequestWeight(key, weight) {
+  const segs = redistribute(getRequestSegments(), key, weight);
+  applyRequestSegments(segs);
+  renderTimeline();
+  updateFooterSummary();
+}
+
+function previewRequestWeight(key, weight) {
+  if (weight === '' || weight == null) return;
+  const segs = redistribute(getRequestSegments(), key, weight);
+  applyRequestSegments(segs);
+  segs.forEach(s => {
+    document.querySelectorAll(`.SegRow[data-seg-key="${s.key}"]`).forEach(row => {
+      const range = row.querySelector('.Range');
+      const pct = row.querySelector('.SegRow-pctInput');
+      if (range) range.value = s.weight;
+      if (pct && document.activeElement !== pct) pct.value = s.weight;
+      else if (pct && s.key === key) pct.value = s.weight;
+    });
+  });
+  renderShapeTimeline('wizardTimelineShape');
+  updateFooterSummary();
+}
+
+function commitRequestWeight(key, weight) {
+  const input = document.querySelector(`.SegRow[data-seg-key="${key}"] .SegRow-pctInput`);
+  if (weight === '' || weight == null) {
+    const current = requestItems().find(p => p.id === key);
+    if (input && current) input.value = current.weight;
+    return;
+  }
+  previewRequestWeight(key, weight);
+}
+
+function toggleRequestLock(key) {
+  const segs = getRequestSegments();
+  const seg = segs.find(s => s.key === key);
+  if (!seg) return;
+  const wouldLock = !seg.locked;
+  if (wouldLock) {
+    const unlockedOthers = segs.filter(s => s.key !== key && !s.locked);
+    if (unlockedOthers.length === 0) {
+      toast('Keep at least one request unlocked');
+      return;
+    }
+  }
+  seg.locked = wouldLock;
+  applyRequestSegments(segs);
+  renderTimeline();
+  updateFooterSummary();
+}
+
+function addRequest() {
+  const d = state.draft;
+  const reqs = requestItems(d);
+  if (!reqs.length) {
+    d.items.push(newRequest(100));
+    renderTimeline();
+    updateFooterSummary();
+    return;
+  }
+  const unlocked = getRequestSegments().filter(s => !s.locked);
+  if (!unlocked.length) {
+    toast('Unlock a request before adding another');
+    return;
+  }
+  const unlockedSum = unlocked.reduce((a, s) => a + s.weight, 0);
+  const starter = Math.min(20, Math.max(5, Math.floor(unlockedSum / (unlocked.length + 1))));
+  const req = newRequest(0);
+  d.items.push(req);
+  applyRequestSegments(redistribute(getRequestSegments(), req.id, starter));
+  renderTimeline();
+  updateFooterSummary();
+}
+
+function removeTimelineItem(itemId) {
+  if (isPhaseWorld()) {
+    removePhase(itemId);
+    return;
+  }
+  const d = state.draft;
+  const index = d.items.findIndex(p => p.id === itemId);
+  if (index === -1) return;
+  const removed = d.items.splice(index, 1)[0];
+  if (removed.kind === 'request') {
+    const segs = getRequestSegments();
+    const unlocked = segs.filter(s => !s.locked);
+    if (unlocked.length && removed.weight) {
+      const give = removed.weight || 0;
+      const base = unlocked.reduce((a, s) => a + s.weight, 0) || unlocked.length;
+      let allocated = 0;
+      unlocked.forEach((s, i) => {
+        if (i === unlocked.length - 1) s.weight += give - allocated;
+        else {
+          const add = Math.round(give * (s.weight / base || 1 / unlocked.length));
+          s.weight += add;
+          allocated += add;
+        }
+      });
+      applyRequestSegments(segs);
+    }
+    if (requestItems(d).length) {
+      const segs2 = getRequestSegments();
+      const sum = segs2.reduce((a, s) => a + s.weight, 0);
+      if (sum !== 100 && segs2.length) {
+        const unlocked2 = segs2.filter(s => !s.locked);
+        const drift = 100 - sum;
+        if (unlocked2.length) unlocked2[unlocked2.length - 1].weight = Math.max(0, unlocked2[unlocked2.length - 1].weight + drift);
+        else segs2[segs2.length - 1].weight = Math.max(0, segs2[segs2.length - 1].weight + drift);
+        applyRequestSegments(segs2);
+      }
+    }
+  }
+  renderTimeline();
+  updateFooterSummary();
+}
+
+function onItemDragStart(event, itemId) {
+  dragState.phaseId = itemId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', itemId);
+  event.currentTarget.classList.add('is-dragging');
+}
+
+function onItemDragOver(event, itemId) {
+  if (!dragState.phaseId || dragState.phaseId === itemId) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.classList.add('is-dropTarget');
+}
+
+function onItemDrop(event, targetId) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('is-dropTarget');
+  const list = isPhaseWorld() ? state.draft.phases : state.draft.items;
+  const from = list.findIndex(p => p.id === dragState.phaseId);
+  const to = list.findIndex(p => p.id === targetId);
+  dragState.phaseId = null;
+  if (from === -1 || to === -1 || from === to) return;
+  list.splice(to, 0, list.splice(from, 1)[0]);
+  refreshTimelineEditors();
+  updateFooterSummary();
+}
+
+function updateRequestField(itemId, key, val) {
+  const item = state.draft.items.find(i => i.id === itemId);
+  if (!item || item.kind !== 'request') return;
+  if (key === 'grade' || key === 'role') item[key] = val;
+  else if (key === 'count') item.count = Math.max(1, Math.round(Number(val) || 1));
+  if (key === 'grade' || key === 'role') {
+    const rowLabel = document.querySelector(`.SegRow[data-seg-key="${itemId}"] .SegRow-requestLabel`);
+    if (rowLabel) {
+      rowLabel.textContent = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
+    }
+    const cardTitle = document.querySelector(`.PhaseCard[data-request-id="${itemId}"] .PhaseCard-title`);
+    if (cardTitle) {
+      const who = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
+      cardTitle.textContent = `${who} · ${item.weight}% · ${item.durationWeeks || 1}w`;
+    }
+    renderShapeTimeline('wizardTimelineShape');
+  }
+}
+
+function flatTreePickerMarkup(type, itemId, value) {
+  const cfg = TREE_PICKERS[type];
+  const selected = value || '';
+  const key = `flat-${type}-${itemId}`;
+  return `
+    <div class="TreeInput" data-tree-picker="${key}" data-picker-type="${type}" data-item-id="${itemId}">
+      <div class="input-group">
+        <input class="Input TreeInput-text"
+          type="text"
+          autocomplete="off"
+          placeholder="${esc(cfg.placeholder)}"
+          value="${esc(selected)}"
+          onfocus="openFlatTreePicker('${type}','${itemId}')"
+          oninput="filterFlatTreePicker('${type}','${itemId}', this.value)"
+          onblur="blurFlatTreePicker('${type}','${itemId}')" />
+        <button class="TreeInput-append" type="button"
+          onmousedown="event.preventDefault()"
+          onclick="toggleFlatTreePicker('${type}','${itemId}')">
+          <i class="${cfg.icon}" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="TreeInput-treeView" onmousedown="event.preventDefault()">
+        ${flatTreeOptionsMarkup(type, selected, '')}
+      </div>
+    </div>`;
+}
+
+function flatTreeOptionsMarkup(type, selected, query) {
+  const cfg = TREE_PICKERS[type];
+  const q = (query || '').trim().toLowerCase();
+  const options = cfg.options().filter(o => !q || o.toLowerCase().includes(q));
+  if (!options.length) return `<div class="TreeInput-empty">${esc(cfg.empty)}</div>`;
+  return options.map(o => `
+    <button class="TreeInput-node${o === selected ? ' is-selected' : ''}" type="button"
+      data-value="${esc(o)}"
+      onclick="selectFlatTreeValue('${type}', this.closest('.TreeInput').dataset.itemId, this.dataset.value)">
+      ${type === 'grade' ? '' : `<i class="${cfg.icon}" aria-hidden="true"></i>`}
+      <span>${esc(o)}</span>
+    </button>`).join('');
+}
+
+function openFlatTreePicker(type, itemId) {
+  const key = `flat-${type}-${itemId}`;
+  closeAllTreePickers(key);
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${key}"]`);
+  if (!root) return;
+  root.classList.add('is-open');
+  const view = root.querySelector('.TreeInput-treeView');
+  const input = root.querySelector('.TreeInput-text');
+  const field = TREE_PICKERS[type].field;
+  const item = state.draft.items.find(i => i.id === itemId);
+  const selected = item?.[field] || '';
+  view.innerHTML = flatTreeOptionsMarkup(type, selected, input.value === selected ? '' : input.value);
+  view.classList.add('is-visible');
+}
+
+function toggleFlatTreePicker(type, itemId) {
+  const key = `flat-${type}-${itemId}`;
+  const root = document.querySelector(`.TreeInput[data-tree-picker="${key}"]`);
+  if (!root) return;
+  if (root.classList.contains('is-open')) { closeAllTreePickers(); return; }
+  openFlatTreePicker(type, itemId);
+  root.querySelector('.TreeInput-text')?.focus();
+}
+
+function filterFlatTreePicker(type, itemId, query) {
+  openFlatTreePicker(type, itemId);
+  const root = document.querySelector(`.TreeInput[data-tree-picker="flat-${type}-${itemId}"]`);
+  if (!root) return;
+  const item = state.draft.items.find(i => i.id === itemId);
+  const selected = item?.[TREE_PICKERS[type].field] || '';
+  root.querySelector('.TreeInput-treeView').innerHTML = flatTreeOptionsMarkup(type, selected, query);
+}
+
+function selectFlatTreeValue(type, itemId, value) {
+  const field = TREE_PICKERS[type].field;
+  updateRequestField(itemId, field, value);
+  closeAllTreePickers();
+  renderTimeline();
+}
+
+function blurFlatTreePicker(type, itemId) {
+  setTimeout(() => {
+    const root = document.querySelector(`.TreeInput[data-tree-picker="flat-${type}-${itemId}"]`);
+    if (!root || !root.classList.contains('is-open')) return;
+    const input = root.querySelector('.TreeInput-text');
+    const item = state.draft.items.find(i => i.id === itemId);
+    const current = item?.[TREE_PICKERS[type].field] || '';
+    if (input) input.value = current;
+    closeAllTreePickers();
+  }, 120);
+}
+
+function requestTimelineRowMarkup(item, requestNumber) {
+  const weeks = Number(item.durationWeeks) || 1;
+  if (item.kind === 'buffer') {
+    return `
+    <div class="SegRow SegRow--buffer" data-seg-key="${item.id}" draggable="false"
+      ondragstart="onItemDragStart(event, '${item.id}')"
+      ondragover="onItemDragOver(event, '${item.id}')"
+      ondragleave="onPhaseDragLeave(event)"
+      ondrop="onItemDrop(event, '${item.id}')"
+      ondragend="onPhaseDragEnd(event)">
+      <button class="SegRow-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder"
+        onmousedown="phaseDragArm(event)" onmouseup="phaseDragDisarm(event)">
+        <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+      </button>
+      <div class="SegRow-name">
+        <i class="fa-regular fa-clock SegRow-bufferIcon" aria-hidden="true"></i>
+        <span>Buffer</span>
+      </div>
+      ${durationCell(item.id, weeks, 'Buffer')}
+      <span></span><span></span><span></span>
+      <button class="Btn-iconOnly" type="button" title="Remove buffer"
+        onclick="removeTimelineItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>`;
+  }
+
+  const label = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
+  return `
+    <div class="SegRow ${item.locked ? 'is-locked' : ''}" data-seg-key="${item.id}" draggable="false"
+      ondragstart="onItemDragStart(event, '${item.id}')"
+      ondragover="onItemDragOver(event, '${item.id}')"
+      ondragleave="onPhaseDragLeave(event)"
+      ondrop="onItemDrop(event, '${item.id}')"
+      ondragend="onPhaseDragEnd(event)">
+      <button class="SegRow-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder"
+        onmousedown="phaseDragArm(event)" onmouseup="phaseDragDisarm(event)">
+        <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+      </button>
+      <div class="SegRow-phaseIdentity">
+        <span class="SegRow-number" aria-label="Request ${requestNumber}">${requestNumber}</span>
+        <span class="SegRow-dot" style="background:var(--surface-emphasis)" aria-hidden="true"></span>
+        <span class="SegRow-requestLabel">${esc(label)}</span>
+      </div>
+      ${durationCell(item.id, weeks, item.grade || 'Request')}
+      <input class="Range" type="range" min="0" max="100" value="${item.weight}"
+        aria-label="Project share"
+        ${item.locked ? 'disabled' : ''}
+        oninput="previewRequestWeight('${item.id}', this.value)" />
+      <div class="input-group">
+        <input class="Input SegRow-pctInput" type="number" min="0" max="100" value="${item.weight}"
+          aria-label="Project share percent"
+          ${item.locked ? 'disabled' : ''}
+          oninput="previewRequestWeight('${item.id}', this.value)"
+          onchange="commitRequestWeight('${item.id}', this.value)" />
+        <span class="input-group-text">%</span>
+      </div>
+      <button class="Btn-iconOnly ${item.locked ? 'is-locked' : ''}" type="button"
+        title="${item.locked ? 'Unlock' : 'Lock'}"
+        onclick="toggleRequestLock('${item.id}')">
+        <i class="fa-solid fa-${item.locked ? 'lock' : 'lock-open'}"></i>
+      </button>
+      <button class="Btn-iconOnly" type="button" title="Remove request"
+        onclick="removeTimelineItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>
+    </div>`;
+}
+
+function renderFlatSegList() {
+  const d = state.draft;
+  let requestNumber = 0;
+  const rows = (d.items || []).map(item => {
+    if (item.kind === 'request') requestNumber += 1;
+    return requestTimelineRowMarkup(item, requestNumber);
+  });
+  const empty = (d.items || []).length ? '' : `
+    <div class="SegEmpty">
+      <div class="Strong" style="margin-bottom:4px;">No demand yet</div>
+      <div>Add a resource request for demand, or a buffer for quiet time between requests.</div>
+    </div>`;
+  const el = document.getElementById('wizardTimelineRows');
+  if (el) el.innerHTML = empty + rows.join('');
+}
+
+function renderRequestCards() {
+  const reqs = requestItems();
+  if (!reqs.length) {
+    document.getElementById('slotEditor').innerHTML = `
+      <div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
+        <div>Add a resource request above to set grade, role, and count.</div>
+      </div>`;
+    return;
+  }
+  document.getElementById('slotEditor').innerHTML = reqs.map(item => {
+    const who = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
+    return `
+    <div class="PhaseCard" data-request-id="${item.id}">
+      <div class="PhaseCard-head">
+        <span class="SegRow-dot" style="background:var(--surface-emphasis)"></span>
+        <span class="PhaseCard-title">${esc(who)} · ${item.weight}% · ${item.durationWeeks || 1}w</span>
+      </div>
+      <div class="PhaseCard-body">
+        <table class="SlotTable">
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Role <span class="Muted">(optional)</span></th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>${flatTreePickerMarkup('grade', item.id, item.grade)}</td>
+              <td>${flatTreePickerMarkup('role', item.id, item.role)}</td>
+              <td><input class="Input SlotCountInput" type="number" min="1" value="${item.count}"
+                oninput="updateRequestField('${item.id}','count',this.value)" /></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSlotEditor() {
+  const phases = effortPhases();
+  if (!phases.length) {
+    document.getElementById('slotEditor').innerHTML = `
+      <div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
+        <div>Add a phase above to seed its resource requests.</div>
+      </div>`;
+    return;
+  }
+  document.getElementById('slotEditor').innerHTML = phases.map((p) => {
+    const pi = state.draft.phases.indexOf(p);
+    return `
+    <div class="PhaseCard">
+      <div class="PhaseCard-head">
+        <span class="SegRow-dot" style="background:${p.color}"></span>
+        <span class="PhaseCard-title">${esc(p.name)} · ${p.weight}% · ${p.durationWeeks || 1}w</span>
+        <button class="Btn Btn--sm" type="button" onclick="addSlot(${pi})"><i class="fa-solid fa-plus"></i> Slot</button>
+      </div>
+      <div class="PhaseCard-body">
+        <table class="SlotTable">
+          <thead>
+            <tr>
+              <th>Grade ${p.slots.every(s => s.grade && s.gradeTouched)
+                ? '<i class="fas fa-check ValidIcon" aria-label="Valid"></i>'
+                : ''}</th>
+              <th>Role <span class="Muted">(optional)</span></th>
+              <th>Count</th>
+              <th>Share % <span class="Muted">(auto-balances)</span></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${p.slots.map((s, si) => {
+              const linked = slotIsLinked(s);
+              return `
+              <tr class="${linked ? 'is-linked' : ''}">
+                <td>${treePickerMarkup('grade', pi, si, s.grade, linked)}</td>
+                <td>${treePickerMarkup('role', pi, si, s.role, linked)}</td>
+                <td><input class="Input SlotCountInput" type="number" min="1" value="${s.count}"
+                  data-pi="${pi}" data-si="${si}"
+                  oninput="updateSlot(${pi},${si},'count',this.value)" /></td>
+                <td>
+                  <input class="Input SlotShareInput" type="number" min="0" max="100" placeholder="—"
+                    data-pi="${pi}" data-si="${si}"
+                    value="${s.sharePercent ?? ''}"
+                    oninput="updateSlotShare(${pi},${si},this.value)" />
+                </td>
+                <td><button class="Btn-iconOnly" type="button" onclick="removeSlot(${pi},${si})" ${p.slots.length <= 1 ? 'disabled' : ''}><i class="fa-solid fa-trash"></i></button></td>
+              </tr>
+              ${linked ? `
+              <tr class="SlotLinkRow">
+                <td colspan="5">${slotReuseNoteMarkup(pi, si)}</td>
+              </tr>` : ''}`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  }).join('');
+}
+
+function updateSlotShare(pi, si, val) {
+  const slots = state.draft.phases[pi].slots;
+  if (val === '' || val == null) {
+    slots.forEach(s => { s.sharePercent = null; });
+    syncShareInputs(pi, -1);
+    return;
+  }
+  redistributeShares(slots, si, val);
+  syncShareInputs(pi, si);
+}
+
+function updateSlot(pi, si, key, val) {
+  const phase = state.draft.phases[pi];
+  const s = phase.slots[si];
+  if (slotIsLinked(s) && (key === 'grade' || key === 'role')) return;
+  if (key === 'grade' || key === 'role') s[key] = val;
+  else s[key] = Number(val);
+  if (key === 'grade' || key === 'role') {
+    syncSlotLinksFrom(phase.id, s.id);
+    if (hasSlotLinkDependents(phase.id, s.id)) renderSlotEditor();
+  }
+}
+
+function addSlot(pi) {
+  const slots = state.draft.phases[pi].slots;
+  const usesShares = phaseUsesShares(slots);
+  const slot = { id: id('sl'), grade: 'Senior', role: 'Senior Tax Analyst', count: 1, sharePercent: null, sameAs: null };
+  slots.push(slot);
+  if (usesShares) {
+    const starter = Math.min(20, Math.max(5, Math.floor(100 / slots.length)));
+    redistributeShares(slots, slots.length - 1, starter);
+  }
+  renderSlotEditor();
+}
+
+function removeSlot(pi, si) {
+  const phase = state.draft.phases[pi];
+  const slots = phase.slots;
+  if (slots.length <= 1) return;
+  const removed = slots[si];
+  const removedShare = removed.sharePercent;
+  const wasUsingShares = phaseUsesShares(slots);
+  slots.splice(si, 1);
+  // Clear inbound links to the removed slot
+  effortPhases().forEach(p => {
+    p.slots.forEach(s => {
+      if (s.sameAs?.phaseId === phase.id && s.sameAs?.slotId === removed.id) s.sameAs = null;
+    });
+  });
+  if (wasUsingShares && removedShare != null) {
+    const last = slots[slots.length - 1];
+    last.sharePercent = (Number(last.sharePercent) || 0) + Number(removedShare);
+    redistributeShares(slots, slots.length - 1, last.sharePercent);
+  } else if (wasUsingShares) {
+    equaliseShares(slots);
+  }
+  renderSlotEditor();
+}
+
+function validateShares(phases) {
+  // Shares either unused (equal split) or always kept at 100% by redistributeShares
+  for (const p of phases) {
+    const shares = p.slots.map(s => s.sharePercent);
+    const any = shares.some(v => v != null && v !== '');
+    const all = shares.every(v => v != null && v !== '');
+    if (any && !all) return false;
+    if (all && shares.reduce((a, b) => a + Number(b), 0) !== 100) return false;
+  }
+  return true;
+}
+
+function validateSharesUI() {
+  return validateShares(effortPhases());
+}
+
+/* ---------- Review ---------- */
+function renderReview() {
+  readWizardForm();
+  const d = state.draft;
+  const timelineStep = panelStepIndex('timeline');
+  let ready, sum, readyLabel;
+
+  if (isPhaseWorld(d)) {
+    const phases = effortPhases(d);
+    const buffers = (d.phases || []).filter(p => p.kind === 'buffer');
+    sum = phases.reduce((a, s) => a + (Number(s.weight) || 0), 0);
+    const gradesOk = phases.every(p => (p.slots || []).every(s => s.grade && String(s.grade).trim()));
+    ready = sum === 100 && phases.length && validateShares(phases) && gradesOk && !!d.name;
+    readyLabel = ready
+      ? `Ready to publish · ${sum}% effort · ${phases.length} handoff${phases.length === 1 ? '' : 's'}${buffers.length ? ` · ${buffers.length} buffer${buffers.length === 1 ? '' : 's'}` : ''} · ${timelineWeeks(d)}w`
+      : 'Return to Timeline to fix the template before publishing';
+  } else {
+    const reqs = requestItems(d);
+    const buffers = (d.items || []).filter(p => p.kind === 'buffer');
+    sum = reqs.reduce((a, s) => a + (Number(s.weight) || 0), 0);
+    ready = sum === 100 && reqs.length && reqs.every(r => r.grade && String(r.grade).trim()) && !!d.name;
+    readyLabel = ready
+      ? `Ready to publish · ${sum}% project demand · ${reqs.length} request${reqs.length === 1 ? '' : 's'}${buffers.length ? ` · ${buffers.length} buffer${buffers.length === 1 ? '' : 's'}` : ''} · ${timelineWeeks(d)}w`
+      : 'Return to Timeline to fix the template before publishing';
+  }
+
+  const structureBody = isPhaseWorld(d)
+    ? (d.phases || []).map(p => {
+        if (p.kind === 'buffer') {
+          return `<div class="ReviewPhase">
+            <div class="ReviewPhase-name">
+              <i class="fa-regular fa-clock SegRow-bufferIcon" aria-hidden="true"></i>
+              <span>Buffer · ${p.durationWeeks || 1}w</span>
+            </div>
+            <div class="ReviewSlots"><div class="ReviewSlot">Timing only</div></div>
+          </div>`;
+        }
+        return `<div class="ReviewPhase">
+          <div class="ReviewPhase-name">
+            <span class="SegRow-dot" style="background:${p.color}"></span>
+            <span>${esc(p.name)} · ${p.weight}% · ${p.durationWeeks || 1}w</span>
+          </div>
+          <div class="ReviewSlots">
+            ${(p.slots || []).map(s => `
+              <div class="ReviewSlot">
+                ${slotIsLinked(s) ? `<i class="fa-solid fa-link" aria-hidden="true" title="${esc(linkSourceLabel(s))}"></i> ` : ''}
+                ${esc(s.grade || 'Any grade')}${s.role ? ` / ${esc(s.role)}` : ''} × ${s.count}
+                · ${s.sharePercent != null ? `${s.sharePercent}% share` : 'equal split'}
+                ${slotIsLinked(s) ? `<span class="Muted"> · ${esc(linkSourceLabel(s))}</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }).join('')
+    : (d.items || []).map(p => {
+        if (p.kind === 'buffer') {
+          return `<div class="ReviewPhase">
+            <div class="ReviewPhase-name">
+              <i class="fa-regular fa-clock SegRow-bufferIcon" aria-hidden="true"></i>
+              <span>Buffer · ${p.durationWeeks || 1}w</span>
+            </div>
+            <div class="ReviewSlots"><div class="ReviewSlot">Timing only</div></div>
+          </div>`;
+        }
+        const who = [p.grade, p.role].filter(Boolean).join(' / ') || 'Resource request';
+        return `<div class="ReviewPhase">
+          <div class="ReviewPhase-name">
+            <span class="SegRow-dot" style="background:var(--surface-emphasis)"></span>
+            <span>${esc(who)} · ${p.weight}% · ${p.durationWeeks || 1}w · ×${p.count}</span>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('reviewSummary').innerHTML = `
+    <div class="ReviewMeta">
+      <div class="ReviewMeta-copy">
+        <h3 class="ReviewMeta-title">${esc(d.name || '(unnamed)')}</h3>
+        <div class="ReviewMeta-detail">${isPhaseWorld(d) ? 'With phases' : 'Without phases'}${d.returnType ? ` · ${esc(d.returnType)}` : ''} · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}</div>
+      </div>
+    </div>
+
+    <div class="ShapePreview">
+      <div class="ShapePreview-head">
+        <h3 class="ShapePreview-title">Project shape</h3>
+      </div>
+      <div class="ShapeTimeline">${shapeTimelineMarkup(d)}</div>
+    </div>
+
+    <section class="ReviewSection" aria-labelledby="reviewStructureTitle">
+      <div class="ReviewSection-head">
+        <div class="ReviewSection-title" id="reviewStructureTitle">${isPhaseWorld(d) ? 'Handoffs and demand' : 'Requests and buffers'}</div>
+        <button class="Btn Btn--sm" type="button" onclick="onStepperClick(${timelineStep})">Edit timeline</button>
+      </div>
+      ${structureBody}
+    </section>
+
+    <div class="Banner ${ready ? 'Banner--success' : 'Banner--danger'}" style="margin-bottom:0;">
+      <i class="fa-solid ${ready ? 'fa-check' : 'fa-triangle-exclamation'}" aria-hidden="true"></i>
+      <div>${readyLabel}</div>
+    </div>
+  `;
+}
+
+function wizardNav(dir) {
+  readWizardForm();
+  const steps = wizardSteps();
+  const panel = currentWizardPanel();
+  if (dir === 1) {
+    if (panel === 'details') {
+      if (!state.draft.name) {
+        const field = document.getElementById('wp-name');
+        field.setAttribute('aria-invalid', 'true');
+        document.getElementById('nameError').classList.remove('hidden');
+        field.focus();
+        return;
+      }
+      state.wizardStep += 1;
+    } else if (panel === 'timeline') {
+      if (!validateTimelineStep()) return;
+      state.wizardStep += 1;
+    } else {
+      publishDraft();
+      return;
+    }
+  } else {
+    state.wizardStep = Math.max(1, state.wizardStep - 1);
+  }
+  if (state.wizardStep > steps.length) state.wizardStep = steps.length;
+  renderWizard();
+}
+
+function validateTimelineStep() {
+  if (isPhaseWorld()) {
+    if (!effortPhases().length) { toast('Add at least one phase'); return false; }
+    if (effortPhases().some(p => !p.name)) { toast('Choose a phase trait for every phase'); return false; }
+    if (!shapeSumOk()) { toast('Phase shares must total 100%'); return false; }
+    if (!validateSharesUI()) { toast('Slot shares must sum to 100% or be left blank'); return false; }
+    const missingGrade = effortPhases().some(p =>
+      (p.slots || []).some(s => !(s.grade && String(s.grade).trim()))
+    );
+    if (missingGrade) { toast('Choose a grade for every resource request'); return false; }
+    return true;
+  }
+  if (!requestItems().length) { toast('Add at least one resource request'); return false; }
+  if (!shapeSumOk()) { toast('Request shares must total 100%'); return false; }
+  if (requestItems().some(r => !(r.grade && String(r.grade).trim()))) {
+    toast('Choose a grade for every resource request');
+    return false;
+  }
+  return true;
+}
+
+function publishDraft() {
+  readWizardForm();
+  const d = state.draft;
+  if (!d.name || !shapeSumOk()) {
+    toast('Fix validation before publishing');
+    return;
+  }
+  if (isPhaseWorld(d)) {
+    if (!validateShares(effortPhases()) || effortPhases().some(p => !p.name)) {
+      toast('Fix validation before publishing');
+      return;
+    }
+    if (effortPhases().some(p => (p.slots || []).some(s => !(s.grade && String(s.grade).trim())))) {
+      toast('Fix validation before publishing');
+      return;
+    }
+  } else if (requestItems(d).some(r => !(r.grade && String(r.grade).trim()))) {
+    toast('Fix validation before publishing');
+    return;
+  }
+  if (d._editing) {
+    const existing = state.catalogue.find(t => t.id === d.id);
+    if (existing) {
+      existing.version += 1;
+      existing.name = d.name;
+      existing.returnType = d.returnType;
+      existing.phaseWorld = d.phaseWorld !== false;
+      existing.phases = JSON.parse(JSON.stringify(d.phases || []));
+      existing.items = JSON.parse(JSON.stringify(d.items || []));
+      existing.status = 'published';
+      toast(`Saved as new version v${existing.version}`);
+    }
+  } else {
+    const t = JSON.parse(JSON.stringify(d));
+    delete t._editing;
+    t.status = 'published';
+    t.version = 1;
+    state.catalogue.unshift(t);
+    toast('Published demand template v1');
+  }
+  state.draft = null;
+  showScreen('catalogue');
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('#addTimelineMenu')) closeAddMenu();
+  if (!event.target.closest('#addWizardTimelineMenu')) closeWizardTimelineMenu();
+});
+
+renderCatalogue();
+showScreen('catalogue');
+</script>
+
+<script src="../config.js"></script>
+<script src="../shared/feedback-store.js"></script>
+<script src="../shared/feedback.js" defer></script>
+</body>
+</html>
