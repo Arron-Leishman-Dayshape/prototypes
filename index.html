@@ -159,6 +159,10 @@
       color: var(--accent);
       background: var(--accent-soft);
     }
+    .actions button:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
     .actions button.is-copied {
       border-color: var(--accent);
       color: var(--accent);
@@ -504,6 +508,10 @@
             });
             return;
           }
+          if (actionBtn.classList.contains('download-btn')) {
+            downloadMockHtml(actionBtn);
+            return;
+          }
           if (actionBtn.classList.contains('feedback-btn')) {
             var fb = actionBtn.getAttribute('data-feedback-href');
             if (fb) location.href = fb;
@@ -574,14 +582,54 @@
         }
       }
 
+      function downloadMockHtml(btn) {
+        var path = btn.getAttribute('data-download-path') || '';
+        var filename = btn.getAttribute('data-download-name') || 'prototype.html';
+        var label = btn.querySelector('.download-label');
+        var prev = label ? label.textContent : '';
+        if (label) label.textContent = 'Downloading…';
+        btn.disabled = true;
+
+        fetch(path, { cache: 'no-store' })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Download failed');
+            return res.blob();
+          })
+          .then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            if (label) label.textContent = 'Downloaded';
+            setTimeout(function () {
+              if (label) label.textContent = prev || 'Download HTML';
+              btn.disabled = false;
+            }, 1400);
+          })
+          .catch(function () {
+            // Fallback: open file in a new tab if blob download blocked
+            window.open(path, '_blank', 'noopener');
+            if (label) label.textContent = prev || 'Download HTML';
+            btn.disabled = false;
+          });
+      }
+
       function actionsMarkup(item) {
         var key = access.configuredKey();
         var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id) + (key ? '&key=' + encodeURIComponent(key) : '');
         var shareUrl = absoluteUrl(item.path);
+        var fileName = String(item.path || '').split('/').pop() || (item.id + '.html');
         return (
           '<div class="actions">' +
             '<button type="button" class="share-btn" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
               '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i> <span class="share-label">Share</span>' +
+            '</button>' +
+            '<button type="button" class="download-btn" data-download-path="' + escapeAttr(item.path) + '" data-download-name="' + escapeAttr(fileName) + '">' +
+              '<i class="fa-solid fa-download" aria-hidden="true"></i> <span class="download-label">Download HTML</span>' +
             '</button>' +
             '<button type="button" class="feedback-btn" data-feedback-href="' + escapeAttr(feedbackHref) + '">' +
               '<i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback' +
