@@ -14,5 +14,13 @@
     "path": "mocks/demand-profile-templates.html",
     "status": "active",
     "updated": "2026-08-07"
+  },
+  {
+    "id": "portfolios-v3",
+    "title": "Portfolio Views",
+    "description": "Create/edit portfolios, dynamic filters, Performance tab with mixed economics n/a suppression.",
+    "path": "mocks/portfolios-v3.html",
+    "status": "active",
+    "updated": "2026-08-07"
   }
 ]
