@@ -1,0 +1,10 @@
+[
+  {
+    "id": "practitioner-kanban",
+    "title": "Practitioner Kanban",
+    "description": "Tax practitioner board — bookings, defer, capacity, week check-in.",
+    "path": "mocks/practitioner-kanban.html",
+    "status": "active",
+    "updated": "2026-08-06"
+  }
+]

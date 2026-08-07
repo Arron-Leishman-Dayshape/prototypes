@@ -1,0 +1,158 @@
+/* Floating feedback widget — include on every mock page */
+.ProtoFeedback-launch {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: #1a1d26;
+  color: #fff;
+  font: 600 14px/1 "Open Sans", system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(26, 29, 38, 0.28);
+}
+.ProtoFeedback-launch:hover { background: #2c3140; }
+.ProtoFeedback-launch i { font-size: 14px; }
+
+.ProtoFeedback-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 76px;
+  z-index: 2147483001;
+  width: min(360px, calc(100vw - 32px));
+  background: #fff;
+  color: #1a1d26;
+  border: 1px solid #e2e3e9;
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(26, 29, 38, 0.2);
+  font-family: "Open Sans", system-ui, sans-serif;
+  overflow: hidden;
+}
+.ProtoFeedback-panel[hidden] { display: none !important; }
+
+.ProtoFeedback-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 0;
+}
+.ProtoFeedback-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.ProtoFeedback-sub {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #6a708f;
+  line-height: 1.4;
+}
+.ProtoFeedback-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #6a708f;
+  cursor: pointer;
+  font-size: 16px;
+}
+.ProtoFeedback-close:hover { background: #f3f4f6; color: #1a1d26; }
+
+.ProtoFeedback-body { padding: 14px 16px 16px; display: grid; gap: 12px; }
+.ProtoFeedback-label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4c5172;
+}
+.ProtoFeedback-label input,
+.ProtoFeedback-label textarea,
+.ProtoFeedback-label select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #babfd1;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: 400 14px/1.4 "Open Sans", system-ui, sans-serif;
+  color: #1a1d26;
+  background: #fff;
+}
+.ProtoFeedback-label textarea { min-height: 96px; resize: vertical; }
+.ProtoFeedback-label input:focus,
+.ProtoFeedback-label textarea:focus,
+.ProtoFeedback-label select:focus {
+  outline: none;
+  border-color: #4f3fa0;
+  box-shadow: 0 0 0 0.2rem rgba(79, 63, 160, 0.25);
+}
+
+.ProtoFeedback-rating {
+  display: flex;
+  gap: 6px;
+}
+.ProtoFeedback-rating button {
+  flex: 1;
+  height: 36px;
+  border: 1px solid #babfd1;
+  border-radius: 6px;
+  background: #fff;
+  color: #4c5172;
+  font: 600 13px/1 "Open Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+.ProtoFeedback-rating button.is-selected,
+.ProtoFeedback-rating button:hover {
+  border-color: #4f3fa0;
+  color: #4f3fa0;
+  background: #f0effb;
+}
+
+.ProtoFeedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 4px;
+}
+.ProtoFeedback-actions button {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font: 600 14px/1 "Open Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+.ProtoFeedback-cancel {
+  border: 1px solid #4f3fa0;
+  background: #fff;
+  color: #4f3fa0;
+}
+.ProtoFeedback-submit {
+  border: 0;
+  background: #4f3fa0;
+  color: #fff;
+}
+.ProtoFeedback-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.ProtoFeedback-status {
+  margin: 0;
+  font-size: 12px;
+  color: #6a708f;
+  min-height: 1.2em;
+}
+.ProtoFeedback-status.is-ok { color: #078138; }
+.ProtoFeedback-status.is-err { color: #a3003c; }
+
+@media (max-width: 480px) {
+  .ProtoFeedback-launch { right: 12px; bottom: 12px; }
+  .ProtoFeedback-panel { right: 12px; bottom: 64px; }
+}
