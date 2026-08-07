@@ -31,6 +31,8 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 <script src="../config.js"></script>
 <script src="../shared/access.js"></script>
 <script src="../shared/feedback-store.js"></script>
+<script src="../shared/telemetry-store.js"></script>
+<script src="../shared/telemetry.js" defer></script>
 <script src="../shared/feedback.js" defer></script>
 ```
 

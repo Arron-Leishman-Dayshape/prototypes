@@ -66,9 +66,13 @@ alter table feedback
 
 (Also in `supabase-screenshot.sql`.)
 
+### First-party heatmaps & sessions
+
+Mocks record clicks, scroll depth, and sessions automatically. Run `supabase-telemetry.sql` once in Supabase so data syncs across reviewers. Insights → Heatmaps / Sessions then show that data (no Clarity required).
+
 ### Export
 
-On each prototype’s feedback page, use **Export thread** to download a self-contained HTML file (comments + screenshots).
+On each prototype’s Insights page, use **Export comments** to download a self-contained HTML file (comments + screenshots).
 
 ## Add a mock
 

@@ -240,7 +240,54 @@
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
+      margin-top: 12px;
     }
+    .heat-stage {
+      position: relative;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3f4f6;
+      min-height: 420px;
+    }
+    .heat-stage iframe {
+      display: block;
+      width: 100%;
+      height: 640px;
+      border: 0;
+      background: #fff;
+      pointer-events: none;
+    }
+    .heat-stage canvas {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .heat-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin: 0 0 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .session-list { display: grid; gap: 8px; margin-top: 8px; }
+    .session-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafafb;
+    }
+    .session-row strong { display: block; margin-bottom: 4px; }
+    .session-row span { color: var(--muted); font-size: 0.85rem; }
 
     .lightbox {
       position: fixed;
@@ -315,11 +362,26 @@
     </section>
 
     <section class="tab-panel" id="panel-heatmaps" data-panel="heatmaps" hidden>
-      <div class="panel-card" id="heatmapsCard"></div>
+      <div class="panel-card">
+        <h2>Click heatmap</h2>
+        <p>Built-in tracking from this prototype — no Clarity required. Open the mock (shared links count) to collect clicks.</p>
+        <div class="heat-meta" id="heatMeta">Loading…</div>
+        <div class="heat-stage" id="heatStage">
+          <iframe id="heatFrame" title="Prototype preview" sandbox="allow-same-origin allow-scripts"></iframe>
+          <canvas id="heatCanvas"></canvas>
+        </div>
+        <div class="panel-actions">
+          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh data</button>
+        </div>
+      </div>
     </section>
 
     <section class="tab-panel" id="panel-sessions" data-panel="sessions" hidden>
-      <div class="panel-card" id="sessionsCard"></div>
+      <div class="panel-card">
+        <h2>Sessions</h2>
+        <p>Each visit gets a session with clicks, scroll depth, and rough duration. Full video replay isn’t included yet — this is the lightweight first-party view.</p>
+        <div id="sessionsList" class="session-list"><div class="empty">Loading sessions…</div></div>
+      </div>
     </section>
 
     <section class="tab-panel" id="panel-overview" data-panel="overview" hidden>
@@ -337,12 +399,23 @@
           <p class="stat-value" id="statShots">—</p>
         </div>
       </div>
+      <div class="stats">
+        <div class="stat">
+          <p class="stat-label">Sessions</p>
+          <p class="stat-value" id="statSessions">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">Clicks</p>
+          <p class="stat-value" id="statClicks">—</p>
+        </div>
+        <div class="stat">
+          <p class="stat-label">Avg scroll depth</p>
+          <p class="stat-value" id="statScroll">—</p>
+        </div>
+      </div>
       <div class="panel-card">
         <h2>What this overview covers</h2>
-        <p>Comment stats come from this prototype’s feedback thread. Heatmaps and session replays live in Microsoft Clarity once you add a project ID.</p>
-        <div class="panel-actions">
-          <a class="btn-ghost" id="overviewClarity" href="https://clarity.microsoft.com" target="_blank" rel="noopener">Open Clarity</a>
-        </div>
+        <p>Comments come from the feedback widget. Heatmaps and sessions are first-party telemetry collected on the mock itself.</p>
       </div>
     </section>
   </main>
@@ -354,6 +427,7 @@
   <script src="config.js"></script>
   <script src="shared/access.js"></script>
   <script src="shared/feedback-store.js"></script>
+  <script src="shared/telemetry-store.js"></script>
   <script>
     (function () {
       if (!window.PrototypesAccess.requireInternalAccess()) return;
@@ -371,13 +445,14 @@
       var lightbox = document.getElementById('lightbox');
       var lightboxImg = document.getElementById('lightboxImg');
       var store = window.PrototypesFeedbackStore;
+      var telemetry = window.PrototypesTelemetry;
       var access = window.PrototypesAccess;
       var cfg = window.PROTOTYPES_CONFIG || {};
       var threadItems = [];
+      var telemetryItems = [];
       var threadTitle = id;
       var mockPath = '';
       var hubHref = 'index.html' + (access.configuredKey() ? ('?key=' + encodeURIComponent(access.configuredKey())) : '');
-      var clarityId = (cfg.clarityId || '').trim();
 
       document.querySelectorAll('a[href="index.html"]').forEach(function (a) {
         a.href = hubHref;
@@ -392,59 +467,128 @@
         return;
       }
 
-      function mockAbsoluteUrl() {
-        if (!mockPath) return '';
-        try { return new URL(mockPath, location.href).href; } catch (e) { return mockPath; }
-      }
-
-      function clarityProjectUrl(section) {
-        if (!clarityId) return 'https://clarity.microsoft.com';
-        // Project dashboard; filters for URL happen inside Clarity UI.
-        var base = 'https://clarity.microsoft.com/projects/view/' + encodeURIComponent(clarityId) + '/';
-        if (section === 'recordings') return base + 'recordings';
-        if (section === 'heatmaps') return base + 'heatmaps';
-        return base + 'dashboard';
-      }
-
-      function renderTelemetryCards() {
-        var url = mockAbsoluteUrl();
-        var heat = document.getElementById('heatmapsCard');
-        var sessions = document.getElementById('sessionsCard');
-        var overviewClarity = document.getElementById('overviewClarity');
-
-        if (clarityId) {
-          heat.innerHTML =
-            '<h2>Heatmaps</h2>' +
-            '<p>Click and scroll heatmaps for this mock are in Microsoft Clarity. Open Clarity, then filter by this prototype URL:</p>' +
-            '<p><code style="font-size:0.85em;word-break:break-all">' + escapeHtml(url || 'Open the prototype once so traffic starts flowing') + '</code></p>' +
-            '<div class="panel-actions">' +
-              '<a class="btn-primary" href="' + escapeAttr(clarityProjectUrl('heatmaps')) + '" target="_blank" rel="noopener">Open heatmaps in Clarity</a>' +
-              (url ? '<button type="button" class="btn-ghost" data-copy-url="' + escapeAttr(url) + '">Copy mock URL</button>' : '') +
-            '</div>';
-
-          sessions.innerHTML =
-            '<h2>Session replays</h2>' +
-            '<p>Watch how reviewers moved through this mock. In Clarity, open Recordings and filter to the same URL.</p>' +
-            '<div class="panel-actions">' +
-              '<a class="btn-primary" href="' + escapeAttr(clarityProjectUrl('recordings')) + '" target="_blank" rel="noopener">Open sessions in Clarity</a>' +
-              (url ? '<button type="button" class="btn-ghost" data-copy-url="' + escapeAttr(url) + '">Copy mock URL</button>' : '') +
-            '</div>';
-          overviewClarity.href = clarityProjectUrl('dashboard');
-        } else {
-          var setup =
-            '<h2>Connect Microsoft Clarity</h2>' +
-            '<p>Heatmaps and session replays need a free Clarity project. Once connected, these tabs deep-link into the right views.</p>' +
-            '<ol>' +
-              '<li>Create a project at <a href="https://clarity.microsoft.com" target="_blank" rel="noopener">clarity.microsoft.com</a></li>' +
-              '<li>Copy the project ID into <code>config.js</code> as <code>clarityId</code></li>' +
-              '<li>Push, then open the mock a few times so traffic appears</li>' +
-            '</ol>' +
-            '<div class="panel-actions">' +
-              '<a class="btn-primary" href="https://clarity.microsoft.com" target="_blank" rel="noopener">Set up Clarity</a>' +
-            '</div>';
-          heat.innerHTML = setup.replace('<h2>Connect Microsoft Clarity</h2>', '<h2>Heatmaps</h2>');
-          sessions.innerHTML = setup.replace('<h2>Connect Microsoft Clarity</h2>', '<h2>Sessions</h2>');
+      function loadTelemetry() {
+        if (!telemetry) {
+          document.getElementById('heatMeta').textContent = 'Telemetry script missing.';
+          return Promise.resolve();
         }
+        return telemetry.list(id).then(function (result) {
+          telemetryItems = result.items || [];
+          renderHeatmap(telemetryItems);
+          renderSessions(telemetryItems);
+          renderTelemetryOverview(telemetryItems);
+        });
+      }
+
+      function renderHeatmap(items) {
+        var clicks = (items || []).filter(function (e) {
+          return e.eventType === 'click' && e.x != null && e.y != null;
+        });
+        var sessions = telemetry ? telemetry.summarizeSessions(items) : [];
+        document.getElementById('heatMeta').textContent =
+          clicks.length + ' clicks · ' + sessions.length + ' sessions' +
+          (telemetry && telemetry.hasSupabase() ? '' : ' · local browser data only until telemetry SQL is run');
+
+        var frame = document.getElementById('heatFrame');
+        var canvas = document.getElementById('heatCanvas');
+        var stage = document.getElementById('heatStage');
+        if (mockPath) frame.src = mockPath;
+
+        function paint() {
+          var w = stage.clientWidth || 760;
+          var h = stage.clientHeight || 640;
+          canvas.width = w;
+          canvas.height = h;
+          var ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+          if (!clicks.length) return;
+
+          // Density grid
+          var cols = 48;
+          var rows = 64;
+          var grid = [];
+          var i, max = 0;
+          for (i = 0; i < cols * rows; i++) grid[i] = 0;
+          clicks.forEach(function (c) {
+            var gx = Math.min(cols - 1, Math.max(0, Math.floor(Number(c.x) * cols)));
+            var gy = Math.min(rows - 1, Math.max(0, Math.floor(Number(c.y) * rows)));
+            var idx = gy * cols + gx;
+            grid[idx] += 1;
+            if (grid[idx] > max) max = grid[idx];
+          });
+
+          var cellW = w / cols;
+          var cellH = h / rows;
+          for (i = 0; i < grid.length; i++) {
+            if (!grid[i]) continue;
+            var intensity = grid[i] / max;
+            var x = (i % cols) * cellW;
+            var y = Math.floor(i / cols) * cellH;
+            ctx.fillStyle = 'rgba(220, 40, 40,' + (0.12 + intensity * 0.55) + ')';
+            ctx.beginPath();
+            ctx.arc(x + cellW / 2, y + cellH / 2, Math.max(cellW, cellH) * (0.55 + intensity * 0.9), 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // Exact click dots
+          clicks.forEach(function (c) {
+            ctx.fillStyle = 'rgba(163, 0, 60, 0.75)';
+            ctx.beginPath();
+            ctx.arc(Number(c.x) * w, Number(c.y) * h, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
+
+        frame.onload = function () { setTimeout(paint, 80); };
+        window.addEventListener('resize', paint);
+        setTimeout(paint, 200);
+      }
+
+      function formatDuration(ms) {
+        if (!ms || ms < 1000) return '<1s';
+        var s = Math.round(ms / 1000);
+        if (s < 60) return s + 's';
+        var m = Math.floor(s / 60);
+        var rem = s % 60;
+        return m + 'm ' + rem + 's';
+      }
+
+      function renderSessions(items) {
+        var list = document.getElementById('sessionsList');
+        if (!telemetry) {
+          list.innerHTML = '<div class="empty">Telemetry unavailable.</div>';
+          return;
+        }
+        var sessions = telemetry.summarizeSessions(items).slice(0, 40);
+        if (!sessions.length) {
+          list.innerHTML = '<div class="empty">No sessions yet. Share the mock and open it to collect visits.</div>';
+          return;
+        }
+        list.innerHTML = sessions.map(function (s) {
+          return (
+            '<div class="session-row">' +
+              '<div>' +
+                '<strong>' + escapeHtml(formatWhen(s.startedAt)) + '</strong>' +
+                '<span>' + s.clicks + ' clicks · scroll ' + Math.round(s.scrollMax || 0) + '% · ' +
+                  formatDuration(s.durationMs) + '</span>' +
+              '</div>' +
+              '<span>' + escapeHtml(String(s.sessionId).slice(0, 8)) + '</span>' +
+            '</div>'
+          );
+        }).join('');
+      }
+
+      function renderTelemetryOverview(items) {
+        if (!telemetry) return;
+        var sessions = telemetry.summarizeSessions(items);
+        var clicks = (items || []).filter(function (e) { return e.eventType === 'click'; }).length;
+        var scrollVals = sessions.map(function (s) { return s.scrollMax || 0; });
+        var avgScroll = scrollVals.length
+          ? Math.round(scrollVals.reduce(function (a, b) { return a + b; }, 0) / scrollVals.length)
+          : 0;
+        document.getElementById('statSessions').textContent = String(sessions.length);
+        document.getElementById('statClicks').textContent = String(clicks);
+        document.getElementById('statScroll').textContent = scrollVals.length ? (avgScroll + '%') : '—';
       }
 
       function setTab(name) {
@@ -461,6 +605,7 @@
         var url = new URL(location.href);
         url.searchParams.set('tab', name);
         history.replaceState(null, '', url.href);
+        if (name === 'heatmaps') setTimeout(function () { renderHeatmap(telemetryItems); }, 50);
       }
 
       document.querySelector('.tabs').addEventListener('click', function (e) {
@@ -469,18 +614,8 @@
         setTab(tab.getAttribute('data-tab'));
       });
 
-      document.body.addEventListener('click', function (e) {
-        var copyBtn = e.target.closest('[data-copy-url]');
-        if (!copyBtn) return;
-        var value = copyBtn.getAttribute('data-copy-url') || '';
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(value).then(function () {
-            var prev = copyBtn.textContent;
-            copyBtn.textContent = 'Copied!';
-            setTimeout(function () { copyBtn.textContent = prev; }, 1400);
-          });
-        }
-      });
+      var refreshBtn = document.getElementById('refreshTelemetry');
+      if (refreshBtn) refreshBtn.addEventListener('click', function () { loadTelemetry(); });
 
       fetch('manifest.json', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : []; })
@@ -498,16 +633,18 @@
           subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
           document.title = 'Insights · ' + title;
           actions.hidden = false;
-          if (mockPath) openMock.href = mockPath;
-          else openMock.hidden = true;
-          renderTelemetryCards();
+          if (mockPath) {
+            openMock.href = mockPath;
+            document.getElementById('heatFrame').src = mockPath;
+          } else openMock.hidden = true;
+          loadTelemetry();
         })
         .catch(function () {
           titleEl.textContent = id;
           subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
           actions.hidden = false;
           openMock.hidden = true;
-          renderTelemetryCards();
+          loadTelemetry();
         });
 
       store.list(id).then(function (result) {
