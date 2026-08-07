@@ -147,8 +147,71 @@
     });
   }
 
+  function deletedKey(prototypeId) {
+    return LOCAL_PREFIX + 'deleted.' + (prototypeId || 'unknown');
+  }
+
+  function readDeleted(prototypeId) {
+    try {
+      return JSON.parse(localStorage.getItem(deletedKey(prototypeId)) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeDeleted(prototypeId, ids) {
+    try {
+      localStorage.setItem(deletedKey(prototypeId), JSON.stringify((ids || []).slice(0, 500)));
+    } catch (e) {}
+  }
+
+  function markDeleted(prototypeId, id) {
+    var ids = readDeleted(prototypeId);
+    if (ids.indexOf(id) === -1) ids.unshift(id);
+    writeDeleted(prototypeId, ids);
+  }
+
+  function filterDeleted(prototypeId, items) {
+    var deleted = readDeleted(prototypeId);
+    if (!deleted.length) return items;
+    var set = {};
+    deleted.forEach(function (id) { set[id] = true; });
+    return (items || []).filter(function (item) { return !set[item.id]; });
+  }
+
+  function remove(prototypeId, itemId) {
+    var id = String(itemId || '');
+    if (!id) return Promise.reject(new Error('Missing comment id'));
+
+    markDeleted(prototypeId, id);
+    var local = readLocal(prototypeId).filter(function (item) {
+      return normalize(item).id !== id;
+    });
+    writeLocal(prototypeId, local);
+
+    if (!hasSupabase()) {
+      return Promise.resolve({ shared: false });
+    }
+
+    var url = supabaseBase() + '?id=eq.' + encodeURIComponent(id);
+    return fetch(url, {
+      method: 'DELETE',
+      headers: {
+        apikey: cfg().supabaseAnonKey.trim(),
+        Authorization: 'Bearer ' + cfg().supabaseAnonKey.trim(),
+        Prefer: 'return=minimal',
+      },
+    }).then(function (res) {
+      if (res.ok || res.status === 204) return { shared: true };
+      // Likely missing DELETE policy — still removed locally
+      return { shared: false, remoteFailed: true, status: res.status };
+    }).catch(function () {
+      return { shared: false, remoteFailed: true };
+    });
+  }
+
   function list(prototypeId) {
-    var local = readLocal(prototypeId).map(normalize);
+    var local = filterDeleted(prototypeId, readLocal(prototypeId).map(normalize));
 
     if (!hasSupabase()) {
       return Promise.resolve({ items: local, shared: false });
@@ -168,7 +231,7 @@
       if (!res.ok) throw new Error('Supabase load failed (' + res.status + ')');
       return res.json();
     }).then(function (rows) {
-      var merged = mergeById(rows, local);
+      var merged = filterDeleted(prototypeId, mergeById(rows, local));
       writeLocal(prototypeId, merged);
       return { items: merged, shared: true };
     }).catch(function () {
@@ -210,6 +273,7 @@
   global.PrototypesFeedbackStore = {
     add: add,
     list: list,
+    remove: remove,
     count: count,
     hasSupabase: hasSupabase,
     resolvePrototypeId: resolvePrototypeId,

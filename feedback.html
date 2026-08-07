@@ -176,12 +176,31 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px 14px;
-      align-items: baseline;
+      align-items: center;
       margin-bottom: 8px;
       font-size: 0.85rem;
       color: var(--muted);
     }
     .item-name { font-weight: 700; color: var(--ink); font-size: 0.95rem; }
+    .item-head-spacer { flex: 1; min-width: 8px; }
+    .item-delete {
+      height: 30px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: #a3003c;
+      font: 600 0.8rem/1 "DM Sans", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .item-delete:hover {
+      background: #feecf2;
+      border-color: #fdd9e6;
+    }
+    .item-delete:disabled {
+      opacity: 0.55;
+      cursor: wait;
+    }
     .stars { color: var(--accent); font-weight: 700; letter-spacing: 0.05em; }
     .item-body {
       margin: 0;
