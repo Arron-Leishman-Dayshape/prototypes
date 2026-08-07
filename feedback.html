@@ -497,11 +497,11 @@
           scaler.style.height = docH + 'px';
 
           var scale = stageW / docW;
-          var displayH = docH * scale;
+          var displayH = Math.ceil(docH * scale);
           scaler.style.transform = 'scale(' + scale + ')';
-          // Reserve visual space after transform (transform doesn't affect layout)
+          // Full scaled page height — no vertical clipping
           stage.style.height = displayH + 'px';
-          // Clip the unscaled layout overflow
+          stage.style.maxHeight = 'none';
           stage.style.overflow = 'hidden';
 
           canvas.style.width = stageW + 'px';
