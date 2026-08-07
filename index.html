@@ -126,7 +126,8 @@
       align-items: flex-end;
       gap: 8px;
     }
-    .links a {
+    .links a,
+    .links button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -135,9 +136,17 @@
       text-decoration: none;
       white-space: nowrap;
       font-size: 0.95rem;
+      font-family: inherit;
+      background: none;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
     }
-    .links a.secondary { color: var(--muted); font-weight: 600; }
-    .links a:hover { text-decoration: underline; }
+    .links a.secondary,
+    .links button.secondary { color: var(--muted); font-weight: 600; }
+    .links a:hover,
+    .links button:hover { text-decoration: underline; }
+    .links button.is-copied { color: var(--accent); }
 
     .card.is-group { grid-template-columns: 1fr; }
     .subs {
@@ -289,11 +298,23 @@
         );
       }
 
+      function absoluteUrl(path) {
+        try {
+          return new URL(path, location.href).href;
+        } catch (e) {
+          return location.origin + '/' + String(path || '').replace(/^\//, '');
+        }
+      }
+
       function linksMarkup(item) {
         var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id);
+        var shareUrl = absoluteUrl(item.path);
         return (
           '<div class="links">' +
             '<a href="' + escapeAttr(item.path) + '">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>' +
+            '<button type="button" class="secondary share-btn" data-share-url="' + escapeAttr(shareUrl) + '" data-share-title="' + escapeAttr(item.title || item.id) + '">' +
+              '<i class="fa-solid fa-share-nodes" aria-hidden="true"></i> <span class="share-label">Share</span>' +
+            '</button>' +
             '<a class="secondary" href="' + feedbackHref + '"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback</a>' +
           '</div>'
         );
