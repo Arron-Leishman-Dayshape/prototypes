@@ -343,12 +343,6 @@
       <button type="button" class="tab" role="tab" aria-selected="false" data-tab="heatmaps">
         <i class="fa-solid fa-fire" aria-hidden="true"></i> Heatmaps
       </button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="sessions">
-        <i class="fa-solid fa-circle-play" aria-hidden="true"></i> Sessions
-      </button>
-      <button type="button" class="tab" role="tab" aria-selected="false" data-tab="overview">
-        <i class="fa-solid fa-chart-simple" aria-hidden="true"></i> Overview
-      </button>
     </div>
 
     <div class="banner" id="localBanner" hidden>
@@ -364,58 +358,15 @@
     <section class="tab-panel" id="panel-heatmaps" data-panel="heatmaps" hidden>
       <div class="panel-card">
         <h2>Click heatmap</h2>
-        <p>Built-in tracking from this prototype — no Clarity required. Open the mock (shared links count) to collect clicks.</p>
+        <p>Clicks on this prototype are collected automatically. Open or share the mock to gather data, then refresh.</p>
         <div class="heat-meta" id="heatMeta">Loading…</div>
         <div class="heat-stage" id="heatStage">
           <iframe id="heatFrame" title="Prototype preview" sandbox="allow-same-origin allow-scripts"></iframe>
           <canvas id="heatCanvas"></canvas>
         </div>
         <div class="panel-actions">
-          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh data</button>
+          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh heatmap</button>
         </div>
-      </div>
-    </section>
-
-    <section class="tab-panel" id="panel-sessions" data-panel="sessions" hidden>
-      <div class="panel-card">
-        <h2>Sessions</h2>
-        <p>Each visit gets a session with clicks, scroll depth, and rough duration. Full video replay isn’t included yet — this is the lightweight first-party view.</p>
-        <div id="sessionsList" class="session-list"><div class="empty">Loading sessions…</div></div>
-      </div>
-    </section>
-
-    <section class="tab-panel" id="panel-overview" data-panel="overview" hidden>
-      <div class="stats">
-        <div class="stat">
-          <p class="stat-label">Comments</p>
-          <p class="stat-value" id="statComments">—</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">Avg rating</p>
-          <p class="stat-value" id="statRating">—</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">With screenshots</p>
-          <p class="stat-value" id="statShots">—</p>
-        </div>
-      </div>
-      <div class="stats">
-        <div class="stat">
-          <p class="stat-label">Sessions</p>
-          <p class="stat-value" id="statSessions">—</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">Clicks</p>
-          <p class="stat-value" id="statClicks">—</p>
-        </div>
-        <div class="stat">
-          <p class="stat-label">Avg scroll depth</p>
-          <p class="stat-value" id="statScroll">—</p>
-        </div>
-      </div>
-      <div class="panel-card">
-        <h2>What this overview covers</h2>
-        <p>Comments come from the feedback widget. Heatmaps and sessions are first-party telemetry collected on the mock itself.</p>
       </div>
     </section>
   </main>
@@ -475,8 +426,6 @@
         return telemetry.list(id).then(function (result) {
           telemetryItems = result.items || [];
           renderHeatmap(telemetryItems);
-          renderSessions(telemetryItems);
-          renderTelemetryOverview(telemetryItems);
         });
       }
 
@@ -484,10 +433,9 @@
         var clicks = (items || []).filter(function (e) {
           return e.eventType === 'click' && e.x != null && e.y != null;
         });
-        var sessions = telemetry ? telemetry.summarizeSessions(items) : [];
         document.getElementById('heatMeta').textContent =
-          clicks.length + ' clicks · ' + sessions.length + ' sessions' +
-          (telemetry && telemetry.hasSupabase() ? '' : ' · local browser data only until telemetry SQL is run');
+          clicks.length + ' clicks recorded' +
+          (telemetry && telemetry.hasSupabase() ? '' : ' · local browser only until supabase-telemetry.sql is run');
 
         var frame = document.getElementById('heatFrame');
         var canvas = document.getElementById('heatCanvas');
@@ -503,7 +451,6 @@
           ctx.clearRect(0, 0, w, h);
           if (!clicks.length) return;
 
-          // Density grid
           var cols = 48;
           var rows = 64;
           var grid = [];
@@ -530,7 +477,6 @@
             ctx.fill();
           }
 
-          // Exact click dots
           clicks.forEach(function (c) {
             ctx.fillStyle = 'rgba(163, 0, 60, 0.75)';
             ctx.beginPath();
@@ -544,55 +490,8 @@
         setTimeout(paint, 200);
       }
 
-      function formatDuration(ms) {
-        if (!ms || ms < 1000) return '<1s';
-        var s = Math.round(ms / 1000);
-        if (s < 60) return s + 's';
-        var m = Math.floor(s / 60);
-        var rem = s % 60;
-        return m + 'm ' + rem + 's';
-      }
-
-      function renderSessions(items) {
-        var list = document.getElementById('sessionsList');
-        if (!telemetry) {
-          list.innerHTML = '<div class="empty">Telemetry unavailable.</div>';
-          return;
-        }
-        var sessions = telemetry.summarizeSessions(items).slice(0, 40);
-        if (!sessions.length) {
-          list.innerHTML = '<div class="empty">No sessions yet. Share the mock and open it to collect visits.</div>';
-          return;
-        }
-        list.innerHTML = sessions.map(function (s) {
-          return (
-            '<div class="session-row">' +
-              '<div>' +
-                '<strong>' + escapeHtml(formatWhen(s.startedAt)) + '</strong>' +
-                '<span>' + s.clicks + ' clicks · scroll ' + Math.round(s.scrollMax || 0) + '% · ' +
-                  formatDuration(s.durationMs) + '</span>' +
-              '</div>' +
-              '<span>' + escapeHtml(String(s.sessionId).slice(0, 8)) + '</span>' +
-            '</div>'
-          );
-        }).join('');
-      }
-
-      function renderTelemetryOverview(items) {
-        if (!telemetry) return;
-        var sessions = telemetry.summarizeSessions(items);
-        var clicks = (items || []).filter(function (e) { return e.eventType === 'click'; }).length;
-        var scrollVals = sessions.map(function (s) { return s.scrollMax || 0; });
-        var avgScroll = scrollVals.length
-          ? Math.round(scrollVals.reduce(function (a, b) { return a + b; }, 0) / scrollVals.length)
-          : 0;
-        document.getElementById('statSessions').textContent = String(sessions.length);
-        document.getElementById('statClicks').textContent = String(clicks);
-        document.getElementById('statScroll').textContent = scrollVals.length ? (avgScroll + '%') : '—';
-      }
-
       function setTab(name) {
-        var allowed = { comments: 1, heatmaps: 1, sessions: 1, overview: 1 };
+        var allowed = { comments: 1, heatmaps: 1 };
         if (!allowed[name]) name = 'comments';
         document.querySelectorAll('.tab').forEach(function (tab) {
           var on = tab.getAttribute('data-tab') === name;
@@ -630,7 +529,7 @@
           threadTitle = title;
           mockPath = item && item.path ? item.path : '';
           titleEl.textContent = title;
-          subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
+          subEl.textContent = 'Comments and click heatmap for this prototype';
           document.title = 'Insights · ' + title;
           actions.hidden = false;
           if (mockPath) {
@@ -641,7 +540,7 @@
         })
         .catch(function () {
           titleEl.textContent = id;
-          subEl.textContent = 'Comments, heatmaps, and sessions for this prototype';
+          subEl.textContent = 'Comments and click heatmap for this prototype';
           actions.hidden = false;
           openMock.hidden = true;
           loadTelemetry();
@@ -651,24 +550,10 @@
         banner.hidden = !!result.shared;
         threadItems = result.items || [];
         renderThread(threadItems);
-        renderOverview(threadItems);
         exportBtn.disabled = !threadItems.length;
       });
 
       setTab(initialTab);
-
-      function renderOverview(items) {
-        document.getElementById('statComments').textContent = String(items.length);
-        var rated = items.filter(function (i) { return i.rating && !isNaN(Number(i.rating)); });
-        if (rated.length) {
-          var avg = rated.reduce(function (sum, i) { return sum + Number(i.rating); }, 0) / rated.length;
-          document.getElementById('statRating').textContent = avg.toFixed(1) + ' / 5';
-        } else {
-          document.getElementById('statRating').textContent = '—';
-        }
-        var shots = items.filter(function (i) { return !!i.screenshotData; }).length;
-        document.getElementById('statShots').textContent = String(shots);
-      }
 
       function renderThread(items) {
         if (!items.length) {
