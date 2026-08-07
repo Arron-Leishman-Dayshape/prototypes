@@ -27,6 +27,8 @@
     --surface-emphasis: #4c5172;
     --surface-strong: #3d425c;
     --surface-primary: #4f3fa0;
+    --surface-nav: #27233d;
+    --surface-accent: #e4e5e7;
     --surface-overlay: rgba(0, 0, 0, .5);
     --surface-header: #fafafa;
     --surface-group: #f3f3f6;
@@ -77,13 +79,13 @@
     --today-marker: #f4645f;
 
     /* Layout */
-    --rail-w: 33px;
-    --col-name-w: 128px;
-    --col-grade-w: 47px;
+    --rail-w: 48px;
+    --col-name-w: 239px;
+    --col-grade-w: 50px;
     --col-expand-w: 20px;
-    --col-dim-w: 87px;
-    --left-w: 282px;
-    --week-w: 85px;
+    --col-dim-w: 96px;
+    --left-w: 405px;
+    --week-w: 112.6px;
     --sub-row-h: 24px;
     --group-h: 27px;
     --slim-h: 10px;
@@ -113,28 +115,32 @@ button { font-family: inherit; }
 .Rail {
     width: var(--rail-w);
     flex: 0 0 var(--rail-w);
-    background: var(--primary);
+    background: var(--surface-nav);
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 8px 0;
-    gap: 2px;
+    padding: 4px 0 10px;
+    gap: 0;
 }
 .Rail-logo {
-    color: #fff;
-    font-size: 15px;
-    margin-bottom: 10px;
-    opacity: .95;
+    width: 40px;
+    height: 40px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+.Rail-logo img { width: 18px; height: 20px; display: block; }
 .Rail-icon {
-    width: 26px; height: 26px;
+    width: 48px; height: 44px;
     display: flex; align-items: center; justify-content: center;
     color: rgba(255,255,255,.82);
-    font-size: 13px;
-    border-radius: 3px;
+    font-size: 18px;
     cursor: default;
 }
-.Rail-icon.is-active { background: rgba(255,255,255,.16); color: #fff; }
+.Rail-icon.is-active { box-shadow: inset 4px 0 0 #fff; color: #fff; }
 .Rail-spacer { flex: 1; }
 
 /* ── Main column ───────────────────────────────────────────── */
@@ -142,15 +148,17 @@ button { font-family: inherit; }
 
 /* ── Toolbar ───────────────────────────────────────────────── */
 .Toolbar {
-    flex: 0 0 auto;
+    flex: 0 0 71px;
+    width: var(--left-w);
+    height: 71px;
     background: var(--surface-default);
     border-bottom: var(--border-xs) solid var(--border-subtle);
-    padding: 6px 8px;
+    padding: 7px 8px;
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
-.Toolbar-row { display: flex; gap: 6px; align-items: center; }
+.Toolbar-row { display: flex; height: 27px; gap: 6px; align-items: center; }
 
 .Tbtn {
     height: 26px;
@@ -207,6 +215,7 @@ button { font-family: inherit; }
     color: var(--text-subtle);
     padding-right: 4px;
 }
+.Toolbar-mode { display: none; }
 .Toolbar-mode strong { color: var(--text-default); font-weight: 600; }
 
 /* ============================================================
@@ -222,7 +231,16 @@ button { font-family: inherit; }
 .Gantt-inner { position: relative; width: max-content; min-width: 100%; }
 
 /* Header */
-.Head { position: sticky; top: 0; z-index: 30; background: var(--surface-header); }
+.Head {
+    position: fixed;
+    top: 0;
+    left: calc(var(--rail-w) + var(--left-w));
+    right: 0;
+    height: 71px;
+    z-index: 30;
+    overflow: hidden;
+    background: var(--surface-header);
+}
 .Head-row { display: flex; }
 .Head-left {
     position: sticky; left: 0; z-index: 2;
@@ -230,10 +248,11 @@ button { font-family: inherit; }
     background: var(--surface-header);
     border-right: var(--border-xs) solid var(--border-subtle);
 }
+.Head .Head-left { display: none; }
 .Head-months, .Head-weeks, .Head-days { display: flex; }
 .Head-month {
     flex: 0 0 auto;
-    height: 18px;
+    height: 27px;
     border-right: var(--border-xs) solid var(--border-emphasis);
     border-bottom: var(--border-xs) solid var(--border-subtle);
     font-size: var(--font-size-small);
@@ -243,7 +262,7 @@ button { font-family: inherit; }
 }
 .Head-week {
     width: var(--week-w); flex: 0 0 var(--week-w);
-    height: 17px;
+    height: 22px;
     border-right: var(--border-xs) solid var(--border-emphasis);
     border-bottom: var(--border-xs) solid var(--border-subtle);
     font-size: var(--font-size-xsmall);
@@ -254,7 +273,7 @@ button { font-family: inherit; }
 .Head-dayset { width: var(--week-w); flex: 0 0 var(--week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
 .Head-day {
     flex: 1;
-    height: 16px;
+    height: 22px;
     border-right: var(--border-xs) solid var(--border-subtle);
     border-bottom: var(--border-xs) solid var(--border-emphasis);
     font-size: 10px;
@@ -280,15 +299,16 @@ button { font-family: inherit; }
 .GroupRow .Row-left,
 .GroupRow .Row-track {
     height: var(--group-h);
-    background: var(--surface-group);
-    border-bottom: var(--border-xs) solid var(--border-emphasis);
+    background: var(--surface-accent);
+    border-top: 2px solid var(--border-default);
+    border-bottom: 0;
 }
 .GroupRow .Row-left {
     align-items: center;
     padding-left: 10px;
     gap: 7px;
     font-size: var(--font-size-xsmall);
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: .04em;
     text-transform: uppercase;
     color: var(--text-accent);
@@ -302,7 +322,7 @@ button { font-family: inherit; }
 
 .Cell-name {
     width: var(--col-name-w); flex: 0 0 var(--col-name-w);
-    padding: 6px 8px 0 0;
+    padding: 6px 8px 0 16px;
     text-align: right;
     font-size: var(--font-size-small);
     color: var(--text-default);
@@ -317,7 +337,7 @@ button { font-family: inherit; }
 
 .Cell-grade {
     width: var(--col-grade-w); flex: 0 0 var(--col-grade-w);
-    padding: 6px 0 0 8px;
+    padding: 6px 0 0 6px;
     font-size: var(--font-size-small);
     color: var(--text-default);
 }
@@ -822,6 +842,23 @@ button { font-family: inherit; }
     background: #fff; border-radius: 3px;
     color: var(--icon-default); font-size: 11px; cursor: pointer;
 }
+
+/* Exact sizing from Figma frame 3096:208443 and Dayshape's Gantt CSS:
+   48px navigation, 405px action/labels area, 71px date header,
+   27px grouping rows, 24px breakdown rows, 112.6px week columns. */
+.Main { position: relative; }
+.Gantt { border-top: 0; }
+.Gantt-inner { padding-top: 0; }
+.Row-left { box-shadow: 1px 0 0 var(--border-subtle); }
+.Cellw { font-size: 12px; }
+.DimLabel { font-size: 12px; }
+.Tbtn { border-color: #babfd1; color: #4c5172; }
+.Tbtn.is-primary { background: #4f3fa0; border-color: #4f3fa0; }
+.Head-month, .Head-week, .Head-day { background: #fff; }
+.Head-month { font-size: 13px; }
+.Head-week { font-size: 11px; }
+.Head-day { font-size: 11px; }
+.Menu { width: 240px; }
 </style>
 </head>
 <body>
@@ -829,7 +866,9 @@ button { font-family: inherit; }
 <div class="App">
     <!-- ── Left nav rail ─────────────────────────────────────── -->
     <nav class="Rail" aria-label="Primary">
-        <div class="Rail-logo"><i class="fa-solid fa-angles-right"></i></div>
+        <div class="Rail-logo" title="Dayshape">
+            <img alt="Dayshape" src="data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE4IiBoZWlnaHQ9IjIwIiB2aWV3Qm94PSIwIDAgMTggMjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxnIGlkPSJsb2dvbWFyayI+CjxwYXRoIGQ9Ik0xNC4xNjA3IDIuMjg1NjhDMTUuMzYxIDQuNjg5OTQgMTUuOTg1OCA3LjM0MDk4IDE1Ljk4NTggMTAuMDI4OUMxNS45ODU4IDEyLjcxNjkgMTUuMzYxIDE1LjM2NzkgMTQuMTYwNyAxNy43NzIyQzE2LjM5MDcgMTUuOTI4OSAxOCAxMy4xNDgxIDE4IDEwLjAzMDNDMTggNi45MTI0MSAxNi4zOTA3IDQuMTI2MzcgMTQuMTYwNyAyLjI4NTY4WiIgZmlsbD0iI0ZGNTkzQiIvPgo8cGF0aCBkPSJNNi41Mjg5NCAwLjIxNTk1MUM4LjUwODk4IDMuMTI3NDEgOS41Njc5MSA2LjU2ODM1IDkuNTY3OTEgMTAuMDkwOUM5LjU2NzkxIDEzLjYxMzQgOC41MDg5OCAxNy4wNTQzIDYuNTI4OTQgMTkuOTY1OEM4Ljg0Njk0IDE5LjU1NiAxMC45NDY3IDE4LjM0MTUgMTIuNDU5NSAxNi41MzU3QzEzLjk3MjMgMTQuNzI5OCAxNC44MDE1IDEyLjQ0OCAxNC44MDE1IDEwLjA5MDlDMTQuODAxNSA3LjczMzczIDEzLjk3MjMgNS40NTE5MiAxMi40NTk1IDMuNjQ2MDhDMTAuOTQ2NyAxLjg0MDIzIDguODQ2OTQgMC42MjU3ODMgNi41Mjg5NCAwLjIxNTk1MVoiIGZpbGw9IiNGRjU5M0IiLz4KPHBhdGggZD0iTTAuMDM2ODE1OCAwSDBWMjBIMC4wMzY4MTU4QzQuNjA0NSAyMCA4LjMwNDQgMTUuNTIzNCA4LjMwNDQgOS45OTM0MkM4LjMwNDQgNC40NjM0NiA0LjYwNDUgMCAwLjAzNjgxNTggMFoiIGZpbGw9IiNGRjU5M0IiLz4KPC9nPgo8L3N2Zz4K" />
+        </div>
         <div class="Rail-icon"><i class="fa-regular fa-bell"></i></div>
         <div class="Rail-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
         <div style="height:12px"></div>
@@ -893,7 +932,7 @@ button { font-family: inherit; }
 
 // ── Calendar ───────────────────────────────────────────────────────────────
 var WEEK_COUNT = 12;
-var WEEK_W = 85;
+var WEEK_W = 112.6;
 var DAY_W = WEEK_W / 5;
 
 function snapMonday(d) {
@@ -904,7 +943,7 @@ function snapMonday(d) {
 }
 function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
 
-var FIRST_MONDAY = snapMonday(new Date(2026, 5, 1));   // w/c 1 June 2026
+var FIRST_MONDAY = snapMonday(new Date(2021, 5, 21));  // w/c 21 June 2021
 var TODAY = addDays(FIRST_MONDAY, 8);                  // Tue of week 2
 
 var WEEKS = [];
@@ -1025,8 +1064,8 @@ DATA.forEach(function (group) {
 
 // ── State ──────────────────────────────────────────────────────────────────
 var state = {
-    breakdown: 'role',
-    showAvailability: false,
+    breakdown: 'phase',
+    showAvailability: true,
     slimView: true,
     grouping: 'day',
     hoursMode: 'consumed',
@@ -1404,7 +1443,7 @@ function buildTodayMarker() {
     var wi = Math.floor(diff / 7);
     var di = diff % 7;
     var m = el('div', 'Today');
-    m.style.left = (282 + wi * WEEK_W + Math.min(di, 4) * DAY_W + DAY_W / 2) + 'px';
+    m.style.left = (405 + wi * WEEK_W + Math.min(di, 4) * DAY_W + DAY_W / 2) + 'px';
     return m;
 }
 
@@ -1518,7 +1557,7 @@ function staticItem(label) {
 function breakdownFlyout(menu, anchorEl) {
     var f = el('div', 'Flyout');
     var a = anchorEl.getBoundingClientRect();
-    f.style.left = (parseFloat(menu.style.left) + 190 + 4) + 'px';
+    f.style.left = (parseFloat(menu.style.left) + 240 + 4) + 'px';
     f.style.top = (a.top - 8) + 'px';
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Resource Breakdown'));
@@ -1549,7 +1588,7 @@ function breakdownFlyout(menu, anchorEl) {
 function availabilityFlyout(menu, anchorEl) {
     var f = el('div', 'Flyout');
     var a = anchorEl.getBoundingClientRect();
-    f.style.left = (parseFloat(menu.style.left) + 190 + 4) + 'px';
+    f.style.left = (parseFloat(menu.style.left) + 240 + 4) + 'px';
     f.style.top = (a.top - 240) + 'px';
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Availability Display Settings'));
