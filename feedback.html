@@ -470,50 +470,65 @@
           return;
         }
 
-        // Use the most common click viewport width so the mock layout matches reviewers
+        // Match the viewport reviewers used (median), so 100vh layouts don't collapse
         var widths = clicks.map(function (c) { return Number(c.viewportW) || 0; }).filter(function (n) { return n > 0; }).sort(function (a, b) { return a - b; });
+        var heights = clicks.map(function (c) { return Number(c.viewportH) || 0; }).filter(function (n) { return n > 0; }).sort(function (a, b) { return a - b; });
         var renderWidth = widths.length ? widths[Math.floor(widths.length / 2)] : 1280;
+        var renderHeight = heights.length ? heights[Math.floor(heights.length / 2)] : 900;
         renderWidth = Math.max(320, Math.min(1600, renderWidth));
+        renderHeight = Math.max(600, Math.min(1400, renderHeight));
 
         var heatSrc = mockPath + (mockPath.indexOf('?') >= 0 ? '&' : '?') + 'heatmap=1';
-        var needsReload = frame.getAttribute('data-heat-src') !== heatSrc || frame.getAttribute('data-heat-w') !== String(renderWidth);
+        var needsReload =
+          frame.getAttribute('data-heat-src') !== heatSrc ||
+          frame.getAttribute('data-heat-w') !== String(renderWidth) ||
+          frame.getAttribute('data-heat-h') !== String(renderHeight);
         if (needsReload) {
           frame.setAttribute('data-heat-src', heatSrc);
           frame.setAttribute('data-heat-w', String(renderWidth));
+          frame.setAttribute('data-heat-h', String(renderHeight));
+          // Size iframe to real reviewer viewport BEFORE load/measure
+          frame.style.width = renderWidth + 'px';
+          frame.style.height = renderHeight + 'px';
+          scaler.style.width = renderWidth + 'px';
+          scaler.style.height = renderHeight + 'px';
           frame.src = heatSrc;
         }
 
-        function medianDocSize(doc) {
+        function measureDoc(doc) {
           var body = doc.body;
           var el = doc.documentElement;
           return {
             w: Math.max(body.scrollWidth, el.scrollWidth, body.offsetWidth, el.clientWidth, renderWidth),
-            h: Math.max(body.scrollHeight, el.scrollHeight, body.offsetHeight, el.clientHeight, 1),
+            h: Math.max(body.scrollHeight, el.scrollHeight, body.offsetHeight, el.clientHeight, renderHeight),
           };
         }
 
         function layoutAndPaint() {
           var stageW = stage.clientWidth || 760;
           if (stageW < 40) stageW = 760;
+
+          // Always start from reviewer viewport so vh-based mocks get a real height
           var docW = renderWidth;
-          var docH = 900;
+          var docH = renderHeight;
+          frame.style.width = renderWidth + 'px';
+          frame.style.height = renderHeight + 'px';
 
           try {
             var doc = frame.contentDocument || frame.contentWindow.document;
-            frame.style.width = renderWidth + 'px';
-            if (doc && doc.documentElement) {
-              doc.documentElement.style.overflow = 'hidden';
-              var size = medianDocSize(doc);
-              docW = size.w;
-              docH = size.h;
+            if (doc && doc.documentElement && doc.body) {
+              // Expand if the page is taller than the viewport (scrollable mock)
+              var size = measureDoc(doc);
+              docW = Math.max(size.w, renderWidth);
+              docH = Math.max(size.h, renderHeight);
             }
           } catch (err) {
             docW = renderWidth;
-            docH = Math.round(renderWidth * 1.4);
+            docH = renderHeight;
           }
 
           if (!docW || !isFinite(docW)) docW = renderWidth;
-          if (!docH || !isFinite(docH)) docH = Math.round(renderWidth * 1.4);
+          if (!docH || !isFinite(docH)) docH = renderHeight;
 
           frame.style.width = docW + 'px';
           frame.style.height = docH + 'px';
@@ -522,7 +537,7 @@
 
           var scale = stageW / docW;
           var displayH = Math.ceil(docH * scale);
-          if (!isFinite(displayH) || displayH < 1) displayH = 400;
+          if (!isFinite(displayH) || displayH < 1) displayH = Math.ceil(renderHeight * scale);
 
           scaler.style.transform = 'scale(' + scale + ')';
           stage.style.height = displayH + 'px';
@@ -536,7 +551,7 @@
 
           setMeta(
             clicks.length + ' click' + (clicks.length === 1 ? '' : 's') +
-            ' · rendered at ' + renderWidth + 'px width · scale ' + Math.round(scale * 100) + '%'
+            ' · rendered at ' + renderWidth + '×' + renderHeight + ' · scale ' + Math.round(scale * 100) + '%'
           );
 
           var w = canvas.width;
@@ -586,12 +601,13 @@
         }
 
         frame.onload = function () {
-          setTimeout(layoutAndPaint, 250);
-          setTimeout(layoutAndPaint, 800);
+          setTimeout(layoutAndPaint, 200);
+          setTimeout(layoutAndPaint, 600);
+          setTimeout(layoutAndPaint, 1200);
         };
         window.addEventListener('resize', schedulePaint);
         if (!needsReload) schedulePaint();
-        else setTimeout(layoutAndPaint, 400);
+        else setTimeout(layoutAndPaint, 300);
       }
 
       function setTab(name) {
