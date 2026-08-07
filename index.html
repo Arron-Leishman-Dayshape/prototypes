@@ -136,30 +136,19 @@
       position: relative;
       z-index: 2;
     }
-    .menu-toggle {
-      width: 40px;
-      height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      color: var(--ink);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+    .menu.is-open {
+      z-index: 40;
     }
-    .menu-toggle:hover,
-    .menu.is-open .menu-toggle {
-      border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
-      color: var(--accent);
-      background: var(--accent-soft);
+    .card:has(.menu.is-open),
+    .sub:has(.menu.is-open) {
+      position: relative;
+      z-index: 40;
     }
     .menu-panel {
       position: absolute;
       top: calc(100% + 6px);
       right: 0;
+      z-index: 50;
       min-width: 200px;
       padding: 6px;
       background: #fff;
