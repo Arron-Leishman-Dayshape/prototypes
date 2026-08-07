@@ -272,11 +272,26 @@
     .heat-meta {
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
       gap: 10px 16px;
       margin: 0 0 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafafb;
       font-size: 0.85rem;
       color: var(--muted);
       font-weight: 600;
+      position: sticky;
+      top: 8px;
+      z-index: 5;
+    }
+    .heat-meta-text { flex: 1; min-width: 12rem; }
+    .heat-meta .btn-ghost {
+      height: 34px;
+      padding: 0 12px;
+      flex: 0 0 auto;
     }
     .session-list { display: grid; gap: 8px; margin-top: 8px; }
     .session-row {
@@ -361,15 +376,15 @@
       <div class="panel-card">
         <h2>Click heatmap</h2>
         <p>Clicks on this prototype are collected automatically. Open or share the mock to gather data, then refresh.</p>
-        <div class="heat-meta" id="heatMeta">Loading…</div>
+        <div class="heat-meta" id="heatMetaBar">
+          <span class="heat-meta-text" id="heatMeta">Loading…</span>
+          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh heatmap</button>
+        </div>
         <div class="heat-stage" id="heatStage">
           <div class="heat-scaler" id="heatScaler">
             <iframe id="heatFrame" title="Prototype preview" sandbox="allow-same-origin allow-scripts"></iframe>
           </div>
           <canvas id="heatCanvas"></canvas>
-        </div>
-        <div class="panel-actions">
-          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh heatmap</button>
         </div>
       </div>
     </section>
@@ -437,15 +452,23 @@
         var clicks = (items || []).filter(function (e) {
           return e.eventType === 'click' && e.x != null && e.y != null;
         });
-        document.getElementById('heatMeta').textContent =
-          clicks.length + ' clicks recorded' +
-          (telemetry && telemetry.hasSupabase() ? '' : ' · local browser only until supabase-telemetry.sql is run');
+        var metaEl = document.getElementById('heatMeta');
+        function setMeta(msg) {
+          if (metaEl) metaEl.textContent = msg;
+        }
+        setMeta(
+          clicks.length + ' click' + (clicks.length === 1 ? '' : 's') + ' recorded' +
+          (telemetry && telemetry.hasSupabase() ? '' : ' · local browser only')
+        );
 
         var frame = document.getElementById('heatFrame');
         var scaler = document.getElementById('heatScaler');
         var canvas = document.getElementById('heatCanvas');
         var stage = document.getElementById('heatStage');
-        if (!mockPath) return;
+        if (!mockPath) {
+          setMeta(clicks.length + ' clicks · open a prototype path to render the heatmap');
+          return;
+        }
 
         // Use the most common click viewport width so the mock layout matches reviewers
         var widths = clicks.map(function (c) { return Number(c.viewportW) || 0; }).filter(function (n) { return n > 0; }).sort(function (a, b) { return a - b; });
@@ -471,25 +494,26 @@
 
         function layoutAndPaint() {
           var stageW = stage.clientWidth || 760;
+          if (stageW < 40) stageW = 760;
           var docW = renderWidth;
           var docH = 900;
 
           try {
             var doc = frame.contentDocument || frame.contentWindow.document;
-            // Force iframe layout width to reviewer viewport width
             frame.style.width = renderWidth + 'px';
             if (doc && doc.documentElement) {
               doc.documentElement.style.overflow = 'hidden';
-              // Give layout a moment at the intended width
               var size = medianDocSize(doc);
               docW = size.w;
               docH = size.h;
             }
           } catch (err) {
-            // same-origin should work; fall back to stage mapping
             docW = renderWidth;
             docH = Math.round(renderWidth * 1.4);
           }
+
+          if (!docW || !isFinite(docW)) docW = renderWidth;
+          if (!docH || !isFinite(docH)) docH = Math.round(renderWidth * 1.4);
 
           frame.style.width = docW + 'px';
           frame.style.height = docH + 'px';
@@ -498,8 +522,9 @@
 
           var scale = stageW / docW;
           var displayH = Math.ceil(docH * scale);
+          if (!isFinite(displayH) || displayH < 1) displayH = 400;
+
           scaler.style.transform = 'scale(' + scale + ')';
-          // Full scaled page height — no vertical clipping
           stage.style.height = displayH + 'px';
           stage.style.maxHeight = 'none';
           stage.style.overflow = 'hidden';
@@ -508,6 +533,11 @@
           canvas.style.height = displayH + 'px';
           canvas.width = Math.round(stageW);
           canvas.height = Math.round(displayH);
+
+          setMeta(
+            clicks.length + ' click' + (clicks.length === 1 ? '' : 's') +
+            ' · rendered at ' + renderWidth + 'px width · scale ' + Math.round(scale * 100) + '%'
+          );
 
           var w = canvas.width;
           var h = canvas.height;
@@ -547,9 +577,6 @@
             ctx.arc(Number(c.x) * w, Number(c.y) * h, 3.5, 0, Math.PI * 2);
             ctx.fill();
           });
-
-          document.getElementById('heatMeta').textContent =
-            clicks.length + ' clicks · rendered at ' + renderWidth + 'px width · scale ' + Math.round(scale * 100) + '%';
         }
 
         var paintTimer = null;
@@ -559,7 +586,6 @@
         }
 
         frame.onload = function () {
-          // Wait for fonts/layout inside the mock
           setTimeout(layoutAndPaint, 250);
           setTimeout(layoutAndPaint, 800);
         };
