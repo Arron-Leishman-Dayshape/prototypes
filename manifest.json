@@ -2,18 +2,35 @@
   {
     "id": "practitioner-kanban",
     "title": "Practitioner Kanban",
-    "description": "Tax practitioner board \u2014 bookings, defer, capacity, week check-in.",
+    "description": "Tax practitioner board — bookings, defer, capacity, week check-in.",
     "path": "mocks/practitioner-kanban.html",
     "status": "active",
     "updated": "2026-08-06"
   },
   {
-    "id": "demand-profile-templates",
-    "title": "Demand profile templates",
-    "description": "Create demand templates with or without phases \u2014 details, timeline with resource requests, and review.",
-    "path": "mocks/demand-profile-templates.html",
+    "id": "demand-templates",
+    "title": "Demand templates",
+    "description": "Two connected flows — building a reusable demand template, then applying one to a job.",
     "status": "active",
-    "updated": "2026-08-07"
+    "updated": "2026-08-07",
+    "children": [
+      {
+        "id": "demand-profile-templates",
+        "title": "Template builder",
+        "description": "New functionality — create templates with or without phases: details, timeline with resource requests, review.",
+        "path": "mocks/demand-profile-templates.html",
+        "status": "active",
+        "updated": "2026-08-07"
+      },
+      {
+        "id": "job-editor-apply-template",
+        "title": "Apply template to job",
+        "description": "Job editor flow — pick a template, schedule back from the deadline, and edit the generated demand.",
+        "path": "mocks/job-editor-apply-template.html",
+        "status": "active",
+        "updated": "2026-08-07"
+      }
+    ]
   },
   {
     "id": "portfolios-v3",

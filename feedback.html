@@ -175,7 +175,13 @@
       fetch('manifest.json', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(function (items) {
-          var item = (items || []).find(function (m) { return m.id === id; });
+          // Manifest entries may be groups; prototypes can live in `children`.
+          var flat = (items || []).reduce(function (all, entry) {
+            return all.concat(
+              Array.isArray(entry.children) && entry.children.length ? entry.children : [entry]
+            );
+          }, []);
+          var item = flat.find(function (m) { return m.id === id; });
           var title = item ? item.title : id;
           titleEl.textContent = title;
           subEl.textContent = 'Feedback thread for this prototype only';

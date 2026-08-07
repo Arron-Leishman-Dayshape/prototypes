@@ -248,30 +248,10 @@
             return;
           }
           list.innerHTML = items.map(function (item) {
-            var status = (item.status || 'active').toLowerCase();
-            var pillClass = status === 'draft' ? 'pill is-draft' : 'pill';
-            var updated = item.updated ? ('Updated ' + item.updated) : '';
-            var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id);
-            return (
-              '<li class="card" data-prototype-id="' + escapeAttr(item.id) + '">' +
-                '<div>' +
-                  '<h2><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h2>' +
-                  '<p>' + escapeHtml(item.description || '') + '</p>' +
-                  '<div class="meta">' +
-                    '<span class="' + pillClass + '">' + escapeHtml(status) + '</span>' +
-                    (updated ? '<span>' + escapeHtml(updated) + '</span>' : '') +
-                    '<span class="fb-count" data-count-for="' + escapeAttr(item.id) + '">Feedback…</span>' +
-                  '</div>' +
-                '</div>' +
-                '<div class="links">' +
-                  '<a href="' + escapeAttr(item.path) + '">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>' +
-                  '<a class="secondary" href="' + feedbackHref + '"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback</a>' +
-                '</div>' +
-              '</li>'
-            );
+            return isGroup(item) ? groupMarkup(item) : cardMarkup(item);
           }).join('');
 
-          items.forEach(function (item) {
+          prototypesOf(items).forEach(function (item) {
             store.count(item.id).then(function (result) {
               var el = document.querySelector('[data-count-for="' + cssEscape(item.id) + '"]');
               if (!el) return;
@@ -283,6 +263,81 @@
         .catch(function () {
           list.innerHTML = '<li class="err">Couldn’t load <code>manifest.json</code>. Serve this folder over HTTP (not as a file:// page).</li>';
         });
+
+      function isGroup(item) {
+        return Array.isArray(item.children) && item.children.length > 0;
+      }
+
+      // Groups are containers only — feedback stays scoped to each child prototype.
+      function prototypesOf(items) {
+        return items.reduce(function (all, item) {
+          return all.concat(isGroup(item) ? item.children : [item]);
+        }, []);
+      }
+
+      function metaMarkup(item, extra) {
+        var status = (item.status || 'active').toLowerCase();
+        var pillClass = status === 'draft' ? 'pill is-draft' : 'pill';
+        var updated = item.updated ? ('Updated ' + item.updated) : '';
+        return (
+          '<div class="meta">' +
+            '<span class="' + pillClass + '">' + escapeHtml(status) + '</span>' +
+            (extra ? '<span>' + escapeHtml(extra) + '</span>' : '') +
+            (updated ? '<span>' + escapeHtml(updated) + '</span>' : '') +
+            (item.path ? '<span class="fb-count" data-count-for="' + escapeAttr(item.id) + '">Feedback…</span>' : '') +
+          '</div>'
+        );
+      }
+
+      function linksMarkup(item) {
+        var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id);
+        return (
+          '<div class="links">' +
+            '<a href="' + escapeAttr(item.path) + '">Open <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>' +
+            '<a class="secondary" href="' + feedbackHref + '"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Feedback</a>' +
+          '</div>'
+        );
+      }
+
+      function cardMarkup(item) {
+        return (
+          '<li class="card" data-prototype-id="' + escapeAttr(item.id) + '">' +
+            '<div>' +
+              '<h2><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h2>' +
+              '<p>' + escapeHtml(item.description || '') + '</p>' +
+              metaMarkup(item) +
+            '</div>' +
+            linksMarkup(item) +
+          '</li>'
+        );
+      }
+
+      function subMarkup(item) {
+        return (
+          '<li class="sub" data-prototype-id="' + escapeAttr(item.id) + '">' +
+            '<div>' +
+              '<h3><a href="' + escapeAttr(item.path) + '">' + escapeHtml(item.title || item.id) + '</a></h3>' +
+              '<p>' + escapeHtml(item.description || '') + '</p>' +
+              metaMarkup(item) +
+            '</div>' +
+            linksMarkup(item) +
+          '</li>'
+        );
+      }
+
+      function groupMarkup(group) {
+        var n = group.children.length;
+        return (
+          '<li class="card is-group" data-prototype-group="' + escapeAttr(group.id) + '">' +
+            '<div>' +
+              '<h2>' + escapeHtml(group.title || group.id) + '</h2>' +
+              '<p>' + escapeHtml(group.description || '') + '</p>' +
+              metaMarkup(group, n === 1 ? '1 mock' : n + ' mocks') +
+            '</div>' +
+            '<ul class="subs">' + group.children.map(subMarkup).join('') + '</ul>' +
+          '</li>'
+        );
+      }
 
       function escapeHtml(s) {
         return String(s || '')
