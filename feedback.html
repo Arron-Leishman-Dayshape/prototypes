@@ -247,14 +247,16 @@
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 10px;
-      overflow: hidden;
+      overflow: auto;
       background: #f3f4f6;
-      min-height: 420px;
+      max-height: min(75vh, 900px);
     }
-    .heat-stage iframe {
+    .heat-scaler {
+      transform-origin: top left;
+      pointer-events: none;
+    }
+    .heat-scaler iframe {
       display: block;
-      width: 100%;
-      height: 640px;
       border: 0;
       background: #fff;
       pointer-events: none;
@@ -263,8 +265,6 @@
       position: absolute;
       left: 0;
       top: 0;
-      width: 100%;
-      height: 100%;
       pointer-events: none;
     }
     .heat-meta {
@@ -361,7 +361,9 @@
         <p>Clicks on this prototype are collected automatically. Open or share the mock to gather data, then refresh.</p>
         <div class="heat-meta" id="heatMeta">Loading…</div>
         <div class="heat-stage" id="heatStage">
-          <iframe id="heatFrame" title="Prototype preview" sandbox="allow-same-origin allow-scripts"></iframe>
+          <div class="heat-scaler" id="heatScaler">
+            <iframe id="heatFrame" title="Prototype preview" sandbox="allow-same-origin allow-scripts"></iframe>
+          </div>
           <canvas id="heatCanvas"></canvas>
         </div>
         <div class="panel-actions">
@@ -438,21 +440,81 @@
           (telemetry && telemetry.hasSupabase() ? '' : ' · local browser only until supabase-telemetry.sql is run');
 
         var frame = document.getElementById('heatFrame');
+        var scaler = document.getElementById('heatScaler');
         var canvas = document.getElementById('heatCanvas');
         var stage = document.getElementById('heatStage');
-        if (mockPath) frame.src = mockPath;
+        if (!mockPath) return;
 
-        function paint() {
-          var w = stage.clientWidth || 760;
-          var h = stage.clientHeight || 640;
-          canvas.width = w;
-          canvas.height = h;
+        // Use the most common click viewport width so the mock layout matches reviewers
+        var widths = clicks.map(function (c) { return Number(c.viewportW) || 0; }).filter(function (n) { return n > 0; }).sort(function (a, b) { return a - b; });
+        var renderWidth = widths.length ? widths[Math.floor(widths.length / 2)] : 1280;
+        renderWidth = Math.max(320, Math.min(1600, renderWidth));
+
+        var heatSrc = mockPath + (mockPath.indexOf('?') >= 0 ? '&' : '?') + 'heatmap=1';
+        var needsReload = frame.getAttribute('data-heat-src') !== heatSrc || frame.getAttribute('data-heat-w') !== String(renderWidth);
+        if (needsReload) {
+          frame.setAttribute('data-heat-src', heatSrc);
+          frame.setAttribute('data-heat-w', String(renderWidth));
+          frame.src = heatSrc;
+        }
+
+        function medianDocSize(doc) {
+          var body = doc.body;
+          var el = doc.documentElement;
+          return {
+            w: Math.max(body.scrollWidth, el.scrollWidth, body.offsetWidth, el.clientWidth, renderWidth),
+            h: Math.max(body.scrollHeight, el.scrollHeight, body.offsetHeight, el.clientHeight, 1),
+          };
+        }
+
+        function layoutAndPaint() {
+          var stageW = stage.clientWidth || 760;
+          var docW = renderWidth;
+          var docH = 900;
+
+          try {
+            var doc = frame.contentDocument || frame.contentWindow.document;
+            // Force iframe layout width to reviewer viewport width
+            frame.style.width = renderWidth + 'px';
+            if (doc && doc.documentElement) {
+              doc.documentElement.style.overflow = 'hidden';
+              // Give layout a moment at the intended width
+              var size = medianDocSize(doc);
+              docW = size.w;
+              docH = size.h;
+            }
+          } catch (err) {
+            // same-origin should work; fall back to stage mapping
+            docW = renderWidth;
+            docH = Math.round(renderWidth * 1.4);
+          }
+
+          frame.style.width = docW + 'px';
+          frame.style.height = docH + 'px';
+          scaler.style.width = docW + 'px';
+          scaler.style.height = docH + 'px';
+
+          var scale = stageW / docW;
+          var displayH = docH * scale;
+          scaler.style.transform = 'scale(' + scale + ')';
+          // Reserve visual space after transform (transform doesn't affect layout)
+          stage.style.height = displayH + 'px';
+          // Clip the unscaled layout overflow
+          stage.style.overflow = 'hidden';
+
+          canvas.style.width = stageW + 'px';
+          canvas.style.height = displayH + 'px';
+          canvas.width = Math.round(stageW);
+          canvas.height = Math.round(displayH);
+
+          var w = canvas.width;
+          var h = canvas.height;
           var ctx = canvas.getContext('2d');
           ctx.clearRect(0, 0, w, h);
           if (!clicks.length) return;
 
-          var cols = 48;
-          var rows = 64;
+          var cols = 56;
+          var rows = Math.max(40, Math.round(56 * (h / Math.max(w, 1))));
           var grid = [];
           var i, max = 0;
           for (i = 0; i < cols * rows; i++) grid[i] = 0;
@@ -473,21 +535,35 @@
             var y = Math.floor(i / cols) * cellH;
             ctx.fillStyle = 'rgba(220, 40, 40,' + (0.12 + intensity * 0.55) + ')';
             ctx.beginPath();
-            ctx.arc(x + cellW / 2, y + cellH / 2, Math.max(cellW, cellH) * (0.55 + intensity * 0.9), 0, Math.PI * 2);
+            ctx.arc(x + cellW / 2, y + cellH / 2, Math.max(cellW, cellH) * (0.5 + intensity * 0.85), 0, Math.PI * 2);
             ctx.fill();
           }
 
           clicks.forEach(function (c) {
-            ctx.fillStyle = 'rgba(163, 0, 60, 0.75)';
+            ctx.fillStyle = 'rgba(163, 0, 60, 0.85)';
             ctx.beginPath();
             ctx.arc(Number(c.x) * w, Number(c.y) * h, 3.5, 0, Math.PI * 2);
             ctx.fill();
           });
+
+          document.getElementById('heatMeta').textContent =
+            clicks.length + ' clicks · rendered at ' + renderWidth + 'px width · scale ' + Math.round(scale * 100) + '%';
         }
 
-        frame.onload = function () { setTimeout(paint, 80); };
-        window.addEventListener('resize', paint);
-        setTimeout(paint, 200);
+        var paintTimer = null;
+        function schedulePaint() {
+          clearTimeout(paintTimer);
+          paintTimer = setTimeout(layoutAndPaint, 60);
+        }
+
+        frame.onload = function () {
+          // Wait for fonts/layout inside the mock
+          setTimeout(layoutAndPaint, 250);
+          setTimeout(layoutAndPaint, 800);
+        };
+        window.addEventListener('resize', schedulePaint);
+        if (!needsReload) schedulePaint();
+        else setTimeout(layoutAndPaint, 400);
       }
 
       function setTab(name) {

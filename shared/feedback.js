@@ -11,8 +11,9 @@
   var prototypeTitle = store ? store.resolvePrototypeTitle(prototypeId) : document.title;
   var HTML2CANVAS_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
 
-  // Only on prototype pages (not hub / inbox)
+  // Only on prototype pages (not hub / inbox / heatmap preview)
   if (!prototypeId || /\/feedback\.html$/i.test(location.pathname)) return;
+  if (/[?&]heatmap=1(?:&|$)/.test(location.search)) return;
 
   function pageMeta() {
     return {

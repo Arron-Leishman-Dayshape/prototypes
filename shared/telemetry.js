@@ -80,7 +80,7 @@
       scrollY: window.scrollY,
       pageUrl: location.href,
       pagePath: location.pathname + location.search,
-      meta: { tag: tag, text: text },
+      meta: { tag: tag, text: text, docW: w, docH: h },
     });
   }
 
