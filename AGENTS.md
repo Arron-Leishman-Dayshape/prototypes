@@ -1,6 +1,6 @@
 # Agent instructions — prototypes hub
 
-This repo is Arron’s personal HTML prototypes hub (not Dayshape). Live site: https://arronleishman.github.io/prototypes/
+This repo is the High Volume Prototypes hub (not Dayshape). Live site: https://arronleishman.github.io/prototypes/
 
 ## Goal
 

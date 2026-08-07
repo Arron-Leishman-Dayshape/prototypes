@@ -1,6 +1,6 @@
 /* Prototypes hub config — edit these and redeploy */
 window.PROTOTYPES_CONFIG = {
-  siteName: 'Arron’s Prototypes',
+  siteName: 'High Volume Prototypes',
   siteTagline: 'Click a mock, share the link, leave feedback.',
 
   // Shared feedback store (free Supabase). Feedback is stored per prototype — no email.

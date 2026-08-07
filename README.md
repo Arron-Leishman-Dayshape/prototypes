@@ -1,4 +1,4 @@
-# Prototypes hub
+# High Volume Prototypes
 
 Static site for HTML mocks: one landing page, shareable URLs, live updates via git deploy, and **feedback stored per prototype** (no email).
 
