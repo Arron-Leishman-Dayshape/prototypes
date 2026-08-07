@@ -226,6 +226,107 @@
       .actions { flex-direction: row; flex-wrap: wrap; align-items: stretch; }
       .actions button { flex: 1 1 auto; }
     }
+
+    .share-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(26, 29, 38, 0.45);
+    }
+    .share-modal[hidden] { display: none !important; }
+    .share-dialog {
+      width: min(480px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 48px rgba(26, 29, 38, 0.22);
+      padding: 22px 22px 18px;
+    }
+    .share-dialog-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .share-dialog-head h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .share-dialog-close {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .share-dialog-close:hover { background: #f3f4f6; color: var(--ink); }
+    .share-dialog-sub {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+    .share-dialog-label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .share-dialog-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    .share-dialog-row input {
+      flex: 1;
+      min-width: 0;
+      height: 42px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font: 400 0.9rem/1 "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background: #fafafb;
+    }
+    .share-dialog-row input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .share-copy-btn {
+      height: 42px;
+      padding: 0 14px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--accent);
+      color: #fff;
+      font: 600 0.9rem/1 "DM Sans", system-ui, sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .share-copy-btn:hover { filter: brightness(1.05); }
+    .share-copy-btn.is-copied { background: #1f4a40; }
+    .share-dialog-note {
+      margin: 12px 0 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
   </style>
 </head>
 <body>
@@ -250,6 +351,26 @@
       Add a file under <code>mocks/</code>, list it in <code>manifest.json</code>, push, done.
     </footer>
   </main>
+
+  <div class="share-modal" id="shareModal" hidden>
+    <div class="share-dialog" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
+      <div class="share-dialog-head">
+        <h2 id="shareModalTitle">Share prototype</h2>
+        <button type="button" class="share-dialog-close" id="shareModalClose" aria-label="Close">&times;</button>
+      </div>
+      <p class="share-dialog-sub" id="shareModalSub">Reviewers get this mock only — not the hub or feedback threads.</p>
+      <label class="share-dialog-label" for="shareModalUrl">Reviewer link</label>
+      <div class="share-dialog-row">
+        <input id="shareModalUrl" type="text" readonly value="" />
+        <button type="button" class="share-copy-btn" id="shareModalCopy">
+          <i class="fa-regular fa-copy" aria-hidden="true"></i>
+          <span id="shareModalCopyLabel">Copy link</span>
+        </button>
+      </div>
+      <p class="share-dialog-note">Paste into Slack, email, or Teams. They can leave feedback on the page; they can’t open Insights.</p>
+    </div>
+  </div>
+
   <script src="config.js"></script>
   <script src="shared/access.js"></script>
   <script src="shared/feedback-store.js"></script>
@@ -305,13 +426,82 @@
           list.innerHTML = '<li class="err">Couldn’t load <code>manifest.json</code>. Serve this folder over HTTP (not as a file:// page).</li>';
         });
 
+      var shareModal = document.getElementById('shareModal');
+      var shareModalUrl = document.getElementById('shareModalUrl');
+      var shareModalTitle = document.getElementById('shareModalTitle');
+      var shareModalSub = document.getElementById('shareModalSub');
+      var shareModalLabel = document.querySelector('.share-dialog-label');
+      var shareModalNote = document.querySelector('.share-dialog-note');
+      var shareModalCopy = document.getElementById('shareModalCopy');
+      var shareModalCopyLabel = document.getElementById('shareModalCopyLabel');
+      var shareModalClose = document.getElementById('shareModalClose');
+      var lastShareFocus = null;
+
+      function openShareModal(options) {
+        options = options || {};
+        lastShareFocus = document.activeElement;
+        shareModalTitle.textContent = options.heading || ('Share “' + (options.title || 'prototype') + '”');
+        shareModalSub.textContent = options.subtitle || 'Reviewers get this mock only — not the hub or feedback threads.';
+        shareModalLabel.textContent = options.label || 'Reviewer link';
+        shareModalNote.textContent = options.note || 'Paste into Slack, email, or Teams. They can leave feedback on the page; they can’t open Insights.';
+        shareModalUrl.value = options.url || '';
+        shareModalCopyLabel.textContent = 'Copy link';
+        shareModalCopy.classList.remove('is-copied');
+        shareModal.hidden = false;
+        shareModalUrl.focus();
+        shareModalUrl.select();
+      }
+
+      function closeShareModal() {
+        shareModal.hidden = true;
+        if (lastShareFocus && lastShareFocus.focus) lastShareFocus.focus();
+      }
+
+      function copyShareUrl() {
+        var url = shareModalUrl.value || '';
+        function done() {
+          shareModalCopy.classList.add('is-copied');
+          shareModalCopyLabel.textContent = 'Copied!';
+          setTimeout(function () {
+            shareModalCopy.classList.remove('is-copied');
+            shareModalCopyLabel.textContent = 'Copy link';
+          }, 1600);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(function () {
+            shareModalUrl.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+          });
+          return;
+        }
+        shareModalUrl.select();
+        try { document.execCommand('copy'); done(); } catch (e) {
+          window.prompt('Copy this link:', url);
+        }
+      }
+
+      shareModalClose.addEventListener('click', closeShareModal);
+      shareModalCopy.addEventListener('click', copyShareUrl);
+      shareModal.addEventListener('click', function (e) {
+        if (e.target === shareModal) closeShareModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !shareModal.hidden) {
+          e.preventDefault();
+          closeShareModal();
+        }
+      });
+
       list.addEventListener('click', function (e) {
         var actionBtn = e.target.closest('.actions button');
         if (actionBtn) {
           e.preventDefault();
           e.stopPropagation();
           if (actionBtn.classList.contains('share-btn')) {
-            sharePrototype(actionBtn);
+            openShareModal({
+              url: actionBtn.getAttribute('data-share-url') || '',
+              title: actionBtn.getAttribute('data-share-title') || 'prototype',
+            });
             return;
           }
           if (actionBtn.classList.contains('feedback-btn')) {
@@ -341,60 +531,14 @@
       var shareHubBtn = document.getElementById('shareHubBtn');
       if (shareHubBtn) {
         shareHubBtn.addEventListener('click', function () {
-          var url = access.hubUrlWithKey();
-          var done = function () {
-            shareHubBtn.textContent = 'Copied hub link!';
-            setTimeout(function () { shareHubBtn.textContent = 'Copy hub link'; }, 1600);
-          };
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(url).then(done);
-          } else {
-            window.prompt('Copy this internal hub link:', url);
-            done();
-          }
+          openShareModal({
+            url: access.hubUrlWithKey(),
+            heading: 'Share internal hub',
+            subtitle: 'For your team only — unlocks the hub and Insights.',
+            label: 'Internal hub link',
+            note: 'Don’t send this to external reviewers. Use Share on a card for reviewer mock links.',
+          });
         });
-      }
-
-      function sharePrototype(btn) {
-        var url = btn.getAttribute('data-share-url') || '';
-        var title = btn.getAttribute('data-share-title') || 'Prototype';
-        var label = btn.querySelector('.share-label');
-
-        function markCopied() {
-          btn.classList.add('is-copied');
-          if (label) label.textContent = 'Copied!';
-          setTimeout(function () {
-            btn.classList.remove('is-copied');
-            if (label) label.textContent = 'Share';
-          }, 1600);
-        }
-
-        function copyFallback() {
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            return navigator.clipboard.writeText(url).then(markCopied);
-          }
-          var input = document.createElement('input');
-          input.value = url;
-          input.setAttribute('readonly', '');
-          input.style.position = 'fixed';
-          input.style.opacity = '0';
-          document.body.appendChild(input);
-          input.select();
-          try { document.execCommand('copy'); markCopied(); } catch (err) { window.prompt('Copy this link:', url); }
-          input.remove();
-          return Promise.resolve();
-        }
-
-        if (navigator.share) {
-          navigator.share({ title: title, text: 'Have a look at this prototype and leave feedback:', url: url })
-            .then(markCopied)
-            .catch(function (err) {
-              if (err && err.name === 'AbortError') return;
-              copyFallback();
-            });
-          return;
-        }
-        copyFallback();
       }
 
       function isGroup(item) {
