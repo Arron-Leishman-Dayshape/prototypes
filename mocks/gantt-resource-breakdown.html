@@ -18,6 +18,7 @@
     --primary-strong: #3d2f80;
     --primary-subtle: #f0effb;
     --primary-accent: #dedaf4;
+    --interactive-primary-d2: #4f3fa0;
 
     --surface-default: #fff;
     --surface-subtle-light: #f8f8f8;
@@ -33,20 +34,33 @@
     --surface-header: #fafafa;
     --surface-group: #f3f3f6;
     --surface-disabled: #f5f5f7;
+    /* Opaque equivalent of rgba(197, 205, 222, .12) over white — the sticky
+       label column needs to hide the timeline scrolling beneath it. */
+    --surface-row-alt: #f8f9fb;
+    --surface-unavailability: #e8e1f8;
+    --surface-icon-hover: rgb(144 144 144 / 40%);
 
+    --surface-container-default: rgba(152, 155, 182, .15);
+    --surface-warning: #e27209;
     --surface-success-subtle: #e1faeb;
     --surface-danger-subtle: #feecf2;
     --surface-warning-subtle: #fff0e0;
     --surface-info-subtle: #edf0f8;
 
     --text-default: #222430;
+    --text-label: #4c5172;
+    --text-white: #f8f8f8;
     --text-subtle: #6a708f;
     --text-disabled: #989bb6;
     --text-accent: #4c5172;
     --text-inverse: #fff;
     --text-primary: #4f3fa0;
+    --text-link: #7059e8;
+    --text-emphasis: #3d425c;
+    --text-success: #078138;
     --text-danger: #a3003c;
     --text-warning: #b45309;
+    --warning: #e27209;
 
     --icon-default: #4c5172;
     --icon-subtle: #888;
@@ -55,18 +69,28 @@
     --border-subtle: #e2e3e9;
     --border-default: #babfd1;
     --border-emphasis: #d7d8df;
+    --border-primary: #4f3fa0;
+    --border-success: #078138;
+    /* Sidebar section divider — heavier than --border-subtle by design */
+    --border-section: #6c757d;
     --border-radius-default: 4px;
+    --border-radius-circle: 100px;
     --border-xs: 1px;
 
     --font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-size-medium: 0.875rem;
+    --font-size-label: 0.8125rem;
     --font-size-small: 0.75rem;
     --font-size-xsmall: 0.6875rem;
+    --font-weight-regular: 400;
+    --font-weight-semibold: 600;
 
     --padding-xs: 0.5rem;
     --padding-sm: 0.75rem;
     --padding-md: 1rem;
     --padding-lg: 1.5rem;
+    /* Gantt settings menu / submenu side inset */
+    --menu-inset: 25px;
 
     /* Booking / phase data colours */
     --phase-preparation: #2398f2;
@@ -78,31 +102,44 @@
     --booking-magenta: #c24cad;
     --today-marker: #f4645f;
 
+    /* Current Gantt cold-to-hot utilisation palette */
+    --utilisation-level-1: #b2bee1;
+    --utilisation-level-2: #a4d9c1;
+    --utilisation-level-3: #f3dd8e;
+    --utilisation-level-4: #ffae52;
+    --utilisation-level-5: #e26bab;
+
     /* Layout */
     --rail-w: 48px;
-    --col-name-w: 239px;
-    --col-grade-w: 50px;
-    --col-expand-w: 20px;
-    --col-dim-w: 96px;
+    --col-select-w: 48px;
+    --col-name-w: 195px;
+    --col-grade-w: 69px;
+    --col-expand-w: 25px;
+    --col-dim-w: 115px;
     --left-w: 405px;
     --week-w: 112.6px;
     --sub-row-h: 24px;
     --group-h: 27px;
-    --slim-h: 10px;
+    --slim-h: 5px;
+    --bar-h: 23px;
+    --bar-border: rgb(0 0 0 / 30%);
 }
 
 * { box-sizing: border-box; }
 
+/* Keep the rem base at the browser default so the rem-based type tokens
+   resolve to the same pixel sizes they do in Dayshape. */
 html, body {
     margin: 0;
     padding: 0;
     height: 100%;
     font-family: var(--font-family);
-    font-size: var(--font-size-medium);
     color: var(--text-default);
     background: var(--surface-default);
     overflow: hidden;
 }
+
+body { font-size: var(--font-size-medium); }
 
 button { font-family: inherit; }
 
@@ -254,6 +291,7 @@ button { font-family: inherit; }
     overflow: hidden;
     background: var(--surface-header);
 }
+.Head-scroll { width: max-content; will-change: transform; }
 .Head-row { display: flex; }
 .Head-left {
     position: sticky; left: 0; z-index: 2;
@@ -300,7 +338,9 @@ button { font-family: inherit; }
 /* Body rows */
 .Row { display: flex; }
 .Row-left {
-    position: sticky; left: 0; z-index: 10;
+    /* Above the bars, gridlines and today marker so the timeline scrolls
+       cleanly underneath, but below the pinned header. */
+    position: sticky; left: 0; z-index: 25;
     width: var(--left-w); flex: 0 0 var(--left-w);
     background: var(--surface-default);
     border-right: var(--border-xs) solid var(--border-subtle);
@@ -330,132 +370,182 @@ button { font-family: inherit; }
 .GroupRow .Row-left i { font-size: 10px; color: var(--icon-default); width: 9px; }
 
 /* Worker block */
-.WorkerRow { border-bottom: var(--border-xs) solid var(--border-emphasis); }
+.WorkerRow { border-bottom: var(--border-xs) solid var(--border-subtle); }
 .WorkerRow .Row-left { align-items: stretch; }
+.WorkerRow.is-alt .Row-left,
+.WorkerRow.is-alt .Row-track { background: var(--surface-row-alt); }
 
+/* The resource name is left-aligned after a 50px select/checkbox gutter, and
+   sits in the first sub-row band rather than centred on the whole block. */
 .Cell-name {
     width: var(--col-name-w); flex: 0 0 var(--col-name-w);
-    padding: 6px 8px 0 16px;
-    text-align: right;
-    font-size: var(--font-size-small);
-    color: var(--text-default);
-    line-height: 16px;
+    padding: 0 5px 0 var(--col-select-w);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-label);
+    color: var(--text-label);
     overflow: hidden;
-    display: flex; align-items: flex-start; justify-content: flex-end; gap: 5px;
+    display: flex; align-items: flex-start; gap: 6px;
 }
+.Cell-name > * { height: var(--sub-row-h); display: flex; align-items: center; }
 .Cell-name span {
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.Cell-name .fa-link { font-size: 9px; color: var(--icon-subtle); margin-top: 4px; }
+.Cell-name .fa-link { font-size: 11px; color: var(--text-label); flex: 0 0 auto; }
 
 .Cell-grade {
     width: var(--col-grade-w); flex: 0 0 var(--col-grade-w);
-    padding: 6px 0 0 6px;
-    font-size: var(--font-size-small);
-    color: var(--text-default);
+    height: var(--sub-row-h);
+    padding-left: 5px;
+    display: flex; align-items: center;
+    font-size: var(--font-size-label);
+    color: var(--text-label);
 }
 .Cell-expand {
     width: var(--col-expand-w); flex: 0 0 var(--col-expand-w);
-    padding-top: 5px;
-    display: flex; align-items: flex-start; justify-content: center;
+    height: var(--sub-row-h);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: center;
 }
 .Expander {
-    width: 13px; height: 13px;
-    border: var(--border-xs) solid var(--border-default);
-    border-radius: 2px;
-    background: #fff;
-    color: var(--icon-default);
-    font-size: 8px;
+    width: 15px; height: 15px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--interactive-primary-d2);
+    font-size: 13px;
     line-height: 1;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    padding: 0;
+    padding: 2px;
 }
-.Expander:hover { border-color: var(--primary); color: var(--primary); }
+.Expander:hover { background: var(--surface-icon-hover); color: #7a7a7a; }
 
 .Cell-dims {
     width: var(--col-dim-w); flex: 0 0 var(--col-dim-w);
-    border-left: var(--border-xs) solid var(--border-subtle);
     display: flex; flex-direction: column;
 }
 .DimLabel {
     height: var(--sub-row-h);
     display: flex; align-items: center;
-    padding: 0 6px;
-    font-size: var(--font-size-small);
-    color: var(--text-default);
+    padding: 2px 4px 2px 6px;
+    border-left: 3px solid var(--border-subtle);
     border-bottom: var(--border-xs) solid var(--border-subtle);
-    background: var(--surface-default);
+    font-size: var(--font-size-small);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-subtle);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    gap: 5px;
-    position: relative;
+    gap: 8px;
 }
 .DimLabel:last-child { border-bottom: 0; }
-.DimLabel.is-other { color: var(--text-subtle); }
-.DimLabel.is-accented { color: var(--primary); }
-.DimLabel-accent {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-}
 .DimLabel.is-expanded { background: var(--surface-list-item-selected-light); font-weight: 600; }
 
 /* Slim availability strip in the left panel gutter */
-.SlimGutter { height: var(--slim-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
+.SlimGutter { height: var(--slim-h); }
 
 /* Timeline cells */
 .Track-weeks { display: flex; flex-direction: column; }
 .Track-subrow { display: flex; height: var(--sub-row-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
 .Track-subrow:last-child { border-bottom: 0; }
+/* The separator is drawn inside the sub-row's height, so the hours strip has to
+   stop short of it — otherwise a hovered cell paints over the line. */
+.Track-hours {
+    display: flex;
+    height: calc(var(--sub-row-h) - var(--border-xs));
+    flex: 0 0 calc(var(--sub-row-h) - var(--border-xs));
+}
 
+/* Daylight PhaseWeekCell (Figma 16232:17192). */
 .Cellw {
     width: var(--week-w); flex: 0 0 var(--week-w);
-    border-right: var(--border-xs) solid var(--border-emphasis);
-    display: flex; align-items: center; justify-content: center;
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 8px;
+    border-right: var(--border-xs) solid var(--border-subtle);
     font-size: var(--font-size-small);
-    color: var(--text-default);
+    color: var(--text-subtle);
     position: relative;
     cursor: default;
     user-select: none;
 }
+.Cellw-hours {
+    flex: 1 0 0; min-width: 0; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .Cellw.is-zero { color: var(--text-disabled); }
 .Cellw.is-clickable { cursor: pointer; }
+/* Has to read against the alternating row tint, so this is the standard
+   Dayshape list hover rather than the lighter one. */
 .Cellw.is-clickable:hover { background: var(--surface-list-item-hover); }
-.Cellw.is-selected { background: var(--primary-subtle); box-shadow: inset 0 0 0 1px var(--primary); z-index: 2; }
-.Cellw-hint {
-    position: absolute; right: 3px; top: 50%; transform: translateY(-50%);
-    font-size: 9px; color: var(--icon-disabled); opacity: 0;
-}
-.Cellw.is-clickable:hover .Cellw-hint { opacity: 1; }
+.Cellw.is-selected { background: var(--surface-default); }
 
-/* Weekend / day gridlines behind the cells */
-.Cellw-grid { position: absolute; inset: 0; display: flex; pointer-events: none; }
-.Cellw-grid i { flex: 1; border-right: var(--border-xs) solid #f2f2f5; }
-.Cellw-grid i:last-child { border-right: 0; }
+/* Date column lines. These are the background canvas the bookings sit on, so
+   they only run behind the bars — the aggregate hour cells are self-contained
+   week cells that carry their own right border instead. */
+.Track-grid { position: absolute; inset: 0; display: flex; pointer-events: none; z-index: 1; }
+.Track-grid > i { width: var(--week-w); flex: 0 0 var(--week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
+.Track-grid > i > b { flex: 1; border-right: var(--border-xs) solid #f2f2f5; }
+.Track-grid > i > b:last-child { border-right: 0; }
+/* Inside the bar layer the lines are the backdrop, so the bars paint over them. */
+.Track-bars > .Track-grid { z-index: 0; }
 
-/* Individual bookings shown when a resource row is expanded */
-.Track-items { display: flex; flex-direction: column; gap: 2px; padding: 2px 0; }
-.ItemRow { display: flex; height: 21px; }
-.ItemSlot { width: var(--week-w); flex: 0 0 var(--week-w); border-right: var(--border-xs) solid var(--border-emphasis); padding: 0 2px; }
+/* Individual bookings shown when a resource row is expanded.
+   Mirrors the main Gantt's .gantt-item / .gantt-item-content / .item-resize-handle. */
+.Track-bars { z-index: 10; }
 .Bar {
-    height: 17px;
-    border-radius: 2px;
-    color: #fff;
-    font-size: 10px;
-    line-height: 17px;
-    padding: 0 4px;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    position: absolute;
+    height: var(--bar-h);
+    min-width: 2px;
+    border: var(--border-xs) solid var(--bar-border);
+    border-radius: 3px;
+    background-color: var(--booking-purple);
+    color: var(--text-white);
+    display: flex;
+    justify-content: space-between;
+    transition: box-shadow .1s, opacity .1s;
     cursor: pointer;
-    border-bottom: 1px solid rgba(0,0,0,.2);
 }
-.Bar.is-selected { outline: 2px solid var(--primary); outline-offset: -2px; }
+.Bar:hover { box-shadow: 1px 1px 6px 2px rgba(64, 64, 64, .3); }
+.Bar.is-dimmed { opacity: .65; }
+.Bar.is-dimmed:hover { box-shadow: 1px 1px 4px 1px rgba(58, 58, 58, .2); }
+
+.Bar-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    height: 21px;
+    line-height: 22px;
+    font-size: var(--font-size-label);
+    font-weight: 300;
+    padding-left: 2px;
+    margin-right: 7px;
+    border-radius: 2px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.Bar.is-selected .Bar-content { font-weight: 400; }
+.Bar-name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+
+.Bar-handle {
+    position: absolute; right: 0;
+    width: 7px; height: 22px;
+    background: rgba(0, 0, 0, .2);
+    border-radius: 0 2px 2px 0;
+    cursor: col-resize;
+}
+
 .Bar--unavailability {
-    background: repeating-linear-gradient(135deg, #d7d8df 0 5px, #eceded 5px 10px);
+    background-color: var(--surface-unavailability);
+    background-image: linear-gradient(transparent 50%, rgba(255, 255, 255, .15) 50%);
+    background-size: 10px 10px;
     color: var(--text-default);
 }
 
-/* Slim availability strip */
-.SlimRow { display: flex; height: var(--slim-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
-.SlimCell { width: var(--week-w); flex: 0 0 var(--week-w); border-right: var(--border-xs) solid var(--border-emphasis); padding: 2px 1px; }
-.SlimCell i { display: block; height: 100%; border-radius: 1px; }
+/* Current Gantt slim view is a five-pixel canvas, scaled from one pixel high.
+   Keep the weekly segments flush so they read as one continuous heatmap. */
+.SlimRow { display: flex; height: var(--slim-h); position: relative; z-index: 2; }
+.SlimCell { width: var(--week-w); flex: 0 0 var(--week-w); height: var(--slim-h); }
+.SlimCell i { display: block; width: 100%; height: 100%; }
 
 /* Today marker */
 .Today {
@@ -474,79 +564,95 @@ button { font-family: inherit; }
     background: var(--surface-default);
     border: var(--border-xs) solid var(--border-subtle);
     border-radius: var(--border-radius-default);
-    box-shadow: 0 6px 20px rgba(0,0,0,.16);
-    padding: 12px 0;
-    width: 190px;
+    padding: 13px 0;
+    width: 275px;
+    display: flex; flex-direction: column; gap: 8px;
+}
+.Menu-group { display: flex; flex-direction: column; }
+/* Section headers rule off from the group above; the first one has nothing
+   to separate it from. */
+.Menu-section {
+    padding: 15px var(--menu-inset) 0;
+    border-top: var(--border-xs) solid var(--border-subtle);
+}
+.Menu-group:first-child > .Menu-section { border-top: 0; padding-top: 0; }
+.Menu-section.has-select {
+    display: flex; flex-direction: column; gap: 19px;
+    padding-bottom: 8px;
 }
 .Menu-title {
-    padding: 0 22px 8px;
     font-size: var(--font-size-medium);
     color: var(--text-subtle);
     text-transform: uppercase;
-    line-height: 21px;
+    line-height: normal;
 }
-.Menu-title:not(:first-child) { padding-top: 14px; }
 .Menu-item {
-    padding: 7px 12px 7px 22px;
+    padding: 8px 33px 8px 24px;
     font-size: var(--font-size-medium);
     color: var(--text-default);
     display: flex; align-items: center; justify-content: space-between;
     gap: 8px;
     cursor: pointer;
-    line-height: 20px;
+    line-height: normal;
 }
-.Menu-item:hover, .Menu-item.is-open { background: var(--surface-subtle-dark); }
-.Menu-item.is-static { cursor: default; color: var(--text-default); }
-.Menu-item.is-static:hover { background: transparent; }
-.Menu-item i.fa-chevron-right, .Menu-item i.fa-chevron-left { font-size: 9px; color: var(--icon-default); }
+.Menu-item:hover, .Menu-item.is-open { background: var(--surface-list-item-hover); }
+.Menu-item.is-static { cursor: default; }
+/* The submenu chevron is part of the hover / open state only. */
+.Menu-item i.fa-chevron-left {
+    font-size: 10px; color: var(--text-default); opacity: 0;
+}
+.Menu-item:hover i.fa-chevron-left, .Menu-item.is-open i.fa-chevron-left { opacity: 1; }
 .Menu-item i.fa-check { font-size: 11px; color: var(--icon-default); }
 .Menu-select {
-    margin: 0 22px 6px;
-    width: calc(100% - 44px);
-    height: 30px;
-    border: var(--border-xs) solid var(--border-emphasis);
-    border-radius: 3px;
-    padding: 0 8px;
+    width: 100%; height: 35px;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    padding: 0 12px;
     font-family: inherit;
     font-size: var(--font-size-medium);
-    color: var(--text-default);
-    background: #fff;
+    line-height: 21px;
+    color: var(--text-emphasis);
+    background: var(--surface-default);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7.05' height='4' viewBox='0 0 7.05152 4'%3E%3Cpath d='M0.474469 0H6.57705C6.99923 0 7.21031 0.509932 6.91147 0.808776L3.86137 3.86125C3.67637 4.04625 3.37515 4.04625 3.19015 3.86125L0.140049 0.808776C-0.158795 0.509932 0.052293 0 0.474469 0Z' fill='%23222430'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
 }
 
+/* Submenus butt against the menu's right edge, so only the outer corners round. */
 .Flyout {
     position: absolute;
     background: var(--surface-default);
     border: var(--border-xs) solid var(--border-subtle);
-    border-radius: var(--border-radius-default);
-    box-shadow: 0 6px 20px rgba(0,0,0,.16);
-    padding: 14px 0;
-    width: 262px;
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+    padding: 13px var(--menu-inset);
+    width: 320px;
+    box-sizing: border-box;
+    display: flex; flex-direction: column; gap: 12px;
 }
 .Flyout-title {
-    padding: 0 22px 10px;
     font-size: var(--font-size-medium);
-    color: var(--text-subtle);
+    color: #6c757d;
     text-transform: uppercase;
-    line-height: 20px;
+    line-height: normal;
 }
 .Radio {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px 22px;
+    display: flex; align-items: center; gap: 8px;
     font-size: var(--font-size-medium);
+    line-height: 21px;
     color: var(--text-default);
     cursor: pointer;
 }
-.Radio:hover { background: var(--surface-subtle-dark); }
+/* 16px ring, 5px purple stroke when checked — matches the exported radio-bg. */
 .Radio-dot {
-    width: 13px; height: 13px; flex: 0 0 13px;
+    width: 16px; height: 16px; flex: 0 0 16px;
+    box-sizing: border-box;
     border-radius: 50%;
     border: var(--border-xs) solid var(--border-default);
     background: #fff;
-    position: relative;
 }
-.Radio.is-checked .Radio-dot { border-color: var(--primary); border-width: 4px; }
+.Radio.is-checked .Radio-dot { border: 5px solid var(--primary); }
 .Radio.is-disabled { color: var(--text-disabled); cursor: not-allowed; }
-.Radio.is-disabled:hover { background: transparent; }
 .Radio.is-disabled .Radio-dot { border-color: var(--border-emphasis); background: var(--surface-disabled); }
 .Radio-tag {
     margin-left: auto;
@@ -557,26 +663,27 @@ button { font-family: inherit; }
     padding: 1px 7px;
 }
 .Checkbox {
-    display: flex; align-items: center; gap: 10px;
-    padding: 6px 22px;
+    display: flex; align-items: center; gap: 8px;
     font-size: var(--font-size-medium);
+    line-height: 21px;
     color: var(--text-default);
     cursor: pointer;
 }
-.Checkbox:hover { background: var(--surface-subtle-dark); }
 .Checkbox-box {
-    width: 13px; height: 13px; flex: 0 0 13px;
+    width: 16px; height: 16px; flex: 0 0 16px;
+    box-sizing: border-box;
     border: var(--border-xs) solid var(--border-default);
     border-radius: 2px;
     background: #fff;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 8px;
+    color: #fff; font-size: 9px;
 }
 .Checkbox.is-checked .Checkbox-box { background: var(--primary); border-color: var(--primary); }
 
-.Seg { display: flex; margin: 8px 22px 4px; border: var(--border-xs) solid var(--border-subtle); border-radius: 3px; overflow: hidden; }
+.Seg { display: flex; border: var(--border-xs) solid var(--border-subtle); border-radius: var(--border-radius-default); overflow: hidden; }
 .Seg button {
-    flex: 1; padding: 6px 0;
+    flex: 1; padding: 7px 0;
+    font-family: inherit;
     font-size: var(--font-size-medium);
     border: 0; border-left: var(--border-xs) solid var(--border-subtle);
     background: #fff; color: var(--text-default);
@@ -587,7 +694,6 @@ button { font-family: inherit; }
 .Seg.is-disabled button { color: var(--text-disabled); cursor: not-allowed; background: #fff; }
 
 .Menu-note {
-    margin: 10px 22px 0;
     padding: 8px 10px;
     background: var(--surface-info-subtle);
     border-radius: 3px;
@@ -598,71 +704,258 @@ button { font-family: inherit; }
 .Menu-note i { color: var(--primary); margin-right: 5px; }
 
 /* ============================================================
-   Multi-select side panel
+   Selection sidebar
    ============================================================ */
+/* Ported from the Figma Make prototype's booking-sidebar.tsx so both
+   prototypes show the same panel. One component, two modes: a single booking
+   shows its job context, a multi-job selection ("dash mode") blanks every
+   value to "--" and drops the Phases section. */
 .Panel {
     position: fixed; top: 0; right: 0; bottom: 0;
-    width: 274px;
+    width: 390px;
     background: var(--surface-default);
     border-left: var(--border-xs) solid var(--border-subtle);
-    box-shadow: -4px 0 16px rgba(0,0,0,.08);
     z-index: 150;
     display: flex; flex-direction: column;
+    overflow: hidden;
 }
-.Panel-tools {
-    display: flex; align-items: center; gap: 6px;
-    padding: 7px 10px;
-    border-bottom: var(--border-xs) solid var(--border-subtle);
-}
-.Panel-tools .Tbtn { flex: 0 0 auto; min-width: 28px; height: 26px; justify-content: center; }
-.Panel-tools .Panel-close { margin-left: auto; }
+
+/* ── Header ─────────────────────────────────────────────────────────── */
 .Panel-head {
-    padding: 12px 14px;
-    border-bottom: var(--border-xs) solid var(--border-subtle);
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 15px; font-weight: 600;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: var(--padding-sm);
+    background: var(--surface-default);
+    border-bottom: var(--border-xs) solid var(--border-section);
+    flex-shrink: 0;
 }
-.Panel-head button { border: 0; background: transparent; cursor: pointer; color: var(--icon-default); font-size: 14px; }
-.Panel-body { flex: 1; overflow: auto; }
-.Panel-sectionTitle { padding: 12px 14px 6px; font-weight: 600; font-size: var(--font-size-medium); }
-.Panel-field {
-    display: flex; align-items: center; gap: 8px;
-    padding: 4px 14px;
-    font-size: var(--font-size-small);
-    color: var(--text-subtle);
+.Panel-headTop { display: flex; align-items: flex-start; gap: 12px; width: 100%; }
+.Panel-title {
+    flex: 1 0 0; min-width: 0; margin: 0;
+    font-size: 16px; font-weight: 700; line-height: normal;
+    color: var(--text-emphasis);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.Panel-field i.lead { width: 14px; color: var(--icon-default); text-align: center; }
-.Panel-input {
-    flex: 1; height: 26px;
-    border: var(--border-xs) solid var(--border-subtle);
-    border-radius: 3px;
-    background: var(--surface-subtle-light);
+.Panel-meta { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.Panel-priority {
+    width: 10px; height: 10px; flex: 0 0 10px;
     display: flex; align-items: center; justify-content: center;
-    color: var(--text-disabled);
+    color: var(--text-danger); font-size: 10px;
 }
-.Panel-row {
+.Panel-code {
+    flex: 1 0 0; min-width: 0;
+    font-size: var(--font-size-medium); line-height: 21px;
+    color: var(--text-link);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Phase badge sits on the left of the toolbar row. */
+.Panel-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.Panel-badge {
+    display: inline-flex; align-items: center;
+    height: 30px; padding: 0 var(--padding-xs);
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: var(--border-radius-default);
+    background: var(--surface-default);
+    font-size: 12px; font-weight: 700; line-height: normal;
+    color: var(--text-subtle); white-space: nowrap;
+    flex-shrink: 0;
+}
+.Panel-tools { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.Panel-count {
     display: flex; align-items: center; justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
     border-top: var(--border-xs) solid var(--border-subtle);
-    font-size: var(--font-size-medium);
-    cursor: pointer;
+    padding-top: 8px;
 }
-.Panel-row:hover { background: var(--surface-list-item-hover); }
-.Panel-row strong { font-weight: 600; }
-.Panel-row .muted { color: var(--text-subtle); font-weight: 400; }
-.Panel-row i.fa-chevron-right { font-size: 9px; color: var(--icon-default); }
-.Panel-list { padding: 0 14px 10px; }
-.Panel-listItem {
-    display: flex; align-items: center; gap: 8px;
-    padding: 5px 0;
-    font-size: var(--font-size-small);
+.Panel-count span {
+    font-size: var(--font-size-medium); font-weight: 700; line-height: 21px;
     color: var(--text-default);
-    border-bottom: var(--border-xs) solid var(--border-subtle);
 }
-.Panel-listItem:last-child { border-bottom: 0; }
-.Panel-swatch { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 8px; }
-.Panel-listItem .hrs { margin-left: auto; color: var(--text-subtle); }
+.Panel-countX {
+    width: 20px; height: 20px; padding: 0; flex-shrink: 0;
+    border: 0; background: none; cursor: pointer;
+    color: var(--text-subtle); font-size: 11px;
+    display: inline-grid; place-items: center;
+}
+
+/* 28px bordered icon button, used in the toolbar and section headers. */
+.PanelBtn {
+    width: 28px; height: 28px; flex-shrink: 0; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    background: var(--surface-default);
+    color: var(--icon-default);
+    font-size: 13px; cursor: pointer;
+    transition: background .12s, border-color .12s;
+}
+.PanelBtn:hover { border-color: var(--border-primary); color: var(--text-primary); }
+/* Toggled-on section action — solid fill, matching the prototype. */
+.PanelBtn.is-active {
+    border-color: transparent;
+    background: var(--text-emphasis);
+    color: var(--text-inverse);
+}
+.PanelBtn--close {
+    background: var(--surface-container-default);
+    border-color: var(--border-subtle);
+    color: var(--surface-primary);
+    font-size: 12px;
+}
+.PanelBtn--close:hover { border-color: var(--border-subtle); color: var(--surface-primary); }
+
+/* ── Schedule ───────────────────────────────────────────────────────── */
+.Panel-body { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.Panel-schedule {
+    display: flex; flex-direction: column; gap: 12px;
+    padding: 12px 12px 13px;
+    background: var(--surface-default);
+    border-bottom: var(--border-xs) solid var(--border-default);
+}
+.Panel-scheduleTitle {
+    font-size: var(--font-size-medium); font-weight: 700; line-height: 21px;
+    color: var(--text-default);
+}
+.Panel-fields { display: flex; flex-direction: column; }
+.Panel-field { display: flex; align-items: center; gap: 8px; }
+.Panel-field > .lead {
+    width: 14px; flex: 0 0 14px;
+    text-align: center; color: var(--icon-default); font-size: 13px;
+}
+.Panel-fieldBody { display: flex; flex: 1 0 0; min-width: 0; align-items: center; gap: 8px; }
+.Panel-input {
+    flex: 1 0 0; min-width: 0; height: 35px;
+    display: flex; align-items: center;
+    padding: 0 12px;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    background: rgba(255, 255, 255, .5);
+    font-size: 13px; color: var(--text-subtle);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.Panel-input.is-dash { font-size: var(--font-size-medium); color: var(--text-link); }
+/* Plain glyph between the dates, not a button. */
+.Panel-lock {
+    width: 24px; height: 24px; flex: 0 0 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--icon-default); font-size: 12px; opacity: .6;
+}
+.Panel-person {
+    flex: 1 0 0; min-width: 0;
+    font-size: var(--font-size-medium); color: var(--text-link);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.Panel-effortRow { height: 35px; }
+/* Value box + unit cap share a border, like Dayshape's input groups. */
+.Panel-effort { display: flex; align-items: stretch; flex: 1 0 0; min-width: 0; height: 35px; }
+.Panel-effort > .val {
+    flex: 1 0 0; min-width: 0;
+    display: flex; align-items: center;
+    padding: 0 12px;
+    border: var(--border-xs) solid var(--border-default);
+    border-right: 0;
+    border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+    background: var(--surface-default);
+    font-size: var(--font-size-medium); color: var(--text-emphasis);
+}
+.Panel-effort > .unit {
+    width: 35px; flex: 0 0 35px;
+    display: flex; align-items: center; justify-content: center;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+    background: var(--surface-default);
+    font-size: var(--font-size-medium); color: var(--text-subtle);
+}
+.Panel-actions { display: flex; align-items: flex-start; gap: 5px; }
+.Panel-split { display: flex; align-items: center; }
+.Panel-split > .PanelBtn:first-child {
+    width: auto; padding: 0 var(--padding-xs);
+    border-right: 0;
+    border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+}
+.Panel-split > .PanelBtn:last-child { border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0; }
+.PanelBtn--wide { width: auto; padding: 0 var(--padding-xs); }
+
+/* ── Collapsible sections ───────────────────────────────────────────── */
+.Panel-section { background: var(--surface-default); border-bottom: var(--border-xs) solid var(--border-section); }
+.Panel-sectionHead { display: flex; align-items: center; gap: 8px; padding: 10px 10px 11px; }
+.Panel-sectionLabel { display: flex; flex: 1 0 0; min-width: 0; align-items: center; }
+.Panel-chev {
+    width: 20px; height: 21px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--border-radius-default);
+    color: var(--text-default); font-size: 11px;
+    cursor: pointer;
+    transition: transform .15s ease;
+    transform: rotate(-90deg);
+}
+.Panel-section.is-open .Panel-chev { transform: rotate(0deg); }
+.Panel-sectionText {
+    display: flex; align-items: center; gap: 4px;
+    padding-right: 5px; min-width: 0;
+    cursor: pointer;
+    font-size: var(--font-size-medium); line-height: 21px; color: #212529;
+}
+.Panel-sectionText b { font-weight: 700; white-space: nowrap; }
+.Panel-sectionText .muted { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.Panel-sectionText .link { font-weight: 400; white-space: nowrap; color: var(--text-link); }
+.Panel-sectionBtns { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
+.Panel-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px var(--padding-xs);
+    border-radius: var(--border-radius-circle);
+    background: var(--surface-subtle-dark);
+    color: var(--text-accent);
+    font-size: 11px; font-weight: var(--font-weight-semibold); line-height: normal;
+    white-space: nowrap;
+}
+.Panel-sectionBody { padding: 0 12px 12px; }
+
+/* ── Phase table ────────────────────────────────────────────────────── */
+.PhaseTable {
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: var(--border-radius-default);
+    overflow: hidden;
+}
+.PhaseTable-row { display: flex; align-items: stretch; }
+.PhaseTable-row.is-clickable { cursor: pointer; }
+.PhaseTable-cell {
+    min-height: 40px; padding: var(--padding-sm);
+    display: flex; align-items: center; gap: 6px;
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-medium); color: var(--text-emphasis);
+    background: var(--surface-default);
+}
+.PhaseTable-cell:last-child { border-right: 0; }
+.PhaseTable-cell--phase { width: 179px; flex: 0 0 179px; }
+.PhaseTable-cell--other { width: 97px; flex: 0 0 97px; }
+.PhaseTable-head .PhaseTable-cell { background: var(--surface-subtle-dark); font-weight: 400; color: var(--text-default); }
+.PhaseTable-row:last-child .PhaseTable-cell { border-bottom: 0; }
+.PhaseTable-row.is-clickable:hover .PhaseTable-cell { background: #f9f8ff; }
+.PhaseTable-row.is-selected .PhaseTable-cell { background: #f5f3ff; }
+.PhaseTable-name { flex: 1 0 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.PhaseTable-row.is-selected .PhaseTable-name { font-weight: 700; color: var(--text-accent); }
+.PhaseTable-tick { flex-shrink: 0; color: var(--text-link); font-size: 11px; }
+
+.Avatar {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border-radius: var(--border-radius-circle);
+    background: var(--surface-primary);
+    color: var(--text-inverse);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    box-sizing: content-box;
+}
+.Avatar--empty { background: #babfd1; font-size: 11px; }
+.AvatarStack { display: flex; align-items: center; }
+.AvatarStack .Avatar + .Avatar { margin-left: -5.5px; border: 1.4px solid var(--surface-default); }
+.PhaseStatus {
+    width: 24px; height: 24px; flex-shrink: 0;
+    border-radius: var(--border-radius-circle);
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--text-success); color: var(--text-inverse); font-size: 10px;
+}
+.PhaseStatus--progress { background: var(--surface-warning); }
+.PhaseStatus--idle { background: var(--border-subtle); color: var(--icon-default); }
 
 /* ============================================================
    Modal
@@ -671,140 +964,287 @@ button { font-family: inherit; }
     position: fixed; inset: 0;
     background: var(--surface-overlay);
     z-index: 300;
-    display: flex; align-items: flex-start; justify-content: center;
-    padding: 40px 20px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
     overflow: auto;
 }
+/* Modal chrome and the CreateBooking-* field system are shared with the
+   practitioner Kanban mock, which mirrors Dayshape's GanttItemCreationModal. */
 .Modal {
     background: var(--surface-default);
     border-radius: 0.3rem;
-    width: 720px;
-    max-width: 100%;
-    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    width: min(870px, 94vw);
+    max-width: 870px;
+    max-height: min(90vh, 920px);
+    border: var(--border-xs) solid rgba(0, 0, 0, .2);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, .15);
     display: flex; flex-direction: column;
-    max-height: calc(100vh - 80px);
+    overflow: hidden;
 }
 .Modal-head {
-    display: flex; align-items: center; gap: 16px;
-    padding: var(--padding-md);
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 1rem 1rem 0.75rem;
     border-bottom: var(--border-xs) solid var(--border-default);
+    flex-shrink: 0;
 }
-.Modal-head h2 { margin: 0; font-size: 18px; font-weight: 600; flex: 1; }
-.Modal-tabs { display: flex; gap: 18px; align-items: center; }
-.Modal-tab {
-    background: transparent; border: 0; border-bottom: 2px solid transparent;
-    padding: 4px 2px; font-size: var(--font-size-medium);
-    color: var(--text-subtle); cursor: pointer;
+.Modal-title {
+    margin: 0; flex: 1;
+    font-size: 1.25rem; font-weight: var(--font-weight-regular);
+    line-height: 1.5; color: var(--text-default);
 }
-.Modal-tab.is-active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
-.Modal-close { background: transparent; border: 0; font-size: 18px; color: var(--icon-default); cursor: pointer; }
-.Modal-body { padding: var(--padding-md); overflow: auto; }
+.Modal-x {
+    width: 35px; height: 35px; flex-shrink: 0;
+    border: 0; border-radius: var(--border-radius-default);
+    background: transparent; color: var(--text-accent);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; margin: -0.25rem -0.25rem -0.25rem 0.5rem;
+}
+.Modal-x:hover { color: var(--text-default); background: var(--surface-subtle-dark); }
+.Modal-body {
+    flex: 1; min-height: 0; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 20px;
+    padding: 15px;
+}
 .Modal-foot {
-    padding: var(--padding-sm) var(--padding-md);
+    padding: 0.75rem;
     border-top: var(--border-xs) solid var(--border-default);
-    display: flex; align-items: center; gap: 8px;
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 0.5rem;
+    flex-shrink: 0;
 }
 .Modal-foot .spacer { flex: 1; }
-
-.Field { margin-bottom: 14px; }
-.Field-label {
-    display: block; font-size: var(--font-size-medium);
-    font-weight: 600; margin-bottom: 5px;
-}
-.Field-label .req { color: var(--text-danger); }
-.Field-row { display: flex; gap: 14px; }
-.Field-row > .Field { flex: 1; margin-bottom: 0; }
-.Input {
-    width: 100%; height: 35px;
-    border: var(--border-xs) solid var(--border-subtle);
-    border-radius: 3px;
-    padding: 0 9px;
-    font-family: inherit; font-size: var(--font-size-medium);
+.Modal-req { color: var(--text-danger); }
+.Modal-fieldLabel,
+.CreateBooking-label {
+    margin: 0;
+    font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
     color: var(--text-default);
-    background: #fff;
+    display: flex; gap: 4px; align-items: flex-start; line-height: 20px;
 }
-.Input::placeholder { color: var(--text-disabled); }
-.InputGroup { display: flex; }
-.InputGroup .Input { border-radius: 3px 0 0 3px; }
-.InputGroup-append {
-    width: 35px; height: 35px;
-    display: flex; align-items: center; justify-content: center;
+
+.CreateBooking-stack { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.CreateBooking-sectionTitle {
+    margin: 0 0 5px;
+    font-size: large; font-weight: 300;
+    color: var(--text-default); line-height: normal;
+}
+.CreateBooking-divider {
+    height: 0; width: 100%; flex-shrink: 0; margin: 0;
+    border: 0; border-top: var(--border-xs) solid var(--border-default);
+}
+.CreateBooking-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+.CreateBooking-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+
+.CreateBooking-inputGroup { display: flex; align-items: stretch; width: 100%; height: 35px; }
+.CreateBooking-inputGroup input,
+.CreateBooking-inputGroup select {
+    flex: 1; min-width: 0; height: 35px;
+    border: var(--border-xs) solid var(--border-default); border-right: none;
+    border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+    padding: 0 12px;
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    color: var(--text-emphasis); background: var(--surface-default);
+    box-sizing: border-box;
+}
+.CreateBooking-inputGroup input:focus,
+.CreateBooking-inputGroup select:focus { outline: none; border-color: var(--border-primary); z-index: 1; }
+.CreateBooking-inputGroup input::placeholder { color: var(--text-subtle); }
+
+/* Light grey append for text units (h / m); solid emphasis for icon buttons. */
+.CreateBooking-unit {
+    width: 35px; height: 35px; min-width: 35px; padding: 0; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-subtle-dark); color: var(--text-emphasis);
+    border: var(--border-xs) solid var(--border-default); border-left: none;
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    line-height: 21px; box-sizing: border-box; cursor: default;
+}
+button.CreateBooking-unit,
+.CreateBooking-unit--icon {
+    cursor: pointer; appearance: none;
+    background: var(--surface-emphasis); color: var(--text-inverse);
+    border-color: var(--surface-emphasis);
+}
+button.CreateBooking-unit:hover,
+.CreateBooking-unit--icon:hover {
+    background: var(--surface-strong); border-color: var(--surface-strong);
+}
+
+.CreateBooking-searchWrap { position: relative; width: 100%; }
+.CreateBooking-searchWrap input {
+    width: 100%; height: 35px; box-sizing: border-box;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    padding: 0 44px 0 12px;
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    color: var(--text-default);
+}
+.CreateBooking-searchWrap input:focus {
+    outline: none; border-color: var(--border-primary);
+    box-shadow: 0 0 0 0.2rem rgba(79, 63, 160, .25);
+}
+.CreateBooking-iconBtn {
+    width: 35px; height: 35px; flex-shrink: 0; padding: 0;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    background: var(--surface-default); color: var(--text-accent);
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.CreateBooking-searchWrap .CreateBooking-iconBtn {
+    position: absolute; right: 0; top: 0; border-left: none;
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+}
+.CreateBooking-iconBtn.is-emphasis {
+    background: var(--surface-primary); border-color: var(--surface-primary);
+    color: var(--text-inverse);
+}
+.CreateBooking-iconBtn.is-emphasis:hover {
+    background: var(--primary-emphasis); border-color: var(--primary-emphasis);
+}
+
+.CreateBooking-select {
+    width: 100%; height: 35px; box-sizing: border-box;
+    border: var(--border-xs) solid var(--border-default);
+    border-radius: var(--border-radius-default);
+    padding: 0 12px;
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    color: var(--text-default); background: var(--surface-default);
+}
+.CreateBooking-select:focus {
+    outline: none; border-color: var(--border-primary);
+    box-shadow: 0 0 0 0.2rem rgba(79, 63, 160, .25);
+}
+
+.CreateBooking-effortRow { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; width: 100%; }
+.CreateBooking-effortInputs { display: flex; gap: 8px; align-items: stretch; }
+.CreateBooking-effortInputs .CreateBooking-inputGroup { width: 91px; flex: 0 0 91px; }
+
+.CreateBooking-assigned {
+    display: flex; align-items: center; gap: 8px; width: 100%; min-height: 35px;
+    padding: 0 0 0 12px; box-sizing: border-box;
+    border: var(--border-xs) solid var(--border-success);
+    border-radius: var(--border-radius-default);
+    background: var(--surface-default);
+    font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default);
+}
+.CreateBooking-assignedText { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.CreateBooking-assignedOk { flex-shrink: 0; color: var(--text-success); font-size: 14px; }
+.CreateBooking-assigned .CreateBooking-unit {
+    background: var(--surface-emphasis); border-color: var(--surface-emphasis);
+    color: var(--text-inverse); border-left: none;
+}
+
+.PhasePills { display: flex; flex-wrap: wrap; gap: 16px; }
+.PhasePill {
+    appearance: none; height: 35px; padding: 0 12px;
+    border-radius: var(--border-radius-circle);
     border: var(--border-xs) solid var(--border-subtle);
-    border-left: 0;
-    border-radius: 0 3px 3px 0;
-    background: var(--surface-subtle-light);
-    color: var(--text-subtle);
-    font-size: var(--font-size-medium);
-}
-.InputGroup-append.is-solid { background: var(--surface-emphasis); color: #fff; border-color: var(--surface-emphasis); cursor: pointer; }
-.InputGroup-append.is-primary { background: var(--primary); color: #fff; border-color: var(--primary); cursor: pointer; }
-
-.Effort { display: flex; align-items: center; gap: 10px; }
-.Effort .InputGroup { width: 118px; }
-.Effort .Input { text-align: left; }
-
-.Modal-section {
-    border-top: var(--border-xs) solid var(--border-subtle);
-    margin-top: 16px; padding-top: 14px;
-}
-.Modal-section h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
-
-.Pills { display: flex; gap: 10px; flex-wrap: wrap; }
-.Pill {
+    background: var(--surface-default); color: var(--text-accent);
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    font-weight: var(--font-weight-semibold); cursor: pointer;
     display: inline-flex; align-items: center; gap: 7px;
-    height: 32px; padding: 0 14px;
-    border-radius: 16px;
-    border: var(--border-xs) solid var(--border-subtle);
-    background: #fff;
-    font-size: var(--font-size-medium);
-    color: var(--text-default);
+}
+.PhasePill.is-selected {
+    background: var(--surface-container-default);
+    border: 2px solid var(--border-default);
+    color: var(--text-emphasis);
+}
+.PhasePill-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+
+/* Dayshape ToggleGroup — btn-group + btn-outline-secondary */
+.BtnGroup { position: relative; display: flex; width: 100%; vertical-align: middle; }
+.BtnGroup > button {
+    position: relative; flex: 1 1 auto; z-index: 0;
+    height: 35px; margin: 0 0 0 -1px; padding: 7px 14px;
+    border: var(--border-xs) solid var(--surface-emphasis);
+    border-radius: 0;
+    background: var(--surface-default); color: var(--surface-emphasis);
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    font-weight: var(--font-weight-semibold); line-height: 1.2; cursor: pointer;
+}
+.BtnGroup > button:first-child {
+    margin-left: 0;
+    border-top-left-radius: var(--border-radius-default);
+    border-bottom-left-radius: var(--border-radius-default);
+}
+.BtnGroup > button:last-child {
+    border-top-right-radius: var(--border-radius-default);
+    border-bottom-right-radius: var(--border-radius-default);
+}
+.BtnGroup > button:hover { color: var(--text-inverse); background: var(--surface-emphasis); }
+.BtnGroup > button.is-active {
+    z-index: 1; color: var(--text-inverse);
+    background: var(--surface-emphasis); border-color: var(--surface-emphasis);
+}
+
+/* TaskTraitsTable / GenericTable alignment */
+.CreateBooking-traitsTableWrap { width: 100%; }
+.CreateBooking-traitsTable {
+    width: 100%; margin: 0; border-collapse: collapse;
+    font-family: var(--font-family); font-size: 14px;
+    color: #212529; background: var(--surface-default);
+}
+.CreateBooking-traitsTable thead th {
+    padding: 0.75rem; vertical-align: bottom; text-align: left;
+    border-top: var(--border-xs) solid var(--border-default);
+    border-bottom: 2px solid var(--border-default);
+    font-weight: 700; color: #212529; user-select: none;
+}
+.CreateBooking-traitsTable thead th.is-primary { width: 110px; }
+.CreateBooking-traitsTable thead th.is-actions { width: 64px; }
+.CreateBooking-traitsTable .CreateBooking-headerCellContent { display: flex; align-items: flex-start; }
+.CreateBooking-traitsTable .CreateBooking-sortIcon {
+    margin-right: 0.5rem; margin-top: 0.15rem; color: var(--text-subtle); font-size: 12px;
+}
+.CreateBooking-traitsTable tbody tr:nth-of-type(odd) { background-color: rgba(0, 0, 0, .02); }
+.CreateBooking-traitsTable tbody tr:hover { background-color: rgba(0, 0, 0, .04); }
+.CreateBooking-traitsTable tbody td {
+    padding: 0.75rem; vertical-align: middle;
+    border-top: var(--border-xs) solid var(--border-default); color: #212529;
+}
+.CreateBooking-traitsTable tbody tr:last-of-type td { border-bottom: 2px solid #dee2e6; }
+.CreateBooking-traitsEmpty {
+    display: flex; justify-content: center; align-items: center; height: 100px;
+    font-size: 14px; color: #6c757d;
+    background: var(--surface-default); border-bottom: 2px solid #dee2e6;
+}
+.CreateBooking-traitRemove {
+    width: 32px; height: 32px; padding: 0; font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: var(--border-xs) solid var(--surface-emphasis);
+    border-radius: var(--border-radius-default);
+    background: var(--surface-default); color: var(--surface-emphasis); cursor: pointer;
+}
+.CreateBooking-traitRemove:hover { background: var(--surface-emphasis); color: var(--text-inverse); }
+.CreateBooking-addTraitBtn {
+    display: inline-flex; align-items: center; align-self: flex-start; width: auto;
+    margin-bottom: 0.25rem; padding: 0.375rem 0.75rem;
+    font-size: 1rem; font-weight: var(--font-weight-regular); line-height: 1.5; height: auto;
+    color: var(--text-primary); background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-primary); border-radius: 0.25rem;
     cursor: pointer;
 }
-.Pill.is-active { background: var(--surface-subtle-dark); border-color: var(--border-emphasis); font-weight: 600; }
-.Pill-dot { width: 9px; height: 9px; border-radius: 50%; }
-
-.Toggle2 { display: flex; width: 324px; border: var(--border-xs) solid var(--border-subtle); border-radius: 3px; overflow: hidden; }
-.Toggle2 button {
-    flex: 1; height: 32px; border: 0; background: #fff;
-    font-size: var(--font-size-medium); color: var(--text-default); cursor: pointer;
-}
-.Toggle2 button.is-active { background: var(--surface-emphasis); color: #fff; }
-
-.Table { width: 100%; border-collapse: collapse; font-size: var(--font-size-medium); }
-.Table th, .Table td {
-    text-align: left; padding: 8px 10px;
-    border-bottom: var(--border-xs) solid var(--border-subtle);
-}
-.Table th { background: var(--surface-subtle-light); font-weight: 600; font-size: var(--font-size-small); }
-.Table .empty { text-align: center; color: var(--text-subtle); padding: 22px; }
-.Badge-primary {
-    display: inline-block; padding: 1px 8px; border-radius: 9px;
-    background: var(--primary-subtle); color: var(--primary);
-    font-size: var(--font-size-xsmall); font-weight: 600;
-}
-
-.Chip {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: var(--font-size-medium);
-}
-.Chip button { border: var(--border-xs) solid var(--border-subtle); background: #fff; border-radius: 3px; width: 26px; height: 26px; cursor: pointer; color: var(--icon-default); }
+.CreateBooking-addTraitBtn:hover { color: var(--text-inverse); background: var(--primary); border-color: var(--primary); }
+.CreateBooking-addTraitBtn i { margin-right: 0.25rem; }
 
 .Btn {
-    height: 35px; padding: 0 16px;
-    border: var(--border-xs) solid var(--border-emphasis);
-    border-radius: 3px;
-    background: #fff;
-    color: var(--text-default);
-    font-size: var(--font-size-medium);
-    cursor: pointer;
+    font-family: var(--font-family); font-size: var(--font-size-medium);
+    font-weight: var(--font-weight-semibold); border-radius: var(--border-radius-default);
+    border: var(--border-xs) solid var(--surface-emphasis); padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 7px; line-height: 1.2;
+    background: var(--surface-default); color: var(--surface-emphasis);
+    white-space: nowrap; cursor: pointer;
+    transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out;
 }
-.Btn:hover { background: var(--surface-subtle-dark); }
-.Btn--primary { background: var(--primary); border-color: var(--primary); color: #fff; }
-.Btn--primary:hover { background: var(--primary-emphasis); }
+.Btn:hover { color: var(--text-inverse); background: var(--surface-emphasis); border-color: var(--surface-emphasis); }
+.Btn--secondary { color: var(--text-primary); border-color: var(--border-primary); background: var(--surface-default); }
+.Btn--secondary:hover { color: var(--text-inverse); background: var(--primary); border-color: var(--primary); }
+.Btn--primary { background: var(--primary); border-color: var(--primary); color: var(--text-inverse); }
+.Btn--primary:hover { background: var(--primary-emphasis); border-color: var(--primary-emphasis); color: var(--text-inverse); }
 
 .Note {
     display: flex; gap: 8px; align-items: flex-start;
-    margin-top: 14px; padding: 9px 11px;
+    padding: 9px 11px;
     background: var(--surface-info-subtle);
     border-radius: 3px;
     font-size: var(--font-size-small);
@@ -869,7 +1309,6 @@ button { font-family: inherit; }
 .Head-month { font-size: 13px; }
 .Head-week { font-size: 11px; }
 .Head-day { font-size: 11px; }
-.Menu { width: 240px; }
 </style>
 </head>
 <body>
@@ -963,6 +1402,15 @@ button { font-family: inherit; }
 var WEEK_COUNT = 12;
 var WEEK_W = 112.6;
 var DAY_W = WEEK_W / 5;
+
+// Booking bars match the main Gantt's 23px .gantt-item, stacked with a 2px gap.
+var BAR_H = 23;
+var BAR_PITCH = BAR_H + 2;
+var BAR_PAD = 2;
+function barsHeight(count, pad) { return count * BAR_PITCH + (pad == null ? BAR_PAD : pad); }
+
+// Settings menu width — submenus dock against its right edge.
+var MENU_W = 275;
 
 function snapMonday(d) {
     var r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -1159,14 +1607,13 @@ function weekConsumed(worker, week) {
     return total;
 }
 function slimColour(consumed, capacity) {
-    if (capacity <= 0) return '#aed6f1';
+    if (capacity <= 0) return 'var(--utilisation-level-5)';
     var p = consumed / capacity;
-    if (p === 0) return '#eceef3';
-    if (p < 0.25) return '#aed6f1';
-    if (p < 0.50) return '#a9dfbf';
-    if (p < 0.75) return '#52be80';
-    if (p <= 1.00) return '#1e8449';
-    return '#c0392b';
+    if (p === 0) return 'var(--utilisation-level-1)';
+    if (p < 1) return 'var(--utilisation-level-2)';
+    if (p === 1) return 'var(--utilisation-level-3)';
+    if (p < 1.25) return 'var(--utilisation-level-4)';
+    return 'var(--utilisation-level-5)';
 }
 
 function rowExpanded(worker, row) { return !!state.expandedRows[worker.id + '|' + row.key]; }
@@ -1188,19 +1635,33 @@ function render() {
     var scrollLeft = document.getElementById('gantt').scrollLeft;
     ganttInner.innerHTML = '';
     ganttInner.appendChild(buildHeader());
+    var rowIndex = 0;
     DATA.forEach(function (group) {
         ganttInner.appendChild(buildGroupRow(group));
         if (state.collapsedDepts[group.dept]) return;
-        group.workers.forEach(function (wk) { ganttInner.appendChild(buildWorkerRow(wk)); });
+        group.workers.forEach(function (wk) { ganttInner.appendChild(buildWorkerRow(wk, rowIndex++)); });
     });
     ganttInner.appendChild(buildTodayMarker());
     document.getElementById('gantt').scrollLeft = scrollLeft;
+    syncHeadScroll();
 
     renderPanel();
 }
 
+// The header is pinned to the top of the window beside the action bar, so it
+// sits outside the Gantt's scroll flow. Shift its bands by the same amount the
+// timeline has scrolled to keep the months over their weeks.
+function syncHeadScroll() {
+    var scroller = ganttInner.querySelector('.Head-scroll');
+    if (scroller) scroller.style.transform = 'translateX(' + -document.getElementById('gantt').scrollLeft + 'px)';
+}
+
 function buildHeader() {
     var head = el('div', 'Head');
+    // The bands live in their own layer so they can be shifted to follow the
+    // Gantt's horizontal scroll while the header itself stays pinned.
+    var scroller = el('div', 'Head-scroll');
+    head.appendChild(scroller);
 
     // Month band — weeks grouped by the month their Monday falls in.
     var mRow = el('div', 'Head-row');
@@ -1217,7 +1678,7 @@ function buildHeader() {
         run.node.style.width = (run.n * WEEK_W) + 'px';
     });
     mRow.appendChild(months);
-    head.appendChild(mRow);
+    scroller.appendChild(mRow);
 
     // Week band
     var wRow = el('div', 'Head-row');
@@ -1225,7 +1686,7 @@ function buildHeader() {
     var wks = el('div', 'Head-weeks');
     WEEKS.forEach(function (d) { wks.appendChild(el('div', 'Head-week', wcLabel(d))); });
     wRow.appendChild(wks);
-    head.appendChild(wRow);
+    scroller.appendChild(wRow);
 
     // Day band
     var dRow = el('div', 'Head-row');
@@ -1244,7 +1705,7 @@ function buildHeader() {
         days.appendChild(set);
     });
     dRow.appendChild(days);
-    head.appendChild(dRow);
+    scroller.appendChild(dRow);
     return head;
 }
 function makeMonth(run) {
@@ -1269,9 +1730,9 @@ function buildGroupRow(group) {
     return row;
 }
 
-function buildWorkerRow(worker) {
+function buildWorkerRow(worker, index) {
     var rows = buildBreakdownRows(worker, state.breakdown);
-    var row = el('div', 'Row WorkerRow');
+    var row = el('div', 'Row WorkerRow' + (index % 2 === 0 ? ' is-alt' : ''));
     row.dataset.worker = worker.id;
 
     // ── Left panel ────────────────────────────────────────────────────────
@@ -1289,7 +1750,7 @@ function buildWorkerRow(worker) {
     if (rows) {
         var allOpen = rows.every(function (r) { return rowExpanded(worker, r); });
         var btn = el('button', 'Expander');
-        btn.innerHTML = '<i class="fa-solid fa-' + (allOpen ? 'minus' : 'plus') + '"></i>';
+        btn.innerHTML = '<i class="far fa-' + (allOpen ? 'minus-square' : 'plus-square') + '"></i>';
         btn.title = allOpen ? 'Collapse all breakdown rows' : 'Expand all breakdown rows';
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
@@ -1327,34 +1788,29 @@ function buildWorkerRow(worker) {
 
     if (!rows) {
         // Breakdown off — flat resource row with individual bookings.
+        var flatH = barsHeight(worker.items.length, BAR_PAD);
         var flat = el('div', 'Track-subrow');
-        flat.style.height = '34px';
+        flat.style.height = flatH + 'px';
         flat.style.position = 'relative';
         WEEKS.forEach(function () { flat.appendChild(el('div', 'Cellw')); });
-        var bars = buildBars(worker, { key: '__flat', items: worker.items }, 3);
+        var bars = buildBars(worker, { key: '__flat', items: worker.items }, BAR_PAD);
         bars.style.position = 'absolute';
         bars.style.inset = '0';
         flat.appendChild(bars);
         weeksCol.appendChild(flat);
         dims.appendChild(el('div', 'DimLabel', ''));
-        dims.lastChild.style.height = '34px';
+        dims.lastChild.style.height = flatH + 'px';
     } else {
         rows.forEach(function (r) {
             var open = rowExpanded(worker, r);
             var itemCount = open ? r.items.length : 0;
-            var h = 24 + (itemCount ? itemCount * 21 + 4 : 0);
+            var h = 24 + (itemCount ? barsHeight(itemCount, BAR_PAD) : 0);
 
             // Left label
             var lbl = el('div', 'DimLabel' + (r.isOther ? ' is-other' : '') + (open ? ' is-expanded' : ''));
             lbl.style.height = h + 'px';
-            lbl.style.alignItems = 'flex-start';
-            lbl.style.paddingTop = '4px';
-            if (r.accent) {
-                var acc = el('div', 'DimLabel-accent');
-                acc.style.background = r.accent;
-                lbl.appendChild(acc);
-                lbl.style.paddingLeft = '9px';
-            }
+            if (h > 24) lbl.style.alignItems = 'flex-start';
+            if (r.accent) lbl.style.borderLeftColor = r.accent;
             lbl.appendChild(el('span', null, r.label));
             lbl.title = r.isOther
                 ? 'Other — unavailabilities and items with no ' + DIMENSIONS[state.breakdown].label.toLowerCase()
@@ -1374,18 +1830,14 @@ function buildWorkerRow(worker) {
             sub.style.flexDirection = 'column';
             sub.style.position = 'relative';
 
-            var hoursRow = el('div');
-            hoursRow.style.display = 'flex';
-            hoursRow.style.height = '24px';
-            hoursRow.style.flex = '0 0 24px';
+            var hoursRow = el('div', 'Track-hours');
             WEEKS.forEach(function (d, wi) {
                 hoursRow.appendChild(buildCell(worker, r, wi, d));
             });
             sub.appendChild(hoursRow);
 
             if (open && r.items.length) {
-                var barBox = buildBars(worker, r, 0);
-                sub.appendChild(barBox);
+                sub.appendChild(buildBars(worker, r, BAR_PAD));
             }
             weeksCol.appendChild(sub);
         });
@@ -1400,21 +1852,28 @@ function buildCell(worker, row, wi, weekDate) {
     var hours = cellHours(row, wi);
     var items = cellItems(row, wi);
     var c = el('div', 'Cellw' + (hours ? '' : ' is-zero'));
-    c.appendChild(gridLines());
-    c.appendChild(el('span', null, fmtHours(hours)));
+    c.appendChild(el('span', 'Cellw-hours', fmtHours(hours)));
 
     var key = worker.id + '|' + row.key + '|' + wi;
+    var rowKey = worker.id + '|' + row.key;
     if (isSelected(key)) c.classList.add('is-selected');
     c.classList.add('is-clickable');
 
-    // Click selects only this cell's bookings — not the whole row (DEVO-29672).
+    // Click selects only this cell's bookings — not the whole row (DEVO-29672) —
+    // and drops the row open so those bookings are visible. Clicking the open
+    // cell again closes it.
     c.addEventListener('click', function (e) {
         if (!items.length) { state.selection = []; render(); return; }
         if (e.metaKey || e.ctrlKey) {
             if (isSelected(key)) state.selection = state.selection.filter(function (s) { return s.key !== key; });
             else state.selection.push({ key: key, worker: worker, row: row, week: wi, items: items });
+            if (row.items.length) state.expandedRows[rowKey] = true;
+        } else if (isSelected(key) && state.expandedRows[rowKey]) {
+            state.selection = [];
+            delete state.expandedRows[rowKey];
         } else {
             state.selection = [{ key: key, worker: worker, row: row, week: wi, items: items }];
+            if (row.items.length) state.expandedRows[rowKey] = true;
         }
         render();
     });
@@ -1433,31 +1892,58 @@ function buildCell(worker, row, wi, weekDate) {
 }
 
 function gridLines() {
-    var g = el('div', 'Cellw-grid');
-    for (var i = 0; i < 5; i++) g.appendChild(document.createElement('i'));
+    var g = el('div', 'Track-grid');
+    WEEKS.forEach(function () {
+        var week = document.createElement('i');
+        for (var d = 0; d < 5; d++) week.appendChild(document.createElement('b'));
+        g.appendChild(week);
+    });
     return g;
 }
 
 function buildBars(worker, row, topPad) {
+    var pad = topPad == null ? BAR_PAD : topPad;
     var box = el('div', 'Track-bars');
     box.style.position = 'relative';
-    box.style.height = (row.items.length * 21 + 4) + 'px';
-    box.style.paddingTop = (topPad || 2) + 'px';
+    box.style.height = barsHeight(row.items.length, pad) + 'px';
+    box.appendChild(gridLines());
+
+    // Same quick-add as the hour cells: double-click the open bars strip
+    // (empty space or a booking) opens create with the row's dimension filled.
+    box.addEventListener('dblclick', function (e) {
+        e.preventDefault();
+        var rect = box.getBoundingClientRect();
+        var wi = Math.max(0, Math.min(WEEKS.length - 1, Math.floor((e.clientX - rect.left) / WEEK_W)));
+        state.selection = [];
+        openCreateModal(worker, row, WEEKS[wi]);
+    });
+
     row.items.forEach(function (it, idx) {
-        var bar = el('div', 'Bar' + (it.kind === 'unavailability' ? ' Bar--unavailability' : ''));
-        bar.style.position = 'absolute';
+        var selected = isItemSelected(it);
+        var bar = el('div', 'Bar'
+            + (it.kind === 'unavailability' ? ' Bar--unavailability' : '')
+            + (selected ? ' is-selected' : '')
+            + (state.selection.length && !selected ? ' is-dimmed' : ''));
         bar.style.left = (it.startWeek * WEEK_W + 2) + 'px';
         bar.style.width = (it.span * WEEK_W - 5) + 'px';
-        bar.style.top = ((topPad || 2) + idx * 21) + 'px';
+        bar.style.top = (pad + idx * BAR_PITCH) + 'px';
         if (it.kind !== 'unavailability') {
-            bar.style.background = state.tasksInGrey ? '#9298b4' : (PHASE_COLOUR[it.phase] || '#4f4970');
+            bar.style.backgroundColor = state.tasksInGrey ? '#9298b4' : (PHASE_COLOUR[it.phase] || '#4f4970');
         }
         var perWeek = it.cells[it.startWeek] || 0;
-        bar.textContent = perWeek + 'h ' + it.job;
+
+        // Main Gantt task label is "<rounded hours><hour character> <name>".
+        var content = el('div', 'Bar-content');
+        content.appendChild(el('span', 'Bar-name', perWeek + 'h ' + it.job));
+        bar.appendChild(content);
+        bar.appendChild(el('div', 'Bar-handle'));
+
         bar.title = it.job + (it.code ? ' (' + it.code + ')' : '') + ' — ' + perWeek + ' h/week';
         bar.addEventListener('click', function (e) {
             e.stopPropagation();
-            state.selection = [{ key: 'bar|' + it.id, worker: worker, row: row, week: it.startWeek, items: [it] }];
+            // A bar click is a single-booking selection, which opens the
+            // detail sidebar rather than the multi-select one.
+            state.selection = [{ key: 'bar|' + it.id, worker: worker, row: row, week: it.startWeek, items: [it], single: true }];
             render();
         });
         box.appendChild(bar);
@@ -1476,6 +1962,12 @@ function buildTodayMarker() {
 
 function isSelected(key) {
     return state.selection.some(function (s) { return s.key === key; });
+}
+
+function isItemSelected(item) {
+    return state.selection.some(function (s) {
+        return s.items.some(function (i) { return i.id === item.id; });
+    });
 }
 
 // ── Tooltip ────────────────────────────────────────────────────────────────
@@ -1525,54 +2017,75 @@ function renderMenu() {
     menu.style.top = (anchor.bottom + 4) + 'px';
     menu.addEventListener('click', function (e) { e.stopPropagation(); });
 
-    menu.appendChild(el('div', 'Menu-title', 'Row Layout'));
-    var sel = el('select', 'Menu-select');
-    ['Business Unit', 'Location', 'Job Profile'].forEach(function (o) {
-        sel.appendChild(new Option(o, o));
-    });
-    menu.appendChild(sel);
-    menu.appendChild(staticItem('Resource Data'));
-    menu.appendChild(staticItem('Resource Sorting'));
+    // ── Row Layout ────────────────────────────────────────────────────
+    var rowLayout = el('div', 'Menu-group');
+    rowLayout.appendChild(menuSection('Row Layout', ['Business Unit', 'Location', 'Job Profile']));
+    rowLayout.appendChild(staticItem('Resource Data'));
+    rowLayout.appendChild(staticItem('Resource Sorting'));
 
-    var bd = el('div', 'Menu-item' + (state.flyout === 'breakdown' ? ' is-open' : ''));
-    bd.innerHTML = '<span>Resource Breakdown</span><i class="fa-solid fa-chevron-right"></i>';
-    bd.addEventListener('mouseenter', function () { state.flyout = 'breakdown'; renderMenu(); });
-    menu.appendChild(bd);
+    var bd = submenuItem('Resource Breakdown', 'breakdown');
+    rowLayout.appendChild(bd);
+    menu.appendChild(rowLayout);
 
-    menu.appendChild(el('div', 'Menu-title', 'Time Settings'));
-    menu.appendChild(staticItem('Gantt Start Date'));
-    menu.appendChild(staticItem('Visible Time (Auto)'));
+    // ── Time Settings ─────────────────────────────────────────────────
+    var time = el('div', 'Menu-group');
+    time.appendChild(menuSection('Time Settings'));
+    time.appendChild(staticItem('Gantt Start Date'));
+    time.appendChild(staticItem('Visible Time (Auto)'));
+    menu.appendChild(time);
 
-    menu.appendChild(el('div', 'Menu-title', 'Availability Settings'));
+    // ── Availability Settings ─────────────────────────────────────────
+    var avail = el('div', 'Menu-group');
+    avail.appendChild(menuSection('Availability Settings'));
     var sa = el('div', 'Menu-item');
     sa.innerHTML = '<span>Show Availability</span>' + (state.showAvailability ? '<i class="fa-solid fa-check"></i>' : '');
     sa.addEventListener('click', function () { state.showAvailability = !state.showAvailability; renderMenu(); render(); });
-    menu.appendChild(sa);
+    avail.appendChild(sa);
 
-    var av = el('div', 'Menu-item' + (state.flyout === 'availability' ? ' is-open' : ''));
-    av.innerHTML = '<span>Availability Settings</span><i class="fa-solid fa-chevron-right"></i>';
-    av.addEventListener('mouseenter', function () { state.flyout = 'availability'; renderMenu(); });
-    menu.appendChild(av);
+    var av = submenuItem('Availability Settings', 'availability');
+    avail.appendChild(av);
+    menu.appendChild(avail);
 
-    menu.appendChild(el('div', 'Menu-title', 'Other Settings'));
-    menu.appendChild(staticItem('Show Draft Bookings'));
-    menu.appendChild(staticItem('Show Draft Unavailability'));
-    menu.appendChild(staticItem('Show Debug Labels'));
+    // ── Other Settings ────────────────────────────────────────────────
+    var other = el('div', 'Menu-group');
+    other.appendChild(menuSection('Other Settings'));
+    other.appendChild(staticItem('Show Draft Bookings'));
+    other.appendChild(staticItem('Show Draft Unavailability'));
+    other.appendChild(staticItem('Show Debug Labels'));
+    menu.appendChild(other);
 
-    menu.appendChild(el('div', 'Menu-title', 'Colour Scheme'));
-    var cs = el('select', 'Menu-select');
-    ['Trait Color', 'Phase Color', 'Engagement Color'].forEach(function (o) { cs.appendChild(new Option(o, o)); });
-    menu.appendChild(cs);
+    // ── Colour Scheme ─────────────────────────────────────────────────
+    var colour = el('div', 'Menu-group');
+    colour.appendChild(menuSection('Colour Scheme', ['Trait Color', 'Phase Color', 'Engagement Color']));
+    menu.appendChild(colour);
 
-    menu.appendChild(el('div', 'Menu-title', 'Resource Requirements'));
-    menu.appendChild(staticItem('Suitability Scoring'));
+    // ── Resource Requirements ─────────────────────────────────────────
+    var reqs = el('div', 'Menu-group');
+    reqs.appendChild(menuSection('Resource Requirements'));
+    reqs.appendChild(staticItem('Suitability Scoring'));
+    menu.appendChild(reqs);
 
     layer.appendChild(menu);
 
-    if (state.flyout === 'breakdown') layer.appendChild(breakdownFlyout(menu, bd));
-    if (state.flyout === 'availability') layer.appendChild(availabilityFlyout(menu, av));
+    var flyout = null, flyoutAnchor = null;
+    if (state.flyout === 'breakdown') { flyout = breakdownFlyout(); flyoutAnchor = bd; }
+    if (state.flyout === 'availability') { flyout = availabilityFlyout(); flyoutAnchor = av; }
+    if (flyout) layer.appendChild(flyout);
 
     overlays.appendChild(layer);
+    // Needs layout, so place the submenu once both panels are in the document.
+    if (flyout) placeFlyout(flyout, menu, flyoutAnchor);
+}
+
+function menuSection(title, options) {
+    var s = el('div', 'Menu-section' + (options ? ' has-select' : ''));
+    s.appendChild(el('div', 'Menu-title', title));
+    if (options) {
+        var sel = el('select', 'Menu-select');
+        options.forEach(function (o) { sel.appendChild(new Option(o, o)); });
+        s.appendChild(sel);
+    }
+    return s;
 }
 
 function staticItem(label) {
@@ -1581,11 +2094,23 @@ function staticItem(label) {
     return n;
 }
 
-function breakdownFlyout(menu, anchorEl) {
-    var f = el('div', 'Flyout');
+function submenuItem(label, flyout) {
+    var n = el('div', 'Menu-item' + (state.flyout === flyout ? ' is-open' : ''));
+    n.innerHTML = '<span>' + esc(label) + '</span><i class="fa-solid fa-chevron-left"></i>';
+    n.addEventListener('mouseenter', function () { state.flyout = flyout; renderMenu(); });
+    return n;
+}
+
+// Submenus sit flush against the menu's right edge with their top on the
+// anchor row, so the two panels read as one surface.
+function placeFlyout(f, menu, anchorEl) {
     var a = anchorEl.getBoundingClientRect();
-    f.style.left = (parseFloat(menu.style.left) + 240 + 4) + 'px';
-    f.style.top = (a.top - 8) + 'px';
+    f.style.left = (parseFloat(menu.style.left) + MENU_W - 1) + 'px';
+    f.style.top = Math.max(8, Math.min(a.top, window.innerHeight - f.offsetHeight - 8)) + 'px';
+}
+
+function breakdownFlyout() {
+    var f = el('div', 'Flyout');
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Resource Breakdown'));
 
@@ -1612,11 +2137,8 @@ function breakdownFlyout(menu, anchorEl) {
     return f;
 }
 
-function availabilityFlyout(menu, anchorEl) {
+function availabilityFlyout() {
     var f = el('div', 'Flyout');
-    var a = anchorEl.getBoundingClientRect();
-    f.style.left = (parseFloat(menu.style.left) + 240 + 4) + 'px';
-    f.style.top = (a.top - 240) + 'px';
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Availability Display Settings'));
 
@@ -1669,7 +2191,90 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-// ── Multi-select panel ─────────────────────────────────────────────────────
+// ── Selection sidebar ──────────────────────────────────────────────────────
+// Mirrors booking-sidebar.tsx from the Figma Make prototype. One builder, two
+// modes: a single booking shows its job context and phases; a multi-job
+// selection blanks the values to "--" and hides Phases (the prototype's
+// "noJobContext" dash mode).
+function clearSelection() { state.selection = []; render(); }
+
+function panelBtn(icon, opts) {
+    opts = opts || {};
+    var b = el('button', 'PanelBtn' + (opts.cls ? ' ' + opts.cls : '') + (opts.active ? ' is-active' : ''));
+    b.type = 'button';
+    b.innerHTML = '<i class="' + icon + '"></i>' + (opts.caret ? '<i class="fa-solid fa-caret-down"></i>' : '');
+    if (opts.caret) b.classList.add('PanelBtn--wide');
+    if (opts.label) { b.setAttribute('aria-label', opts.label); b.title = opts.label; }
+    if (opts.onClick) b.addEventListener('click', function (e) { e.stopPropagation(); opts.onClick(e); });
+    return b;
+}
+
+// A "Sidebar section header": chevron, bold label, muted suffix, action buttons,
+// and an optional body that the chevron toggles.
+function panelSection(opts) {
+    var wrap = el('div', 'Panel-section' + (opts.open ? ' is-open' : ''));
+    var head = el('div', 'Panel-sectionHead');
+
+    var label = el('div', 'Panel-sectionLabel');
+    var chev = el('div', 'Panel-chev');
+    chev.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+    label.appendChild(chev);
+
+    var text = el('div', 'Panel-sectionText');
+    text.appendChild(el('b', null, opts.title));
+    if (opts.suffix) text.appendChild(el('span', 'muted', opts.suffix));
+    if (opts.link) text.appendChild(el('span', 'link', opts.link));
+    if (opts.pill) text.appendChild(el('span', 'Panel-pill', opts.pill));
+    label.appendChild(text);
+    head.appendChild(label);
+
+    if (opts.buttons && opts.buttons.length) {
+        var btns = el('div', 'Panel-sectionBtns');
+        opts.buttons.forEach(function (b) { btns.appendChild(b); });
+        head.appendChild(btns);
+    }
+    wrap.appendChild(head);
+
+    var body = null;
+    if (opts.body) {
+        body = el('div', 'Panel-sectionBody');
+        body.appendChild(opts.body);
+        if (!opts.open) body.style.display = 'none';
+        wrap.appendChild(body);
+    }
+    function toggle() {
+        var open = wrap.classList.toggle('is-open');
+        if (body) body.style.display = open ? '' : 'none';
+    }
+    chev.addEventListener('click', toggle);
+    text.addEventListener('click', toggle);
+    return wrap;
+}
+
+function panelField(icon, build) {
+    var f = el('div', 'Panel-field');
+    f.innerHTML = '<i class="lead ' + icon + '"></i>';
+    var body = el('div', 'Panel-fieldBody');
+    build(body);
+    f.appendChild(body);
+    return f;
+}
+
+function effortInput(value, unit) {
+    var e = el('div', 'Panel-effort');
+    e.appendChild(el('div', 'val', value));
+    e.appendChild(el('div', 'unit', unit));
+    return e;
+}
+
+function fmtStamp(d, time) {
+    return time + ' ' + pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) + '/' + String(d.getFullYear()).slice(-2);
+}
+
+function initials(name) {
+    return name.split(/\s+/).slice(0, 2).map(function (w) { return w[0]; }).join('');
+}
+
 function renderPanel() {
     var old = document.getElementById('selPanel');
     if (old) old.remove();
@@ -1679,99 +2284,227 @@ function renderPanel() {
     state.selection.forEach(function (s) { s.items.forEach(function (it) { if (all.indexOf(it) === -1) all.push(it); }); });
     if (!all.length) return;
 
+    var sel = state.selection[0];
+    var worker = sel.worker;
+    var lead = all[0];
+    // Dash mode: a multi-booking selection can span engagements, so every
+    // job-specific value blanks out to "--".
+    var dash = all.length > 1 || !lead.code;
+
     var p = el('div', 'Panel');
     p.id = 'selPanel';
-
-    var tools = el('div', 'Panel-tools');
-    ['fa-copy', 'fa-trash-can', 'fa-scissors', 'fa-rotate-left', 'fa-rotate-right'].forEach(function (ic) {
-        var b = el('button', 'Tbtn');
-        b.innerHTML = '<i class="fa-solid ' + ic + '"></i>';
-        tools.appendChild(b);
-    });
-    var close = el('button', 'Tbtn Panel-close');
-    close.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    close.addEventListener('click', function () { state.selection = []; render(); });
-    tools.appendChild(close);
-    p.appendChild(tools);
-
-    var head = el('div', 'Panel-head');
-    head.appendChild(el('span', null, all.length + (all.length === 1 ? ' Selected Booking' : ' Selected Bookings')));
-    var x = el('button');
-    x.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    x.addEventListener('click', function () { state.selection = []; render(); });
-    head.appendChild(x);
-    p.appendChild(head);
-
-    var body = el('div', 'Panel-body');
-
-    body.appendChild(el('div', 'Panel-sectionTitle', 'Schedule'));
-    body.appendChild(field('fa-regular fa-clock', ['--', '--'], true));
-    body.appendChild(field('fa-solid fa-left-right', ['--', '--']));
-    body.appendChild(field('fa-solid fa-hourglass-half', ['-- h', '-- m']));
-    body.appendChild(field('fa-solid fa-user', ['--']));
-
-    var s0 = state.selection[0];
-    var ctx = el('div', 'Panel-list');
-    ctx.style.padding = '10px 14px 4px';
-    ctx.style.fontSize = 'var(--font-size-small)';
-    ctx.style.color = 'var(--text-subtle)';
-    ctx.innerHTML = 'From <strong style="color:var(--text-default)">' + esc(s0.row.label) + '</strong>' +
-        (state.selection.length === 1 ? ' · ' + esc(wcLabel(WEEKS[s0.week])) : ' + ' + (state.selection.length - 1) + ' more cells') +
-        '<br>' + esc(s0.worker.name);
-    body.appendChild(ctx);
-
-    var list = el('div', 'Panel-list');
-    all.forEach(function (it) {
-        var li = el('div', 'Panel-listItem');
-        var sw = el('div', 'Panel-swatch');
-        sw.style.background = it.kind === 'unavailability' ? '#c8cad4' : (PHASE_COLOUR[it.phase] || '#4f4970');
-        li.appendChild(sw);
-        li.appendChild(el('span', null, it.job));
-        li.appendChild(el('span', 'hrs', (it.cells[s0.week] || Object.values(it.cells)[0]) + ' h'));
-        list.appendChild(li);
-    });
-    body.appendChild(list);
-
-    [['Resource Requirements', all.length, 'fa-filter'],
-     ['Traits', all.length * 2, 'fa-pen'],
-     ['Engagement', new Set(all.map(function (i) { return i.code; })).size, 'fa-filter'],
-     ['Economics', null, null, 'Recovery Rate 74%, Margin 56%'],
-     ['Location', null, null],
-     ['Notes', null, null, 'Note goes here']
-    ].forEach(function (row) {
-        var r = el('div', 'Panel-row');
-        var lbl = '<span><i class="fa-solid fa-chevron-right" style="margin-right:7px"></i><strong>' + esc(row[0]) + '</strong>';
-        if (row[1] != null) lbl += ' <span class="muted">(' + row[1] + ')</span>';
-        if (row[3]) lbl += ' <span class="muted">(' + esc(row[3]) + ')</span>';
-        lbl += '</span>';
-        r.innerHTML = lbl + (row[2] ? '<i class="fa-solid ' + row[2] + '" style="color:var(--icon-default)"></i>' : '');
-        body.appendChild(r);
-    });
-
-    p.appendChild(body);
+    p.appendChild(panelHead(lead, all, dash));
+    p.appendChild(panelBody(lead, worker, dash));
     overlays.appendChild(p);
 }
 
-function field(icon, values, lock) {
-    var f = el('div', 'Panel-field');
-    f.innerHTML = '<i class="lead ' + icon + '"></i>';
-    values.forEach(function (v, i) {
-        if (i) f.appendChild(el('span', null, '-'));
-        var b = el('div', 'Panel-input', v);
-        f.appendChild(b);
-    });
-    if (lock) {
-        var l = el('div', 'Panel-input');
-        l.style.flex = '0 0 26px';
-        l.style.background = 'var(--surface-emphasis)';
-        l.style.color = '#fff';
-        l.innerHTML = '<i class="fa-solid fa-lock" style="font-size:10px"></i>';
-        f.insertBefore(l, f.children[2]);
+function panelHead(lead, all, dash) {
+    var head = el('div', 'Panel-head');
+
+    if (!dash) {
+        var group = el('div');
+        group.style.display = 'flex';
+        group.style.flexDirection = 'column';
+
+        var top = el('div', 'Panel-headTop');
+        top.appendChild(el('p', 'Panel-title', lead.job));
+        top.appendChild(panelBtn('fa-solid fa-xmark', { cls: 'PanelBtn--close', label: 'Close', onClick: clearSelection }));
+        group.appendChild(top);
+
+        if (lead.code) {
+            var meta = el('div', 'Panel-meta');
+            var pri = el('div', 'Panel-priority');
+            pri.innerHTML = '<i class="fa-solid fa-angles-up"></i>';
+            meta.appendChild(pri);
+            meta.appendChild(el('div', 'Panel-code', lead.code));
+            group.appendChild(meta);
+        }
+        head.appendChild(group);
     }
-    return f;
+
+    var bar = el('div', 'Panel-toolbar');
+    bar.appendChild(!dash && lead.phase ? el('div', 'Panel-badge', lead.phase) : el('div'));
+
+    var tools = el('div', 'Panel-tools');
+    tools.appendChild(panelBtn('fa-regular fa-clone', { label: 'Clone' }));
+    tools.appendChild(panelBtn('fa-regular fa-trash-can', { label: 'Delete' }));
+    tools.appendChild(panelBtn('fa-solid fa-crosshairs', { label: 'Jump to' }));
+    tools.appendChild(panelBtn('fa-solid fa-clock-rotate-left', { label: 'Audit history' }));
+    tools.appendChild(panelBtn('fa-solid fa-retweet', { label: 'Swap / reassign' }));
+    if (dash) tools.appendChild(panelBtn('fa-solid fa-xmark', { cls: 'PanelBtn--close', label: 'Close', onClick: clearSelection }));
+    bar.appendChild(tools);
+    head.appendChild(bar);
+
+    if (all.length > 1) {
+        var count = el('div', 'Panel-count');
+        count.appendChild(el('span', null, all.length + ' Selected Booking' + (all.length === 1 ? '' : 's')));
+        var x = el('button', 'Panel-countX');
+        x.type = 'button';
+        x.title = 'Clear selection';
+        x.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+        x.addEventListener('click', clearSelection);
+        count.appendChild(x);
+        head.appendChild(count);
+    }
+    return head;
+}
+
+function panelBody(lead, worker, dash) {
+    var body = el('div', 'Panel-body');
+    body.appendChild(scheduleBlock(lead, worker, dash));
+
+    body.appendChild(panelSection({ title: 'Suggestions', suffix: '(0)' }));
+    body.appendChild(panelSection({
+        title: 'Resource Requirements',
+        buttons: [panelBtn('fa-solid fa-filter', { label: 'Filter' })]
+    }));
+    body.appendChild(panelSection({
+        title: 'Traits', suffix: '(Detail)',
+        buttons: [panelBtn('fa-solid fa-pencil', { label: 'Edit' })]
+    }));
+    body.appendChild(panelSection({ title: 'Booking State', suffix: '(Definite)' }));
+    body.appendChild(panelSection({
+        title: 'Engagement',
+        link: dash ? null : lead.code,
+        buttons: [panelBtn('fa-regular fa-calendar-plus', { label: 'Calendar' }),
+                  panelBtn('fa-solid fa-right-left', { label: 'Swap' }),
+                  panelBtn('fa-solid fa-filter', { label: 'Filter' })]
+    }));
+
+    if (!dash) body.appendChild(phasesSection(lead, worker));
+
+    body.appendChild(panelSection({ title: 'Economics', suffix: '(Recovery Rate 74%, Margin 56%)' }));
+    body.appendChild(panelSection({ title: 'Percentage Scheduled', suffix: '(72.9%)' }));
+    body.appendChild(panelSection({ title: 'Location' }));
+    body.appendChild(panelSection({ title: 'Notes' }));
+    return body;
+}
+
+function scheduleBlock(lead, worker, dash) {
+    var wrap = el('div', 'Panel-schedule');
+    wrap.appendChild(el('div', 'Panel-scheduleTitle', 'Schedule'));
+
+    var start = WEEKS[lead.startWeek];
+    var endMonday = WEEKS[Math.min(lead.startWeek + lead.span - 1, WEEKS.length - 1)];
+    var end = new Date(endMonday.getFullYear(), endMonday.getMonth(), endMonday.getDate() + 4);
+    var total = 0;
+    Object.keys(lead.cells).forEach(function (k) { total += lead.cells[k]; });
+
+    var fields = el('div', 'Panel-fields');
+
+    fields.appendChild(panelField('fa-regular fa-clock', function (f) {
+        f.appendChild(el('div', 'Panel-input' + (dash ? ' is-dash' : ''), dash ? '--' : fmtStamp(start, '09:00AM')));
+        var lock = el('div', 'Panel-lock');
+        lock.innerHTML = '<i class="fa-solid fa-lock-open"></i>';
+        f.appendChild(lock);
+        f.appendChild(el('div', 'Panel-input' + (dash ? ' is-dash' : ''), dash ? '--' : fmtStamp(end, '05:30PM')));
+    }));
+
+    var person = panelField('fa-solid fa-user', function (f) {
+        f.appendChild(el('span', 'Panel-person', dash ? '--' : '(' + worker.grade + ') ' + worker.name));
+    });
+    person.classList.add('Panel-effortRow');
+    fields.appendChild(person);
+
+    fields.appendChild(panelField('fa-solid fa-hourglass-half', function (f) {
+        if (dash) {
+            f.appendChild(effortInput('--', 'h'));
+            f.appendChild(effortInput('--', 'm'));
+        } else {
+            f.appendChild(effortInput(String(Math.floor(total)), 'h'));
+            f.appendChild(effortInput(String(Math.round((total % 1) * 60)), 'm'));
+            f.appendChild(effortInput('30', '%'));
+        }
+    }));
+    wrap.appendChild(fields);
+
+    var actions = el('div', 'Panel-actions');
+    actions.appendChild(panelBtn('fa-solid fa-up-down-left-right', { caret: true, label: 'Move' }));
+    var split = el('div', 'Panel-split');
+    split.appendChild(panelBtn('fa-regular fa-calendar-days', { label: 'Reschedule' }));
+    split.appendChild(panelBtn('fa-solid fa-caret-down', { label: 'Reschedule options' }));
+    actions.appendChild(split);
+    actions.appendChild(panelBtn('fa-solid fa-down-left-and-up-right-to-center', { label: 'Compress' }));
+    wrap.appendChild(actions);
+    return wrap;
+}
+
+function phasesSection(lead, worker) {
+    var total = 0;
+    Object.keys(lead.cells).forEach(function (k) { total += lead.cells[k]; });
+
+    var table = el('div', 'PhaseTable');
+    var head = el('div', 'PhaseTable-row PhaseTable-head');
+    head.appendChild(el('div', 'PhaseTable-cell PhaseTable-cell--phase', 'Phase'));
+    head.appendChild(el('div', 'PhaseTable-cell PhaseTable-cell--other', 'Assignee'));
+    head.appendChild(el('div', 'PhaseTable-cell PhaseTable-cell--other', 'Status'));
+    table.appendChild(head);
+
+    PHASE_ORDER.forEach(function (phase) {
+        var assigned = phase === lead.phase;
+        var row = el('div', 'PhaseTable-row is-clickable');
+
+        var name = el('div', 'PhaseTable-cell PhaseTable-cell--phase');
+        name.appendChild(el('span', 'PhaseTable-name', phase));
+        var tick = el('i', 'PhaseTable-tick fa-solid fa-check');
+        tick.style.display = 'none';
+        name.appendChild(tick);
+        row.appendChild(name);
+
+        var who = el('div', 'PhaseTable-cell PhaseTable-cell--other');
+        var stack = el('div', 'AvatarStack');
+        if (assigned) {
+            stack.appendChild(el('div', 'Avatar', initials(worker.name)));
+        } else {
+            var empty = el('div', 'Avatar Avatar--empty');
+            empty.innerHTML = '<i class="fa-solid fa-user"></i>';
+            stack.appendChild(empty);
+        }
+        who.appendChild(stack);
+        row.appendChild(who);
+
+        // Preparation (or any assigned phase) reads as done, First Review as
+        // in-progress, anything else as not started.
+        var kind = (phase === 'Preparation' || assigned) ? 'done' : phase === 'First Review' ? 'progress' : 'idle';
+        var st = el('div', 'PhaseTable-cell PhaseTable-cell--other');
+        var dot = el('div', 'PhaseStatus' + (kind === 'done' ? '' : ' PhaseStatus--' + kind));
+        dot.innerHTML = '<i class="fa-solid ' + (kind === 'done' ? 'fa-user-check' : kind === 'progress' ? 'fa-retweet' : 'fa-arrow-right') + '"></i>';
+        st.appendChild(dot);
+        row.appendChild(st);
+
+        row.addEventListener('click', function () {
+            var on = row.classList.toggle('is-selected');
+            [].forEach.call(table.querySelectorAll('.PhaseTable-row'), function (r) {
+                if (r !== row) r.classList.remove('is-selected');
+                var t = r.querySelector('.PhaseTable-tick');
+                if (t) t.style.display = 'none';
+            });
+            tick.style.display = on ? '' : 'none';
+        });
+        table.appendChild(row);
+    });
+
+    return panelSection({
+        title: 'Phases', suffix: '(' + PHASE_ORDER.length + ')',
+        pill: (Math.round(total * 10) / 10) + ' hours',
+        open: true, body: table,
+        buttons: [panelBtn('fa-regular fa-calendar-plus', { label: 'Select all phase bookings' }),
+                  panelBtn('fa-solid fa-filter', { label: 'Filter to phase bookings' })]
+    });
 }
 
 // ── Create booking modal (quick add) ───────────────────────────────────────
+function requirementField(label, value, icon) {
+    return '<div class="CreateBooking-field">' +
+        '<div class="CreateBooking-label">' + esc(label) + ' <span class="Modal-req">*</span></div>' +
+        '<div class="CreateBooking-inputGroup">' +
+            '<input type="text" value="' + esc(value) + '" placeholder="Search" />' +
+            '<button type="button" class="CreateBooking-unit" aria-label="Search ' + esc(label) + '">' +
+                '<i class="' + icon + '"></i></button>' +
+        '</div>' +
+    '</div>';
+}
+
 function openCreateModal(worker, row, weekDate) {
     closeModal();
     var dim = state.breakdown;
@@ -1785,19 +2518,9 @@ function openCreateModal(worker, row, weekDate) {
 
     var head = el('div', 'Modal-head');
     head.innerHTML =
-        '<h2>Create a New Booking</h2>' +
-        '<div class="Modal-tabs">' +
-            '<button class="Modal-tab" data-tab="unavailability">Unavailability</button>' +
-            '<button class="Modal-tab is-active" data-tab="booking">Booking</button>' +
-        '</div>' +
-        '<button class="Modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>';
-    head.querySelector('.Modal-close').addEventListener('click', closeModal);
-    Array.prototype.forEach.call(head.querySelectorAll('.Modal-tab'), function (t) {
-        t.addEventListener('click', function () {
-            head.querySelectorAll('.Modal-tab').forEach(function (o) { o.classList.remove('is-active'); });
-            t.classList.add('is-active');
-        });
-    });
+        '<h2 class="Modal-title">Create a New Booking</h2>' +
+        '<button type="button" class="Modal-x" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>';
+    head.querySelector('.Modal-x').addEventListener('click', closeModal);
     m.appendChild(head);
 
     var body = el('div', 'Modal-body');
@@ -1805,45 +2528,64 @@ function openCreateModal(worker, row, weekDate) {
 
     var html = '';
     html +=
-        '<div class="Field">' +
-            '<label class="Field-label">Engagement <span class="req">*</span></label>' +
-            '<div class="InputGroup">' +
-                '<input class="Input" placeholder="Search for engagement" />' +
-                '<div class="InputGroup-append is-primary"><i class="fa-solid fa-magnifying-glass"></i></div>' +
+        '<div class="CreateBooking-stack">' +
+            '<div class="Modal-fieldLabel">Engagement <span class="Modal-req">*</span></div>' +
+            '<div class="CreateBooking-searchWrap">' +
+                '<input type="search" placeholder="Search for Engagement" autocomplete="off" />' +
+                '<button type="button" class="CreateBooking-iconBtn is-emphasis" tabindex="-1" aria-hidden="true">' +
+                    '<i class="fa-solid fa-magnifying-glass"></i></button>' +
             '</div>' +
         '</div>';
 
     if (dim === 'phase' && value) {
         html +=
-            '<div class="Modal-section"><h3>Phase</h3><div class="Pills">' +
-            PHASE_ORDER.map(function (p) {
-                return '<button class="Pill' + (p === value ? ' is-active' : '') + '">' +
-                       '<span class="Pill-dot" style="background:' + PHASE_COLOUR[p] + '"></span>' + esc(p) + '</button>';
-            }).join('') +
-            '</div></div>';
+            '<div class="CreateBooking-stack">' +
+                '<h3 class="CreateBooking-sectionTitle">Phase</h3>' +
+                '<div class="PhasePills" role="group" aria-label="Phase">' +
+                PHASE_ORDER.map(function (p) {
+                    return '<button type="button" class="PhasePill' + (p === value ? ' is-selected' : '') + '">' +
+                           '<span class="PhasePill-dot" style="background:' + PHASE_COLOUR[p] + '"></span>' + esc(p) + '</button>';
+                }).join('') +
+                '</div>' +
+            '</div>';
     }
 
     html +=
-        '<div class="Modal-section"><h3>Scheduling Details</h3>' +
-            '<div class="Field-row">' +
-                '<div class="Field"><label class="Field-label">From</label>' +
-                    '<div class="InputGroup"><input class="Input" value="' + from + '" />' +
-                    '<div class="InputGroup-append is-solid"><i class="fa-regular fa-calendar"></i></div></div></div>' +
-                '<div class="Field"><label class="Field-label">To</label>' +
-                    '<div class="InputGroup"><input class="Input" placeholder="Select date and time" />' +
-                    '<div class="InputGroup-append is-solid"><i class="fa-regular fa-calendar"></i></div></div></div>' +
-            '</div>' +
-            '<div class="Field" style="margin-top:14px"><label class="Field-label">Effort</label>' +
-                '<div class="Effort">' +
-                    '<div class="InputGroup"><input class="Input" value="7" /><div class="InputGroup-append">m</div></div>' +
-                    '<div class="InputGroup"><input class="Input" value="30" /><div class="InputGroup-append">h</div></div>' +
-                    '<div class="InputGroup"><input class="Input" value="100" /><div class="InputGroup-append">%</div></div>' +
-                    '<label style="display:flex;gap:6px;align-items:center;font-size:var(--font-size-medium)"><input type="checkbox" /> Repeat</label>' +
+        '<div class="CreateBooking-stack">' +
+            '<h3 class="CreateBooking-sectionTitle">Scheduling Details</h3>' +
+            '<div class="CreateBooking-grid2">' +
+                '<div class="CreateBooking-field">' +
+                    '<div class="CreateBooking-label">From <span class="Modal-req">*</span></div>' +
+                    '<div class="CreateBooking-inputGroup"><input type="text" value="' + from + '" />' +
+                    '<button type="button" class="CreateBooking-unit" aria-label="Pick from date">' +
+                    '<i class="fa-regular fa-calendar"></i></button></div>' +
+                '</div>' +
+                '<div class="CreateBooking-field">' +
+                    '<div class="CreateBooking-label">To <span class="Modal-req">*</span></div>' +
+                    '<div class="CreateBooking-inputGroup"><input type="text" placeholder="Select date and time" />' +
+                    '<button type="button" class="CreateBooking-unit" aria-label="Pick to date">' +
+                    '<i class="fa-regular fa-calendar"></i></button></div>' +
                 '</div>' +
             '</div>' +
-            '<div class="Field" style="margin-bottom:0"><label class="Field-label">Assign Resource</label>' +
-                '<div class="InputGroup"><input class="Input" value="(' + esc(worker.grade) + ') ' + esc(worker.name) + '" />' +
-                '<div class="InputGroup-append is-solid"><i class="fa-solid fa-user"></i></div></div></div>' +
+            '<div class="CreateBooking-field">' +
+                '<div class="CreateBooking-label">Effort <span class="Modal-req">*</span></div>' +
+                '<div class="CreateBooking-effortRow">' +
+                    '<div class="CreateBooking-effortInputs">' +
+                        '<div class="CreateBooking-inputGroup"><input type="number" min="0" step="1" value="30" aria-label="Hours" />' +
+                        '<span class="CreateBooking-unit" aria-hidden="true">h</span></div>' +
+                        '<div class="CreateBooking-inputGroup"><input type="number" min="0" max="45" step="15" value="0" aria-label="Minutes" />' +
+                        '<span class="CreateBooking-unit" aria-hidden="true">m</span></div>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="CreateBooking-field">' +
+                '<div class="CreateBooking-label">Assigned Resource</div>' +
+                '<div class="CreateBooking-assigned">' +
+                    '<span class="CreateBooking-assignedText">(' + esc(worker.grade) + ') ' + esc(worker.name) + '</span>' +
+                    '<i class="fa-solid fa-circle-check CreateBooking-assignedOk" aria-hidden="true"></i>' +
+                    '<span class="CreateBooking-unit CreateBooking-unit--icon" aria-hidden="true"><i class="fa-solid fa-user"></i></span>' +
+                '</div>' +
+            '</div>' +
         '</div>';
 
     if ((dim === 'role' || dim === 'req') && value) {
@@ -1855,36 +2597,48 @@ function openCreateModal(worker, row, weekDate) {
             grade = parts[0] || ''; unit = parts[1] || ''; location = parts[2] || '';
         }
         html +=
-            '<div class="Modal-section"><h3>Resource Requirement</h3>' +
-                '<div class="Toggle2"><button>Specific</button><button class="is-active">Flexible</button></div>' +
-                '<div class="Field-row" style="margin-top:14px">' +
-                    '<div class="Field"><label class="Field-label">Job Profile <span class="req">*</span></label>' +
-                        '<div class="InputGroup"><input class="Input" value="' + esc(grade) + '" placeholder="Search" />' +
-                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-id-badge"></i></div></div></div>' +
-                    '<div class="Field"><label class="Field-label">Engagement Role <span class="req">*</span></label>' +
-                        '<div class="InputGroup"><input class="Input" value="' + esc(engRole) + '" placeholder="Search" />' +
-                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-sitemap"></i></div></div></div>' +
+            '<div class="CreateBooking-stack">' +
+                '<hr class="CreateBooking-divider" />' +
+                '<h3 class="CreateBooking-sectionTitle">Resource Requirement</h3>' +
+                '<div class="BtnGroup" role="group" aria-label="Requirement type">' +
+                    '<button type="button">Specific</button>' +
+                    '<button type="button" class="is-active">Flexible</button>' +
                 '</div>' +
-                '<div class="Field-row" style="margin-top:14px">' +
-                    '<div class="Field"><label class="Field-label">Location <span class="req">*</span></label>' +
-                        '<div class="InputGroup"><input class="Input" value="' + esc(location) + '" placeholder="Search" />' +
-                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-location-dot"></i></div></div></div>' +
-                    '<div class="Field"><label class="Field-label">Business Unit <span class="req">*</span></label>' +
-                        '<div class="InputGroup"><input class="Input" value="' + esc(unit) + '" placeholder="Search" />' +
-                        '<div class="InputGroup-append is-solid"><i class="fa-solid fa-building"></i></div></div></div>' +
+                '<div class="CreateBooking-grid2">' +
+                    requirementField('Job Profile', grade, 'fa-solid fa-id-badge') +
+                    requirementField('Engagement Role', engRole, 'fa-solid fa-sitemap') +
+                '</div>' +
+                '<div class="CreateBooking-grid2">' +
+                    requirementField('Location', location, 'fa-solid fa-location-dot') +
+                    requirementField('Business Unit', unit, 'fa-solid fa-building') +
                 '</div>' +
             '</div>';
     }
 
     html +=
-        '<div class="Modal-section"><h3>Booking Traits</h3>' +
-            '<button class="Btn" style="height:32px;margin-bottom:12px"><i class="fa-solid fa-plus" style="margin-right:6px"></i>Add Traits</button>' +
-            '<table class="Table"><thead><tr><th>Name</th><th>Primary</th><th style="text-align:right">Remove</th></tr></thead><tbody>' +
-            (dim === 'bookingType' && value
-                ? '<tr><td>' + esc(value) + '</td><td><span class="Badge-primary">Primary</span></td>' +
-                  '<td style="text-align:right"><i class="fa-solid fa-xmark" style="color:var(--icon-default)"></i></td></tr>'
-                : '<tr><td colspan="3" class="empty">Nothing to display</td></tr>') +
-            '</tbody></table>' +
+        '<div class="CreateBooking-stack">' +
+            '<hr class="CreateBooking-divider" />' +
+            '<h3 class="CreateBooking-sectionTitle">Booking Traits</h3>' +
+            '<button type="button" class="CreateBooking-addTraitBtn">' +
+                '<i class="fas fa-plus" aria-hidden="true"></i>Add Traits</button>' +
+            '<div class="CreateBooking-traitsTableWrap">' +
+                '<table class="CreateBooking-traitsTable" aria-label="Booking traits">' +
+                    '<thead><tr>' +
+                        '<th scope="col"><div class="CreateBooking-headerCellContent">' +
+                            '<i class="CreateBooking-sortIcon fas fa-sort" aria-hidden="true"></i><span>Name</span></div></th>' +
+                        '<th scope="col" class="is-primary"><div class="CreateBooking-headerCellContent">' +
+                            '<i class="CreateBooking-sortIcon fas fa-sort" aria-hidden="true"></i><span>Primary</span></div></th>' +
+                        '<th scope="col" class="is-actions">Remove</th>' +
+                    '</tr></thead>' +
+                    (dim === 'bookingType' && value
+                        ? '<tbody><tr><td>' + esc(value) + '</td>' +
+                          '<td><i class="fa-solid fa-circle-check" style="color:var(--text-success)" aria-label="Primary"></i></td>' +
+                          '<td><button type="button" class="CreateBooking-traitRemove" aria-label="Remove trait">' +
+                          '<i class="fa-solid fa-xmark"></i></button></td></tr></tbody>'
+                        : '<tbody></tbody>') +
+                '</table>' +
+                (dim === 'bookingType' && value ? '' : '<div class="CreateBooking-traitsEmpty">Nothing to display</div>') +
+            '</div>' +
         '</div>';
 
     var noteText;
@@ -1905,10 +2659,9 @@ function openCreateModal(worker, row, weekDate) {
     m.appendChild(body);
 
     var foot = el('div', 'Modal-foot');
-    foot.innerHTML = '<div class="spacer"></div>';
     var more = el('button', 'Btn', 'More Options');
-    var cancel = el('button', 'Btn', 'Cancel');
-    var create = el('button', 'Btn Btn--primary', 'Create');
+    var cancel = el('button', 'Btn Btn--secondary', 'Cancel');
+    var create = el('button', 'Btn Btn--primary', 'Save');
     cancel.addEventListener('click', closeModal);
     create.addEventListener('click', function () {
         closeModal();
@@ -1937,6 +2690,8 @@ document.getElementById('gantt').addEventListener('click', function (e) {
     if (e.target.closest('.Cellw') || e.target.closest('.Bar')) return;
     if (state.selection.length) { state.selection = []; render(); }
 });
+
+document.getElementById('gantt').addEventListener('scroll', syncHeadScroll, { passive: true });
 
 render();
 })();
