@@ -460,13 +460,11 @@ a { color: var(--text-link-color); text-decoration: none; }
   min-height: 96px;
   border-radius: var(--border-radius-default);
 }
-.Stepper--vertical .Stepper-step--current,
-.Stepper--vertical .Stepper-step--done {
-  cursor: pointer;
-}
-.Stepper--vertical .Stepper-step--done:hover {
+.Stepper--vertical .Stepper-step[role="button"] { cursor: pointer; }
+.Stepper--vertical .Stepper-step[role="button"]:not(.Stepper-step--current):hover {
   background: var(--surface-list-item-hover);
 }
+.Stepper--vertical .Stepper-step.is-locked .Stepper-info { opacity: 0.5; }
 .Stepper-step[role="button"]:focus-visible {
   outline: 2px solid var(--border-primary-focus);
   outline-offset: var(--padding-xs);
@@ -943,7 +941,7 @@ a { color: var(--text-link-color); text-decoration: none; }
                 <label class="Field-label" for="wp-name">Name *</label>
                 <input class="Input" id="wp-name" type="text" placeholder="Corporate Return demand profile"
                   aria-describedby="nameError"
-                  oninput="this.setAttribute('aria-invalid','false'); document.getElementById('nameError').classList.add('hidden')" />
+                  oninput="onNameInput(this)" />
                 <p class="InlineError hidden" id="nameError">Enter a template name.</p>
               </div>
               <div class="Field">
@@ -1702,11 +1700,12 @@ function renderStepper() {
 
   document.getElementById('wizardStepper').innerHTML = steps.map(step => {
     const connectorStatus = horizontalConnectorStatus(steps, step.stepNumber);
-    const isReachable = step.status === 'current' || step.status === 'done';
-    const stepInteraction = isReachable
+    const reachable = canReachStep(step.stepNumber);
+    const blockedBy = reachable ? '' : firstStepIssue(step.stepNumber);
+    const stepInteraction = reachable
       ? `role="button" tabindex="0" onclick="onStepperClick(${step.stepNumber})"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onStepperClick(${step.stepNumber})}"`
-      : '';
+      : `aria-disabled="true" title="${esc(blockedBy)}"`;
     const markerInner = step.status === 'done'
       ? '<i class="Stepper-check fas fa-check" aria-hidden="true"></i>'
       : step.status === 'error'
@@ -1714,7 +1713,7 @@ function renderStepper() {
         : `<span class="Stepper-number">${step.stepNumber}</span>`;
 
     return `
-      <li class="Stepper-step Stepper-step--${step.status}${step.isLast ? ' Stepper-step--last' : ''}"
+      <li class="Stepper-step Stepper-step--${step.status}${step.isLast ? ' Stepper-step--last' : ''}${reachable ? '' : ' is-locked'}"
           data-test="Stepper-step-${step.stepNumber}"
           ${stepInteraction}
           ${step.status === 'current' || step.status === 'error' ? 'aria-current="step"' : ''}>
@@ -1744,11 +1743,44 @@ function horizontalConnectorStatus(steps, afterStepNumber) {
 }
 
 function onStepperClick(n) {
-  // Jump only to completed or current steps
-  if (n <= state.wizardStep) {
-    state.wizardStep = n;
-    renderWizard();
+  readWizardForm();
+  if (n === state.wizardStep) return;
+  if (!canReachStep(n)) {
+    const issue = firstStepIssue(n);
+    if (issue) toast(issue);
+    return;
   }
+  state.wizardStep = n;
+  renderWizard();
+}
+
+function onNameInput(field) {
+  field.setAttribute('aria-invalid', 'false');
+  document.getElementById('nameError').classList.add('hidden');
+  state.draft.name = field.value.trim();
+  renderStepper();
+}
+
+/* ---------- Step gating ---------- */
+// A step unlocks once every step before it has its required fields filled.
+// Steps with nothing required never block the ones after them.
+function stepIssue(panelId) {
+  if (panelId === 'details') return state.draft && state.draft.name ? null : 'Enter a template name';
+  if (panelId === 'timeline') return timelineIssue();
+  return null;
+}
+
+function firstStepIssue(stepNumber) {
+  const before = wizardSteps().slice(0, stepNumber - 1);
+  for (const step of before) {
+    const issue = stepIssue(step.id);
+    if (issue) return issue;
+  }
+  return null;
+}
+
+function canReachStep(stepNumber) {
+  return !firstStepIssue(stepNumber);
 }
 
 function renderDetails() {
@@ -2453,6 +2485,7 @@ function renderTimeline() {
     renderFlatSegList();
     renderRequestCards();
   }
+  renderStepper();
 }
 
 function newRequest(weight = 0) {
@@ -2830,6 +2863,7 @@ function renderRequestCards() {
       <div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
         <div>Add a resource request above to set grade, role, and count.</div>
       </div>`;
+    renderStepper();
     return;
   }
   document.getElementById('slotEditor').innerHTML = reqs.map(item => {
@@ -2861,6 +2895,7 @@ function renderRequestCards() {
       </div>
     </div>`;
   }).join('');
+  renderStepper();
 }
 
 function renderSlotEditor() {
@@ -2870,6 +2905,7 @@ function renderSlotEditor() {
       <div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
         <div>Add a phase above to seed its resource requests.</div>
       </div>`;
+    renderStepper();
     return;
   }
   document.getElementById('slotEditor').innerHTML = phases.map((p) => {
@@ -2923,6 +2959,7 @@ function renderSlotEditor() {
     </div>
   `;
   }).join('');
+  renderStepper();
 }
 
 function updateSlotShare(pi, si, val) {
@@ -3109,7 +3146,7 @@ function wizardNav(dir) {
   const panel = currentWizardPanel();
   if (dir === 1) {
     if (panel === 'details') {
-      if (!state.draft.name) {
+      if (stepIssue('details')) {
         const field = document.getElementById('wp-name');
         field.setAttribute('aria-invalid', 'true');
         document.getElementById('nameError').classList.remove('hidden');
@@ -3131,24 +3168,29 @@ function wizardNav(dir) {
   renderWizard();
 }
 
-function validateTimelineStep() {
+function timelineIssue() {
   if (isPhaseWorld()) {
-    if (!effortPhases().length) { toast('Add at least one phase'); return false; }
-    if (effortPhases().some(p => !p.name)) { toast('Choose a phase trait for every phase'); return false; }
-    if (!shapeSumOk()) { toast('Phase shares must total 100%'); return false; }
-    if (!validateSharesUI()) { toast('Slot shares must sum to 100% or be left blank'); return false; }
+    if (!effortPhases().length) return 'Add at least one phase';
+    if (effortPhases().some(p => !p.name)) return 'Choose a phase trait for every phase';
+    if (!shapeSumOk()) return 'Phase shares must total 100%';
+    if (!validateSharesUI()) return 'Slot shares must sum to 100% or be left blank';
     const missingGrade = effortPhases().some(p =>
       (p.slots || []).some(s => !(s.grade && String(s.grade).trim()))
     );
-    if (missingGrade) { toast('Choose a grade for every resource request'); return false; }
-    return true;
+    if (missingGrade) return 'Choose a grade for every resource request';
+    return null;
   }
-  if (!requestItems().length) { toast('Add at least one resource request'); return false; }
-  if (!shapeSumOk()) { toast('Request shares must total 100%'); return false; }
+  if (!requestItems().length) return 'Add at least one resource request';
+  if (!shapeSumOk()) return 'Request shares must total 100%';
   if (requestItems().some(r => !(r.grade && String(r.grade).trim()))) {
-    toast('Choose a grade for every resource request');
-    return false;
+    return 'Choose a grade for every resource request';
   }
+  return null;
+}
+
+function validateTimelineStep() {
+  const issue = timelineIssue();
+  if (issue) { toast(issue); return false; }
   return true;
 }
 
