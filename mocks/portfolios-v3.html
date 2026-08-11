@@ -4244,6 +4244,35 @@ const PF_LEFT_W = 405;
 const PF_MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function pfBarsHeight(count, pad) { return count * PF_BAR_PITCH + (pad == null ? PF_BAR_PAD : pad); }
+/* Pack bookings into the fewest lanes: share a lane unless week ranges overlap. */
+function pfPackBarLanes(items) {
+    const sorted = (items || []).slice().sort(function (a, b) {
+        if (a.startWeek !== b.startWeek) return a.startWeek - b.startWeek;
+        if (b.span !== a.span) return b.span - a.span;
+        return String(a.id).localeCompare(String(b.id));
+    });
+    const laneEnds = [];
+    const laneOf = {};
+    sorted.forEach(function (it) {
+        const start = it.startWeek;
+        const end = it.startWeek + it.span;
+        let lane = -1;
+        for (let i = 0; i < laneEnds.length; i++) {
+            if (start >= laneEnds[i]) { lane = i; break; }
+        }
+        if (lane === -1) {
+            lane = laneEnds.length;
+            laneEnds.push(end);
+        } else {
+            laneEnds[lane] = end;
+        }
+        laneOf[it.id] = lane;
+    });
+    return { laneCount: Math.max(1, laneEnds.length), laneOf: laneOf };
+}
+function pfLaneCount(items) {
+    return pfPackBarLanes(items).laneCount;
+}
 function pfSnapMonday(d) {
     const r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
     const dow = r.getDay();
@@ -4761,7 +4790,7 @@ function pfBuildWorkerRow(worker, index) {
     }
 
     if (!rows) {
-        const flatH = pfBarsHeight(Math.max(1, worker.items.length), PF_BAR_PAD);
+        const flatH = pfBarsHeight(pfLaneCount(worker.items), PF_BAR_PAD);
         const flat = pfEl("div", "PfTeam-subrow");
         flat.style.height = flatH + "px";
         flat.style.position = "relative";
@@ -4777,8 +4806,8 @@ function pfBuildWorkerRow(worker, index) {
     } else {
         rows.forEach(function (r) {
             const open = pfRowExpanded(worker, r);
-            const itemCount = open ? r.items.length : 0;
-            const h = 24 + (itemCount ? pfBarsHeight(itemCount, PF_BAR_PAD) : 0);
+            const laneCount = open && r.items.length ? pfLaneCount(r.items) : 0;
+            const h = 24 + (laneCount ? pfBarsHeight(laneCount, PF_BAR_PAD) : 0);
 
             const lbl = pfEl("div", "PfTeam-dimLabel" + (open ? " is-expanded" : ""));
             lbl.style.height = h + "px";
@@ -4859,16 +4888,18 @@ function pfGridLines() {
 
 function pfBuildBars(worker, row, topPad) {
     const pad = topPad == null ? PF_BAR_PAD : topPad;
+    const pack = pfPackBarLanes(row.items);
     const box = pfEl("div", "PfTeam-bars");
     box.style.position = "relative";
-    box.style.height = pfBarsHeight(Math.max(1, row.items.length), pad) + "px";
+    box.style.height = pfBarsHeight(pack.laneCount, pad) + "px";
     box.appendChild(pfGridLines());
 
-    row.items.forEach(function (it, idx) {
+    row.items.forEach(function (it) {
+        const lane = pack.laneOf[it.id] != null ? pack.laneOf[it.id] : 0;
         const bar = pfEl("div", "PfTeam-bar" + (it.kind === "unavailability" ? " PfTeam-bar--unavail" : ""));
         bar.style.left = (it.startWeek * PF_WEEK_W + 2) + "px";
         bar.style.width = (it.span * PF_WEEK_W - 5) + "px";
-        bar.style.top = (pad + idx * PF_BAR_PITCH) + "px";
+        bar.style.top = (pad + lane * PF_BAR_PITCH) + "px";
         if (it.kind !== "unavailability") {
             bar.style.backgroundColor = PF_PHASE_COLOUR[it.phase] || "#4f4970";
         }
