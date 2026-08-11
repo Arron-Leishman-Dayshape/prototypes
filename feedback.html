@@ -307,6 +307,51 @@
       z-index: 5;
     }
     .heat-meta-text { flex: 1; min-width: 12rem; }
+    .heat-meta-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .heat-page-nav {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 2px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+    .heat-page-nav.is-on { display: inline-flex; }
+    .heat-page-nav button {
+      width: 32px;
+      height: 32px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .heat-page-nav button:hover:not(:disabled) {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .heat-page-nav button:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+    .heat-page-label {
+      min-width: 9.5rem;
+      padding: 0 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--ink);
+      white-space: nowrap;
+    }
     .heat-meta .btn-ghost {
       height: 34px;
       padding: 0 12px;
@@ -469,7 +514,14 @@
         <p>Clicks on this prototype are collected automatically. Open or share the mock to gather data, then refresh.</p>
         <div class="heat-meta" id="heatMetaBar">
           <span class="heat-meta-text" id="heatMeta">Loading…</span>
-          <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh heatmap</button>
+          <div class="heat-meta-actions">
+            <div class="heat-page-nav" id="heatPageNav" aria-label="Mock pages">
+              <button type="button" id="heatPagePrev" aria-label="Previous page"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+              <span class="heat-page-label" id="heatPageLabel">Page 1</span>
+              <button type="button" id="heatPageNext" aria-label="Next page"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+            </div>
+            <button type="button" class="btn-ghost" id="refreshTelemetry">Refresh heatmap</button>
+          </div>
         </div>
         <div class="heat-stage" id="heatStage">
           <div class="heat-scaler" id="heatScaler">
@@ -558,6 +610,158 @@
         });
       }
 
+      var heatPages = [];
+      var heatPageIndex = 0;
+      var heatRepaint = null;
+
+      function titleCaseWords(value) {
+        return String(value || '')
+          .replace(/[-_]+/g, ' ')
+          .replace(/\b\w/g, function (ch) { return ch.toUpperCase(); })
+          .trim();
+      }
+
+      function labelFromNode(el) {
+        if (!el) return '';
+        var title =
+          el.querySelector('.TopBar-title, .Wizard-stepTitle, h1, h2') ||
+          el.querySelector('[data-page-title]');
+        if (title && title.textContent) return title.textContent.replace(/\s+/g, ' ').trim().slice(0, 48);
+        return '';
+      }
+
+      function firstPortfolioName(win, doc) {
+        try {
+          if (win.portfolios) {
+            var keys = ['starred', 'browse', 'archive'];
+            for (var i = 0; i < keys.length; i++) {
+              var rows = win.portfolios[keys[i]];
+              if (rows && rows.length && rows[0].name) return rows[0].name;
+            }
+          }
+        } catch (e) {}
+        var cell = doc.querySelector('.cell-name');
+        return cell && cell.textContent ? cell.textContent.trim() : 'Portfolio';
+      }
+
+      function discoverHeatPages(win, doc) {
+        var pages = [];
+        if (!doc || !win) return pages;
+
+        function pushPage(key, title, activate) {
+          if (pages.some(function (p) { return p.key === key; })) return;
+          pages.push({ key: key, title: title || key, activate: activate });
+        }
+
+        var screens = Array.prototype.slice.call(doc.querySelectorAll('.screen[id]'));
+        if (screens.length > 1) {
+          var wizardSteps = Array.prototype.slice.call(doc.querySelectorAll('[id^="wizard-step-"]'));
+          screens.forEach(function (el) {
+            var raw = el.id.replace(/^screen-/, '');
+            if (raw === 'wizard' && wizardSteps.length) return;
+            var title = labelFromNode(el) || titleCaseWords(raw);
+            pushPage(el.id, title, function () {
+              if (typeof win.showScreen === 'function') win.showScreen(raw);
+              else screens.forEach(function (s) { s.classList.toggle('is-active', s === el); });
+            });
+          });
+          wizardSteps.forEach(function (stepEl, idx) {
+            var stepTitle = labelFromNode(stepEl) || ('Step ' + (idx + 1));
+            pushPage(stepEl.id, 'Wizard · ' + stepTitle, function () {
+              if (typeof win.showScreen === 'function') win.showScreen('wizard');
+              else {
+                screens.forEach(function (s) {
+                  s.classList.toggle('is-active', s.id === 'screen-wizard');
+                });
+              }
+              try {
+                if (win.state) win.state.wizardStep = idx + 1;
+                if (typeof win.renderWizard === 'function') {
+                  win.renderWizard();
+                  return;
+                }
+              } catch (err) {}
+              wizardSteps.forEach(function (s) {
+                s.classList.toggle('hidden', s !== stepEl);
+              });
+            });
+          });
+          return pages;
+        }
+
+        var views = Array.prototype.slice.call(doc.querySelectorAll('section.view[id], .Main > .view[id]'));
+        if (views.length > 1) {
+          var hasDetailTabs = !!(doc.getElementById('tab-performance') && doc.getElementById('tab-team'));
+          views.forEach(function (el) {
+            var raw = el.id.replace(/^view-/, '');
+            if (raw === 'detail' && hasDetailTabs) return;
+            var title = labelFromNode(el) || titleCaseWords(raw);
+            pushPage(el.id, title, function () {
+              if (raw === 'list' && typeof win.showList === 'function') {
+                win.showList();
+                return;
+              }
+              if (raw === 'detail' && typeof win.openPortfolio === 'function') {
+                win.openPortfolio(firstPortfolioName(win, doc));
+                return;
+              }
+              views.forEach(function (v) { v.classList.toggle('is-active', v === el); });
+            });
+          });
+          if (hasDetailTabs) {
+            pushPage('detail-performance', 'Detail · Performance', function () {
+              if (typeof win.openPortfolio === 'function') win.openPortfolio(firstPortfolioName(win, doc));
+              if (typeof win.switchTab === 'function') win.switchTab('performance');
+            });
+            pushPage('detail-team', 'Detail · Team', function () {
+              if (typeof win.openPortfolio === 'function') win.openPortfolio(firstPortfolioName(win, doc));
+              if (typeof win.switchTab === 'function') win.switchTab('team');
+            });
+          }
+        }
+
+        return pages;
+      }
+
+      function updateHeatPageNav() {
+        var nav = document.getElementById('heatPageNav');
+        var label = document.getElementById('heatPageLabel');
+        var prev = document.getElementById('heatPagePrev');
+        var next = document.getElementById('heatPageNext');
+        if (!nav || !label || !prev || !next) return;
+        if (heatPages.length < 2) {
+          nav.classList.remove('is-on');
+          return;
+        }
+        nav.classList.add('is-on');
+        var page = heatPages[heatPageIndex] || heatPages[0];
+        label.textContent = (heatPageIndex + 1) + ' / ' + heatPages.length + ' · ' + page.title;
+        prev.disabled = false;
+        next.disabled = false;
+      }
+
+      function applyHeatPage(opts) {
+        opts = opts || {};
+        if (!heatPages.length) {
+          updateHeatPageNav();
+          return;
+        }
+        heatPageIndex = Math.max(0, Math.min(heatPages.length - 1, heatPageIndex));
+        var page = heatPages[heatPageIndex];
+        updateHeatPageNav();
+        try { page.activate(); } catch (err) {}
+        if (opts.skipPaint) return;
+        setTimeout(function () { if (heatRepaint) heatRepaint(); }, 80);
+        setTimeout(function () { if (heatRepaint) heatRepaint(); }, 350);
+        setTimeout(function () { if (heatRepaint) heatRepaint(); }, 800);
+      }
+
+      function shiftHeatPage(delta) {
+        if (heatPages.length < 2) return;
+        heatPageIndex = (heatPageIndex + delta + heatPages.length) % heatPages.length;
+        applyHeatPage();
+      }
+
       function renderHeatmap(items) {
         var clicks = (items || []).filter(function (e) {
           return e.eventType === 'click' && e.x != null && e.y != null;
@@ -577,6 +781,8 @@
         var stage = document.getElementById('heatStage');
         if (!mockPath) {
           setMeta(clicks.length + ' clicks · open a prototype path to render the heatmap');
+          heatPages = [];
+          updateHeatPageNav();
           return;
         }
 
@@ -602,6 +808,9 @@
           frame.style.height = renderHeight + 'px';
           scaler.style.width = renderWidth + 'px';
           scaler.style.height = renderHeight + 'px';
+          heatPages = [];
+          heatPageIndex = 0;
+          updateHeatPageNav();
           frame.src = heatSrc;
         }
 
@@ -612,6 +821,32 @@
             w: Math.max(body.scrollWidth, el.scrollWidth, body.offsetWidth, el.clientWidth, renderWidth),
             h: Math.max(body.scrollHeight, el.scrollHeight, body.offsetHeight, el.clientHeight, renderHeight),
           };
+        }
+
+        function syncPagesFromFrame() {
+          try {
+            var win = frame.contentWindow;
+            var doc = frame.contentDocument || (win && win.document);
+            if (!doc || !doc.body) return;
+            var found = discoverHeatPages(win, doc);
+            if (!found.length) {
+              heatPages = [];
+              updateHeatPageNav();
+              return;
+            }
+            var prevKey = heatPages[heatPageIndex] && heatPages[heatPageIndex].key;
+            heatPages = found;
+            if (prevKey) {
+              var idx = heatPages.findIndex(function (p) { return p.key === prevKey; });
+              heatPageIndex = idx >= 0 ? idx : 0;
+            } else {
+              heatPageIndex = 0;
+            }
+            updateHeatPageNav();
+          } catch (err) {
+            heatPages = [];
+            updateHeatPageNav();
+          }
         }
 
         function layoutAndPaint() {
@@ -659,9 +894,13 @@
           canvas.width = Math.round(stageW);
           canvas.height = Math.round(displayH);
 
+          var pageBit = heatPages.length > 1
+            ? ' · page ' + (heatPageIndex + 1) + '/' + heatPages.length
+            : '';
           setMeta(
             clicks.length + ' click' + (clicks.length === 1 ? '' : 's') +
-            ' · rendered at ' + renderWidth + '×' + renderHeight + ' · scale ' + Math.round(scale * 100) + '%'
+            ' · rendered at ' + renderWidth + '×' + renderHeight +
+            ' · scale ' + Math.round(scale * 100) + '%' + pageBit
           );
 
           var w = canvas.width;
@@ -761,20 +1000,35 @@
           ctx.globalAlpha = 1;
         }
 
+        heatRepaint = function () {
+          syncPagesFromFrame();
+          layoutAndPaint();
+        };
+
         var paintTimer = null;
         function schedulePaint() {
           clearTimeout(paintTimer);
-          paintTimer = setTimeout(layoutAndPaint, 60);
+          paintTimer = setTimeout(function () {
+            syncPagesFromFrame();
+            layoutAndPaint();
+          }, 60);
         }
 
         frame.onload = function () {
-          setTimeout(layoutAndPaint, 200);
-          setTimeout(layoutAndPaint, 600);
-          setTimeout(layoutAndPaint, 1200);
+          setTimeout(function () {
+            syncPagesFromFrame();
+            applyHeatPage({ skipPaint: true });
+            layoutAndPaint();
+          }, 200);
+          setTimeout(function () { if (heatRepaint) heatRepaint(); }, 600);
+          setTimeout(function () { if (heatRepaint) heatRepaint(); }, 1200);
         };
         window.addEventListener('resize', schedulePaint);
         if (!needsReload) schedulePaint();
-        else setTimeout(layoutAndPaint, 300);
+        else setTimeout(function () {
+          syncPagesFromFrame();
+          layoutAndPaint();
+        }, 300);
       }
 
       function setTab(name) {
@@ -802,6 +1056,24 @@
 
       var refreshBtn = document.getElementById('refreshTelemetry');
       if (refreshBtn) refreshBtn.addEventListener('click', function () { loadTelemetry(); });
+
+      var heatPagePrev = document.getElementById('heatPagePrev');
+      var heatPageNext = document.getElementById('heatPageNext');
+      if (heatPagePrev) heatPagePrev.addEventListener('click', function () { shiftHeatPage(-1); });
+      if (heatPageNext) heatPageNext.addEventListener('click', function () { shiftHeatPage(1); });
+      document.addEventListener('keydown', function (e) {
+        var heatPanel = document.getElementById('panel-heatmaps');
+        if (!heatPanel || heatPanel.hidden) return;
+        if (heatPages.length < 2) return;
+        if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          shiftHeatPage(-1);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          shiftHeatPage(1);
+        }
+      });
 
       fetch('manifest.json', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : []; })
