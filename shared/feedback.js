@@ -179,6 +179,124 @@
     });
   }
 
+  function isFeedbackChrome(el) {
+    if (!el || !el.closest) return false;
+    return !!(
+      el.closest('.ProtoFeedback-launch') ||
+      el.closest('.ProtoFeedback-panel') ||
+      el.closest('.ProtoFeedback-pickTip') ||
+      el.id === 'protoFeedbackPickTip'
+    );
+  }
+
+  function looksLikeComponent(el) {
+    if (!el || el.nodeType !== 1) return false;
+    var cls = typeof el.className === 'string' ? el.className : '';
+    if (!cls) return false;
+    // Prefer named UI blocks (Btn, Card, Modal, TopBar-title, NavBar-li, …)
+    return /(^|\s)([A-Z][A-Za-z0-9]+|[A-Z][A-Za-z0-9]*-[A-Za-z0-9_-]+)(\s|$)/.test(cls) ||
+      /\b(btn|button|card|modal|dialog|panel|nav|menu|tab|row|cell|item|tile|chip|badge|toolbar|header|footer|sidebar|drawer|toast|alert|table|list)\b/i.test(cls);
+  }
+
+  /**
+   * Climb from the leaf under the cursor to a sensible “component” target —
+   * buttons, cards, list rows, form fields — instead of tiny nested divs/spans/icons.
+   */
+  function resolvePickTarget(raw) {
+    if (!raw || raw.nodeType !== 1) return null;
+    if (isFeedbackChrome(raw)) return null;
+
+    var start = raw;
+    if (start.closest && start.closest('svg') && start.tagName.toLowerCase() !== 'svg') {
+      start = start.closest('svg');
+    }
+
+    var INTERACTIVE = /^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL|IMG|VIDEO|CANVAS|TABLE|FORM|FIELDSET|DETAILS|TEXTAREA)$/i;
+    var BLOCK = /^(SECTION|ARTICLE|ASIDE|NAV|HEADER|FOOTER|MAIN|LI|TR|TD|TH|FIGURE|DIALOG|UL|OL|DL|DT|DD)$/i;
+    var ROLE_OK = /^(button|link|menuitem|tab|checkbox|radio|textbox|combobox|option|switch|listitem|article|region|group|dialog|navigation|toolbar|banner|contentinfo)$/i;
+
+    var vpArea = Math.max(1, window.innerWidth * window.innerHeight);
+    var MIN_W = 48;
+    var MIN_H = 28;
+    var MIN_AREA = 1800;
+    var MAX_RATIO = 0.72;
+
+    function rectOf(el) {
+      try { return el.getBoundingClientRect(); } catch (e) { return null; }
+    }
+
+    function tooBig(rect) {
+      return (rect.width * rect.height) > vpArea * MAX_RATIO ||
+        rect.width > window.innerWidth * 0.92 ||
+        rect.height > window.innerHeight * 0.92;
+    }
+
+    function bigEnough(rect) {
+      return rect.width >= MIN_W && rect.height >= MIN_H && (rect.width * rect.height) >= MIN_AREA;
+    }
+
+    function score(el, rect) {
+      var tag = el.tagName;
+      var role = (el.getAttribute('role') || '').toLowerCase();
+      var s = 0;
+      if (INTERACTIVE.test(tag) || ROLE_OK.test(role)) s += 100;
+      if (BLOCK.test(tag)) s += 70;
+      if (looksLikeComponent(el)) s += 55;
+      if (tag === 'SVG') s += 40;
+      // Prefer mid-sized components over huge wrappers or tiny chips
+      var area = rect.width * rect.height;
+      var ideal = Math.min(vpArea * 0.18, 220000);
+      s += Math.max(0, 35 - Math.abs(area - ideal) / ideal * 35);
+      return s;
+    }
+
+    var best = null;
+    var bestScore = -1;
+    var cur = start;
+
+    while (cur && cur !== document.body && cur !== document.documentElement) {
+      if (isFeedbackChrome(cur)) break;
+
+      var rect = rectOf(cur);
+      if (rect && rect.width >= 8 && rect.height >= 8 && !tooBig(rect)) {
+        var tag = cur.tagName;
+        var role = (cur.getAttribute('role') || '').toLowerCase();
+        var meaningful =
+          INTERACTIVE.test(tag) ||
+          BLOCK.test(tag) ||
+          ROLE_OK.test(role) ||
+          looksLikeComponent(cur) ||
+          (bigEnough(rect) && (tag === 'DIV' || tag === 'SPAN' || tag === 'SVG'));
+
+        if (meaningful) {
+          var sc = score(cur, rect);
+          // Prefer the first strong hit while climbing (closest component),
+          // but allow a clearly stronger parent (e.g. icon → button → card).
+          if (sc >= 90) return cur;
+          if (sc > bestScore) {
+            best = cur;
+            bestScore = sc;
+          }
+        }
+      }
+
+      cur = cur.parentElement;
+    }
+
+    if (best) return best;
+
+    // Fallback: climb until something is reasonably sized, without eating the page
+    cur = start;
+    while (cur && cur !== document.body && cur !== document.documentElement) {
+      if (isFeedbackChrome(cur)) break;
+      var r = rectOf(cur);
+      if (r && bigEnough(r) && !tooBig(r)) return cur;
+      cur = cur.parentElement;
+    }
+
+    return start;
+  }
+
   function startElementPick() {
     var panel = document.getElementById('protoFeedbackPanel');
     var launch = document.getElementById('protoFeedbackLaunch');
@@ -188,14 +306,15 @@
     var tip = document.createElement('div');
     tip.className = 'ProtoFeedback-pickTip';
     tip.id = 'protoFeedbackPickTip';
-    tip.innerHTML = '<strong>Click the UI</strong> you’re referring to · Esc to cancel';
+    tip.innerHTML = '<strong>Click a component</strong> you’re referring to · Esc to cancel';
     document.body.appendChild(tip);
 
     var hoverEl = null;
     function onMove(e) {
-      var el = document.elementFromPoint(e.clientX, e.clientY);
-      if (!el || el === tip || tip.contains(el)) return;
-      if (hoverEl === el) return;
+      var under = document.elementFromPoint(e.clientX, e.clientY);
+      if (!under || under === tip || tip.contains(under) || isFeedbackChrome(under)) return;
+      var el = resolvePickTarget(under);
+      if (!el || el === hoverEl) return;
       if (hoverEl) hoverEl.classList.remove('ProtoFeedback-pickTarget');
       hoverEl = el;
       hoverEl.classList.add('ProtoFeedback-pickTarget');
@@ -222,9 +341,14 @@
     function onClick(e) {
       e.preventDefault();
       e.stopPropagation();
-      var el = e.target;
-      if (el === tip || tip.contains(el)) return;
+      var under = e.target;
+      if (under === tip || tip.contains(under) || isFeedbackChrome(under)) return;
+      var el = resolvePickTarget(under) || hoverEl;
       cleanup();
+      if (!el) {
+        setStatus('Couldn’t find a component there. Try again or use “Capture page”.', 'err');
+        return;
+      }
       setStatus('Capturing…');
       captureElement(el)
         .then(function (dataUrl) {
