@@ -450,21 +450,6 @@ button { font-family: inherit; }
     font-weight: 600;
 }
 
-/* Tasks fade in as their row opens. Only rows opened by the last click carry
-   is-revealing, so a re-render elsewhere does not replay the animation. */
-@keyframes barReveal {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: none; }
-}
-.Track-bars.is-revealing .Bar { animation: barReveal .18s ease-out both; }
-.Track-bars.is-revealing .Bar:nth-child(3) { animation-delay: .02s; }
-.Track-bars.is-revealing .Bar:nth-child(4) { animation-delay: .04s; }
-.Track-bars.is-revealing .Bar:nth-child(5) { animation-delay: .06s; }
-.Track-bars.is-revealing .Bar:nth-child(n+6) { animation-delay: .08s; }
-@media (prefers-reduced-motion: reduce) {
-    .Track-bars.is-revealing .Bar { animation: none; }
-}
-
 /* Slim availability strip in the left panel gutter */
 .SlimGutter { height: var(--slim-h); }
 
@@ -1648,19 +1633,11 @@ var state = {
     collapsedDepts: {},
     selectedCell: null,        // "workerId|rowKey|week" — hour-cell highlight only
     selection: [],             // booking selection (drives the side panel)
-    justOpened: {},            // rows opened by the last click — animate once
     prefs: null,               // display prefs parked while breakdown is active
     menu: null                 // null | 'root'
 };
 
-/** Marks a row as expanded, and as newly opened so its tasks animate in. */
-function openRow(worker, row) {
-    var k = worker.id + '|' + row.key;
-    if (!state.expandedRows[k]) {
-        state.expandedRows[k] = true;
-        state.justOpened[k] = true;
-    }
-}
+function openRow(worker, row) { state.expandedRows[worker.id + '|' + row.key] = true; }
 
 function breakdownOn() { return state.breakdown !== 'none'; }
 
@@ -1787,7 +1764,6 @@ function render() {
     syncHeadScroll();
 
     renderPanel();
-    state.justOpened = {};
 }
 
 // The header is pinned to the top of the window beside the action bar, so it
@@ -1990,7 +1966,7 @@ function buildWorkerRow(worker, index) {
             sub.appendChild(hoursRow);
 
             if (open && r.items.length) {
-                sub.appendChild(buildBars(worker, r, BAR_PAD, state.justOpened[worker.id + '|' + r.key]));
+                sub.appendChild(buildBars(worker, r, BAR_PAD));
             }
             weeksCol.appendChild(sub);
         });
@@ -2054,9 +2030,9 @@ function gridLines() {
     return g;
 }
 
-function buildBars(worker, row, topPad, revealing) {
+function buildBars(worker, row, topPad) {
     var pad = topPad == null ? BAR_PAD : topPad;
-    var box = el('div', 'Track-bars' + (revealing ? ' is-revealing' : ''));
+    var box = el('div', 'Track-bars');
     box.style.position = 'relative';
     box.style.height = barsHeight(row.items.length, pad) + 'px';
     box.appendChild(gridLines());
