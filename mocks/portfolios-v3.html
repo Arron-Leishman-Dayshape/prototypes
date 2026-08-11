@@ -657,7 +657,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     border-right: var(--border-xs) solid var(--border-subtle);
     display: flex;
 }
-.PfTeam-rowTrack { position: relative; display: flex; }
+.PfTeam-rowTrack { position: relative; display: flex; cursor: cell; }
 
 .PfTeam-group .PfTeam-rowLeft,
 .PfTeam-group .PfTeam-rowTrack {
@@ -1607,6 +1607,45 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .RTraitsWarn { display: flex; align-items: center; gap: 8px; color: var(--text-warning); font-size: var(--font-size-medium); margin: 8px 0 0; }
 .RTraitsWarn i { color: #fba645; }
 
+/* ---- Add Resource Requirement modal (Job Editor replica) ---- */
+.ReqModal-backdrop { position: fixed; inset: 0; background: rgba(31,32,45,.5); display: none; align-items: flex-start; justify-content: center; z-index: 120; padding: 56px 16px; }
+.ReqModal-backdrop.is-open { display: flex; }
+.ReqModal { background: #fff; border-radius: var(--border-radius-lg, 8px); width: 100%; max-width: 600px; max-height: calc(100vh - 112px); display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
+.ReqModal-header { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); flex: 0 0 auto; }
+.ReqModal-title { font-size: var(--font-size-h2); font-weight: var(--font-weight-regular); margin: 0; color: var(--text-default); }
+.ReqModal-close {
+    margin-left: auto; flex: 0 0 auto; width: 28px; height: 28px; padding: 0; border: none; background: none;
+    border-radius: var(--border-radius-default); color: var(--icon-subtle); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.ReqModal-close:hover { background: var(--surface-subtle-dark); color: var(--text-default); }
+.ReqModal-body { padding: 20px; overflow-y: auto; }
+.ReqModal-footer { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); flex: 0 0 auto; }
+.ReqModal-mandatoryNote { color: var(--text-subtle); font-size: var(--font-size-small); }
+.ReqModal-mandatoryNote .req, .ReqField .req { color: var(--text-danger); }
+.ReqModal-tabs { display: flex; width: 100%; margin-bottom: 18px; }
+.ReqModal-tab {
+    flex: 1 1 0; border: 1px solid var(--border-default); background: #fff; color: var(--text-accent);
+    padding: 7px 12px; font-family: var(--font-family); font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-medium); cursor: pointer;
+}
+.ReqModal-tab + .ReqModal-tab { border-left: none; }
+.ReqModal-tab:first-child { border-radius: var(--border-radius-default) 0 0 var(--border-radius-default); }
+.ReqModal-tab:last-child { border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0; }
+.ReqModal-tab.is-active { background: var(--surface-primary); border-color: var(--surface-primary); color: #fff; }
+.ReqField { margin-bottom: 16px; }
+.ReqField-label { display: block; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-emphasis); margin-bottom: 5px; }
+.ReqField-control { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); padding: 8px 10px; background: #fff; }
+.ReqField-control .lead { color: var(--icon-subtle); flex: 0 0 auto; }
+.ReqField-control .chev { color: var(--icon-subtle); flex: 0 0 auto; font-size: 11px; }
+.ReqField-select { border: none; outline: none; flex: 1 1 auto; background: transparent; font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default); appearance: none; -webkit-appearance: none; cursor: pointer; }
+.ReqSummary { display: flex; gap: 36px; margin: 2px 0 14px; }
+.ReqSummary label { display: block; font-size: var(--font-size-extra-small); color: var(--text-subtle); text-transform: uppercase; font-weight: var(--font-weight-bold); letter-spacing: .03em; margin-bottom: 2px; }
+.ReqSummary .val { color: var(--text-default); }
+.ReqCheck { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; }
+.ReqCheck input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.ReqSkills-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px dashed var(--border-default); border-radius: var(--border-radius-default); padding: 14px 16px; color: var(--text-subtle); font-size: var(--font-size-small); }
+
 /* view switching */
 .view { display: none; }
 .view.is-active { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
@@ -1878,8 +1917,83 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     </div>
 </div>
 
+<!-- ===================== Add Resource Requirement modal (Job Editor) ===================== -->
+<div class="ReqModal-backdrop" id="reqModal">
+    <div class="ReqModal" role="dialog" aria-modal="true" aria-labelledby="reqModalTitle">
+        <div class="ReqModal-header">
+            <h3 class="ReqModal-title" id="reqModalTitle">Add Resource Requirement</h3>
+            <button class="ReqModal-close" title="Close without saving" aria-label="Close" onclick="closeReqModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="ReqModal-body">
+            <div class="ReqField">
+                <label class="ReqField-label" for="reqEngagement">Engagement <span class="req">*</span></label>
+                <div class="ReqField-control"><i class="fa-solid fa-briefcase lead"></i><select id="reqEngagement" class="ReqField-select" required><option value="">Choose engagement</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+            </div>
+
+            <div class="ReqModal-tabs">
+                <button type="button" class="ReqModal-tab" data-rtype="specific" onclick="switchReqTab('specific')">Specific</button>
+                <button type="button" class="ReqModal-tab is-active" data-rtype="flexible" onclick="switchReqTab('flexible')">Flexible</button>
+                <button type="button" class="ReqModal-tab" data-rtype="unassignable" onclick="switchReqTab('unassignable')">Unassignable</button>
+            </div>
+
+            <div id="reqtab-specific" class="reqtab" hidden>
+                <div class="ReqField">
+                    <label class="ReqField-label" for="reqWorker">Worker Name <span class="req">*</span></label>
+                    <div class="ReqField-control"><i class="fa-solid fa-user lead"></i><select id="reqWorker" class="ReqField-select" onchange="onReqWorkerChange()"><option value="">Choose worker</option><option>Priya Patel</option><option>Sofia Rossi</option><option>Noah Williams</option><option>Mia Fernandez</option><option>Tom Becker</option><option>Jordan Blake</option><option>Olivia Chen</option><option>Marcus Webb</option><option>Aisha Khan</option><option>Harry Collins</option><option>Liam O'Connor</option><option>Emma Johnson</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+                <div class="ReqSummary" id="reqWorkerSummary" style="display:none">
+                    <div><label>Grade</label><div class="val" id="reqwGrade">—</div></div>
+                    <div><label>Functional Unit</label><div class="val" id="reqwFu">—</div></div>
+                    <div><label>Geographical Unit</label><div class="val" id="reqwGu">—</div></div>
+                </div>
+                <label class="ReqCheck"><input type="checkbox" id="reqContinuity" /> Continuity</label>
+            </div>
+
+            <div id="reqtab-flexible" class="reqtab">
+                <div class="ReqField">
+                    <label class="ReqField-label">Project Role</label>
+                    <div class="ReqField-control"><i class="fa-solid fa-briefcase lead"></i><select class="ReqField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+                <div class="ReqField">
+                    <label class="ReqField-label" for="reqGrade">Grade <span class="req">*</span></label>
+                    <div class="ReqField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="reqGrade" class="ReqField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+                <div class="ReqField">
+                    <label class="ReqField-label">Functional Unit</label>
+                    <div class="ReqField-control"><i class="fa-solid fa-building lead"></i><select class="ReqField-select"><option value="">Choose functional unit</option><option>Audit</option><option>Tax</option><option>Advisory</option><option>Risk Assurance</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+                <div class="ReqField">
+                    <label class="ReqField-label">Geographical Unit</label>
+                    <div class="ReqField-control"><i class="fa-solid fa-map lead"></i><select class="ReqField-select"><option value="">Choose geographical unit</option><option>London</option><option>Manchester</option><option>Edinburgh</option><option>Bristol</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+            </div>
+
+            <div id="reqtab-unassignable" class="reqtab" hidden>
+                <div class="ReqField">
+                    <label class="ReqField-label" for="reqUnGrade">Grade <span class="req">*</span></label>
+                    <div class="ReqField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="reqUnGrade" class="ReqField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                </div>
+            </div>
+
+            <div id="reqSkills" class="ReqField">
+                <label class="ReqField-label">Required Skills</label>
+                <div class="ReqSkills-box">
+                    <span>No skills added yet.</span>
+                    <button class="Btn Btn--sm" type="button"><i class="fa-solid fa-plus"></i> Add Skills</button>
+                </div>
+            </div>
+        </div>
+        <div class="ReqModal-footer">
+            <span class="ReqModal-mandatoryNote"><span class="req">*</span> Mandatory fields</span>
+            <span class="TopBar-spacer"></span>
+            <button type="button" class="Btn Btn--secondary" onclick="closeReqModal()">Cancel</button>
+            <button type="button" class="Btn Btn--primary" onclick="submitReq()">Confirm</button>
+        </div>
+    </div>
+</div>
+
 <!-- ===================== Create a New Booking modal (Figma High-Volume) ===================== -->
-<div class="RModal-backdrop" id="resourceModal">
+<div class="RModal-backdrop" id="bookingModal">
     <div class="RModal" role="dialog" aria-modal="true" aria-labelledby="rModalTitle">
         <div class="RModal-header">
             <h3 class="RModal-title" id="rModalTitle">Create a New Booking</h3>
@@ -1887,7 +2001,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
                 <button type="button" class="RModal-headerTab" role="tab" id="rTabUnavailability" aria-selected="false" onclick="switchBookingModalTab('unavailability')">Unavailability</button>
                 <button type="button" class="RModal-headerTab is-active" role="tab" id="rTabBooking" aria-selected="true" onclick="switchBookingModalTab('booking')">Booking</button>
             </div>
-            <button class="RModal-close" title="Close without saving" aria-label="Close" onclick="closeResourceModal()"><i class="fa-solid fa-xmark"></i></button>
+            <button class="RModal-close" title="Close without saving" aria-label="Close" onclick="closeBookingModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="RModal-body">
             <div class="RModal-pane" id="rtab-booking">
@@ -2034,8 +2148,8 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
         </div>
         <div class="RModal-footer">
             <button type="button" class="Btn Btn--tertiary">More Options</button>
-            <button type="button" class="Btn Btn--secondary" onclick="closeResourceModal()">Cancel</button>
-            <button type="button" class="Btn Btn--primary" onclick="submitResource()">Create</button>
+            <button type="button" class="Btn Btn--secondary" onclick="closeBookingModal()">Cancel</button>
+            <button type="button" class="Btn Btn--primary" onclick="submitBooking()">Create</button>
         </div>
     </div>
 </div>
@@ -3892,7 +4006,8 @@ function closeCreateModal() {
     document.getElementById("createModal").classList.remove("is-open");
 }
 document.getElementById("createModal").addEventListener("click", e => { if (e.target.id === "createModal") closeCreateModal(); });
-document.getElementById("resourceModal").addEventListener("click", e => { if (e.target.id === "resourceModal") closeResourceModal(); });
+document.getElementById("bookingModal").addEventListener("click", e => { if (e.target.id === "bookingModal") closeBookingModal(); });
+document.getElementById("reqModal").addEventListener("click", e => { if (e.target.id === "reqModal") closeReqModal(); });
 
 /* ============================================================
    Performance tab — consolidated portfolio economics
@@ -4148,7 +4263,7 @@ const PF_DIMENSIONS = {
     none:        { label: "None" },
     role:        { label: "Role",                 field: "role" },
     bookingType: { label: "Primary Booking Type", field: "bookingType" },
-    phase:       { label: "Phase",                field: "phase", deferred: true },
+    phase:       { label: "Phase",                field: "phase" },
     req:         { label: "Resource Requirement", field: "req" }
 };
 const PF_PHASE_ORDER = ["Preparation", "First Review", "Second Review"];
@@ -4275,13 +4390,26 @@ const PF_WORKER_SPECS = [
         ["Year-end Audit — Calder Ceramics", "CCR-YE", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 48, 3, 14]
     ]},
     { id: "w-noah", name: "Noah Williams", grade: "A2", cap: 37.5, items: [
-        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 0, 6, 30],
-        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 2, 35],
-        ["Cut-off Testing — Meridian Bank", "MBK-CO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 12, 5, 28],
-        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 20, 5, 26],
-        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 28, 4, 20],
-        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 36, 5, 24],
-        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 44, 5, 22]
+        /* Heavy same-week Preparation stack — shows why Phase breakdown matters */
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 6, 4, 8],
+        ["Cut-off Testing — Meridian Bank", "MBK-CO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 7],
+        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 3, 10],
+        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 6],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 7, 3, 8],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 7, 3, 7],
+        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 9],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 7, 3, 8],
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 3, 6],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 7, 3, 7],
+        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 5],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 7, 3, 6],
+        /* Other phases in the same window — Phase breakdown separates these from the Preparation pile */
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "First Review", "Associate", "Audit", "A2 / Assurance / London", 6, 3, 4],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "First Review", "Associate", "Audit", "A2 / Assurance / London", 7, 2, 4],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Second Review", "Associate", "Audit", "A2 / Assurance / London", 8, 2, 3],
+        /* Quieter rest of year so the stack stands out */
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 28, 4, 22],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 40, 4, 18]
     ]},
     { id: "w-jordan", name: "Jordan Blake", grade: "A2", cap: 37.5, items: [
         ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 1, 6, 28],
@@ -4334,8 +4462,7 @@ const pfTeamState = {
     collapsedEngagements: {},
     selectedCell: null,
     menu: null,
-    flyout: null,
-    viewMenu: null
+    flyout: null
 };
 
 function pfBreakdownOn() { return pfTeamState.breakdown !== "none"; }
@@ -4417,11 +4544,12 @@ function pfPortfolioEngagementNames() {
     return Object.keys(set).sort(function (a, b) { return a.localeCompare(b); });
 }
 
-function pfPopulateEngagementSelect() {
-    const sel = document.getElementById("rEngagement");
+function pfPopulateEngagementSelect(selectId, placeholder) {
+    const sel = document.getElementById(selectId || "rEngagement");
     if (!sel) return;
     const cur = sel.value;
-    sel.innerHTML = '<option value="">Search for engagement</option>';
+    const emptyLabel = placeholder || (selectId === "reqEngagement" ? "Choose engagement" : "Search for engagement");
+    sel.innerHTML = '<option value="">' + emptyLabel + '</option>';
     pfPortfolioEngagementNames().forEach(function (name) {
         const opt = document.createElement("option");
         opt.value = name;
@@ -4437,25 +4565,26 @@ function setTeamPivot(pivot) {
     pfTeamState.selectedCell = null;
     pfTeamState.menu = null;
     pfTeamState.flyout = null;
-    pfTeamState.viewMenu = null;
     renderGantt();
     pfRenderMenu();
+    const viewBtn = document.getElementById("pfTeamViewBtn");
+    if (viewBtn) {
+        const next = pivot === "engagement" ? "Resource view" : "Engagement view";
+        viewBtn.title = "Pivot to " + next;
+        viewBtn.setAttribute("aria-label", "Pivot to " + next);
+    }
 }
 
 function toggleTeamSettings(e) {
     e.stopPropagation();
-    pfTeamState.viewMenu = null;
     pfTeamState.menu = pfTeamState.menu ? null : "root";
     pfTeamState.flyout = null;
     pfRenderMenu();
 }
 
-function toggleTeamViewMenu(e) {
+function pivotTeamView(e) {
     e.stopPropagation();
-    pfTeamState.menu = null;
-    pfTeamState.flyout = null;
-    pfTeamState.viewMenu = pfTeamState.viewMenu ? null : "open";
-    pfRenderMenu();
+    setTeamPivot(pfTeamState.pivot === "engagement" ? "resource" : "engagement");
 }
 
 function pfBuildHeadCorner() {
@@ -4466,17 +4595,18 @@ function pfBuildHeadCorner() {
     addBtn.type = "button";
     addBtn.id = "pfTeamAddResourceBtn";
     addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Resource</span>';
-    addBtn.addEventListener("click", function (e) { e.stopPropagation(); openResourceModal(); });
+    addBtn.title = "Add Resource Requirement";
+    addBtn.addEventListener("click", function (e) { e.stopPropagation(); openReqModal(); });
     tools.appendChild(addBtn);
 
     const viewBtn = pfEl("button", "Btn Btn--tertiary");
     viewBtn.type = "button";
     viewBtn.id = "pfTeamViewBtn";
-    viewBtn.title = pfTeamState.pivot === "engagement" ? "Engagement view" : "Resource view";
-    viewBtn.setAttribute("aria-haspopup", "true");
-    viewBtn.setAttribute("aria-label", "Pivot view");
+    const pivotTo = pfTeamState.pivot === "engagement" ? "Resource view" : "Engagement view";
+    viewBtn.title = "Pivot to " + pivotTo;
+    viewBtn.setAttribute("aria-label", "Pivot to " + pivotTo);
     viewBtn.innerHTML = '<i class="fa-solid fa-right-left" aria-hidden="true"></i>';
-    viewBtn.addEventListener("click", toggleTeamViewMenu);
+    viewBtn.addEventListener("click", pivotTeamView);
     tools.appendChild(viewBtn);
 
     const filterBtn = pfEl("button", "Btn Btn--tertiary");
@@ -4603,6 +4733,15 @@ function pfBuildWorkerRow(worker, index) {
 
     const track = pfEl("div", "PfTeam-rowTrack");
     track.style.width = (PF_WEEKS.length * PF_WEEK_W) + "px";
+    track.title = "Double-click to create a booking";
+    track.addEventListener("dblclick", function (e) {
+        if (e.target.closest("button, a, .PfTeam-bar")) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const contentX = e.clientX - track.getBoundingClientRect().left;
+        const weekIndex = Math.max(0, Math.min(PF_WEEK_COUNT - 1, Math.floor(contentX / PF_WEEK_W)));
+        openBookingModal({ worker: worker, weekIndex: weekIndex });
+    });
     const weeksCol = pfEl("div", "PfTeam-trackWeeks");
     weeksCol.style.width = "100%";
     track.appendChild(weeksCol);
@@ -4699,6 +4838,11 @@ function pfBuildCell(worker, row, wi) {
             if (row.items.length) pfTeamState.expandedRows[rowKey] = true;
         }
         renderGantt();
+    });
+    c.addEventListener("dblclick", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openBookingModal({ worker: worker, weekIndex: wi });
     });
     return c;
 }
@@ -4805,7 +4949,7 @@ function renderGantt() {
     host.scrollLeft = scrollLeft;
     host.scrollTop = scrollTop;
     // Re-anchor open menus after DOM rebuild
-    if (pfTeamState.menu || pfTeamState.viewMenu) pfRenderMenu();
+    if (pfTeamState.menu) pfRenderMenu();
 }
 
 function pfRenderMenu() {
@@ -4813,48 +4957,19 @@ function pfRenderMenu() {
     if (existing) existing.remove();
 
     const settingsBtn = document.getElementById("pfTeamSettingsBtn");
-    const viewBtn = document.getElementById("pfTeamViewBtn");
     if (settingsBtn) settingsBtn.classList.toggle("is-active", !!pfTeamState.menu);
-    if (viewBtn) viewBtn.classList.toggle("is-active", !!pfTeamState.viewMenu);
 
-    if (!pfTeamState.menu && !pfTeamState.viewMenu) return;
+    if (!pfTeamState.menu) return;
 
     const layer = pfEl("div", "PfTeam-menuLayer");
     layer.id = "pfTeamMenuLayer";
     layer.addEventListener("click", function () {
         pfTeamState.menu = null;
         pfTeamState.flyout = null;
-        pfTeamState.viewMenu = null;
         pfRenderMenu();
     });
 
-    if (pfTeamState.viewMenu && viewBtn) {
-        const anchor = viewBtn.getBoundingClientRect();
-        const menu = pfEl("div", "PfTeam-menu");
-        menu.style.width = "220px";
-        menu.style.left = Math.max(8, anchor.left) + "px";
-        menu.style.top = (anchor.bottom + 4) + "px";
-        menu.addEventListener("click", function (e) { e.stopPropagation(); });
-
-        const section = pfEl("div", "PfTeam-menuSection");
-        section.appendChild(pfEl("div", "PfTeam-menuTitle", "Gantt view"));
-        menu.appendChild(section);
-
-        [
-            { key: "resource", label: "Resource view" },
-            { key: "engagement", label: "Engagement view" }
-        ].forEach(function (opt) {
-            const item = pfEl("div", "PfTeam-menuItem");
-            item.innerHTML = "<span>" + opt.label + "</span>" + (pfTeamState.pivot === opt.key ? '<i class="fa-solid fa-check"></i>' : "");
-            item.addEventListener("click", function () { setTeamPivot(opt.key); });
-            menu.appendChild(item);
-        });
-        layer.appendChild(menu);
-        document.body.appendChild(layer);
-        return;
-    }
-
-    if (!pfTeamState.menu || !settingsBtn) {
+    if (!settingsBtn) {
         document.body.appendChild(layer);
         return;
     }
@@ -4920,7 +5035,7 @@ function pfRenderMenu() {
     }
 }
 
-/* ---- Create a New Booking modal ---- */
+/* ---- Add Resource Requirement + Create Booking modals ---- */
 const WORKER_INFO = {
     "Priya Patel":    { grade: "Manager",          fu: "Audit",           gu: "London", code: "MAN" },
     "Sofia Rossi":    { grade: "Senior Associate", fu: "Audit",           gu: "London", code: "SA" },
@@ -4935,17 +5050,146 @@ const WORKER_INFO = {
     "Liam O'Connor":  { grade: "Partner",          fu: "Audit",           gu: "London", code: "PTR" },
     "Emma Johnson":   { grade: "Manager",          fu: "Audit",           gu: "London", code: "MAN" }
 };
+const GRADE_CODE = { Partner: "PTR", Director: "DIR", "Senior Manager": "SRM", Manager: "MAN", "Senior Associate": "SA", Associate: "A2" };
+let reqTab = "flexible";
 let bookingModalTab = "booking";
+let bookingContext = { workerId: null, weekIndex: 2 };
 
-function openResourceModal() {
+function assignOptionValue(worker) {
+    const code = worker.grade || (WORKER_INFO[worker.name] && WORKER_INFO[worker.name].code) || "MAN";
+    return "(" + code + ") " + worker.name;
+}
+
+function openReqModal() {
+    switchReqTab("flexible");
+    pfPopulateEngagementSelect("reqEngagement", "Choose engagement");
+    const eng = document.getElementById("reqEngagement");
+    if (eng) eng.value = "";
+    const worker = document.getElementById("reqWorker");
+    if (worker) worker.value = "";
+    onReqWorkerChange();
+    const cont = document.getElementById("reqContinuity");
+    if (cont) cont.checked = false;
+    const grade = document.getElementById("reqGrade");
+    if (grade) grade.value = "";
+    const unGrade = document.getElementById("reqUnGrade");
+    if (unGrade) unGrade.value = "";
+    document.getElementById("reqModal").classList.add("is-open");
+}
+function closeReqModal() { document.getElementById("reqModal").classList.remove("is-open"); }
+function switchReqTab(t) {
+    reqTab = t;
+    document.querySelectorAll(".ReqModal-tab").forEach(function (b) {
+        b.classList.toggle("is-active", b.dataset.rtype === t);
+    });
+    document.querySelectorAll(".reqtab").forEach(function (p) {
+        p.hidden = p.id !== "reqtab-" + t;
+    });
+    const skills = document.getElementById("reqSkills");
+    if (skills) skills.hidden = (t === "unassignable");
+}
+function onReqWorkerChange() {
+    const name = (document.getElementById("reqWorker") || {}).value || "";
+    const info = WORKER_INFO[name];
+    const summary = document.getElementById("reqWorkerSummary");
+    if (summary) summary.style.display = info ? "flex" : "none";
+    if (info) {
+        document.getElementById("reqwGrade").textContent = info.grade;
+        document.getElementById("reqwFu").textContent = info.fu;
+        document.getElementById("reqwGu").textContent = info.gu;
+    }
+}
+function submitReq() {
+    const v = function (id) { const el = document.getElementById(id); return el ? el.value : ""; };
+    const engagement = v("reqEngagement");
+    if (!engagement) {
+        const sel = document.getElementById("reqEngagement");
+        if (sel) {
+            sel.focus();
+            sel.style.outline = "2px solid var(--text-danger)";
+            setTimeout(function () { sel.style.outline = ""; }, 1200);
+        }
+        return;
+    }
+    let name, grade, role, kindName;
+    if (reqTab === "specific") {
+        name = v("reqWorker") || "New resource";
+        const info = WORKER_INFO[name] || {};
+        grade = info.grade || "Associate";
+        role = grade;
+        kindName = name;
+    } else if (reqTab === "unassignable") {
+        grade = v("reqUnGrade") || "Associate";
+        name = grade + " (Unassignable)";
+        role = grade;
+        kindName = name;
+    } else {
+        grade = v("reqGrade") || "Associate";
+        name = "Flexible — " + grade;
+        role = grade;
+        kindName = name;
+    }
+    const gradeCode = GRADE_CODE[grade] || "A2";
+    let worker = pfTeamWorkers.find(function (w) { return w.name === kindName; });
+    if (!worker) {
+        worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: kindName, grade: gradeCode, cap: 37.5, items: [] };
+        pfTeamWorkers.push(worker);
+    }
+    const startWeek = 2, span = 3, hours = 10;
+    const cells = {};
+    for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
+    worker.items.push({
+        id: "pfit-" + (++PF_ITEM_SEQ),
+        job: engagement,
+        code: "",
+        phase: "Preparation",
+        role: role,
+        bookingType: "Audit",
+        req: gradeCode + " / Assurance / London",
+        startWeek: startWeek,
+        span: span,
+        hours: hours,
+        cells: cells,
+        kind: "booking"
+    });
+    if (pfTeamState.pivot === "engagement") {
+        delete pfTeamState.collapsedEngagements[engagement];
+    }
+    renderGantt();
+    closeReqModal();
+}
+
+function formatBookingFromWeek(weekIndex) {
+    const d = PF_WEEKS[Math.max(0, Math.min(PF_WEEK_COUNT - 1, weekIndex || 0))];
+    if (!d) return "07/05/21 09:00AM";
+    return pfPad2(d.getDate()) + "/" + pfPad2(d.getMonth() + 1) + "/" + String(d.getFullYear()).slice(2) + " 09:00AM";
+}
+
+function openBookingModal(opts) {
+    opts = opts || {};
+    bookingContext.workerId = opts.worker ? opts.worker.id : null;
+    bookingContext.weekIndex = typeof opts.weekIndex === "number" ? opts.weekIndex : 2;
     switchBookingModalTab("booking");
-    pfPopulateEngagementSelect();
+    pfPopulateEngagementSelect("rEngagement", "Search for engagement");
     const eng = document.getElementById("rEngagement");
     if (eng) eng.value = "";
     const assign = document.getElementById("rAssign");
-    if (assign) assign.selectedIndex = Math.min(1, assign.options.length - 1);
+    if (assign) {
+        // Rebuild options from live workers so new requirements appear
+        const current = opts.worker ? assignOptionValue(opts.worker) : "";
+        assign.innerHTML = '<option value="">Select resource</option>';
+        pfTeamWorkers.forEach(function (wk) {
+            if (/^Flexible —|Unassignable\)/.test(wk.name)) return;
+            const opt = document.createElement("option");
+            opt.value = assignOptionValue(wk);
+            opt.textContent = opt.value;
+            assign.appendChild(opt);
+        });
+        if (current) assign.value = current;
+        else if (assign.options.length > 1) assign.selectedIndex = 1;
+    }
     const from = document.getElementById("rFrom");
-    if (from) from.value = "07/05/21 09:00AM";
+    if (from) from.value = formatBookingFromWeek(bookingContext.weekIndex);
     const to = document.getElementById("rTo");
     if (to) to.value = "";
     const effortH = document.getElementById("rEffortH");
@@ -4956,9 +5200,9 @@ function openResourceModal() {
     if (effortPct) effortPct.value = "100";
     const repeat = document.getElementById("rRepeat");
     if (repeat) repeat.checked = false;
-    document.getElementById("resourceModal").classList.add("is-open");
+    document.getElementById("bookingModal").classList.add("is-open");
 }
-function closeResourceModal() { document.getElementById("resourceModal").classList.remove("is-open"); }
+function closeBookingModal() { document.getElementById("bookingModal").classList.remove("is-open"); }
 function switchBookingModalTab(t) {
     bookingModalTab = t;
     const bookingTab = document.getElementById("rTabBooking");
@@ -4983,9 +5227,9 @@ function parseAssignResource(raw) {
     if (m) return { code: m[1], name: m[2].trim() };
     return { code: "MAN", name: raw || "New resource" };
 }
-function submitResource() {
+function submitBooking() {
     if (bookingModalTab === "unavailability") {
-        closeResourceModal();
+        closeBookingModal();
         return;
     }
     const engEl = document.getElementById("rEngagement");
@@ -5004,12 +5248,16 @@ function submitResource() {
     const gradeCode = parsed.code || info.code || "A2";
     const role = info.grade || "Manager";
     let worker = pfTeamWorkers.find(function (w) { return w.name === parsed.name; });
+    if (!worker && bookingContext.workerId) {
+        worker = pfTeamWorkers.find(function (w) { return w.id === bookingContext.workerId; });
+    }
     if (!worker) {
         worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: parsed.name, grade: gradeCode, cap: 37.5, items: [] };
         pfTeamWorkers.push(worker);
     }
     const hours = parseFloat((document.getElementById("rEffortH") || {}).value) || 10;
-    const startWeek = 2, span = 3;
+    const startWeek = Math.max(0, Math.min(PF_WEEK_COUNT - 1, bookingContext.weekIndex || 2));
+    const span = Math.min(3, PF_WEEK_COUNT - startWeek);
     const cells = {};
     for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
     worker.items.push({
@@ -5030,7 +5278,7 @@ function submitResource() {
         delete pfTeamState.collapsedEngagements[engagement];
     }
     renderGantt();
-    closeResourceModal();
+    closeBookingModal();
 }
 
 /* sticky head + labels handle scroll sync */
