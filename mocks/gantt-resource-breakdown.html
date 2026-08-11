@@ -654,14 +654,6 @@ button { font-family: inherit; }
 .Radio.is-checked .Radio-dot { border: 5px solid var(--primary); }
 .Radio.is-disabled { color: var(--text-disabled); cursor: not-allowed; }
 .Radio.is-disabled .Radio-dot { border-color: var(--border-emphasis); background: var(--surface-disabled); }
-.Radio-tag {
-    margin-left: auto;
-    font-size: var(--font-size-xsmall);
-    color: var(--text-subtle);
-    background: var(--surface-subtle-dark);
-    border-radius: 9px;
-    padding: 1px 7px;
-}
 .Checkbox {
     display: flex; align-items: center; gap: 8px;
     font-size: var(--font-size-medium);
@@ -691,7 +683,9 @@ button { font-family: inherit; }
 }
 .Seg button:first-child { border-left: 0; }
 .Seg button.is-active { background: var(--surface-emphasis); color: var(--text-inverse); }
-.Seg.is-disabled button { color: var(--text-disabled); cursor: not-allowed; background: #fff; }
+.Seg button:disabled { color: var(--text-disabled); cursor: not-allowed; background: #fff; }
+/* A locked-on segment still reads as the current choice, just muted. */
+.Seg button.is-active:disabled { background: var(--surface-disabled); color: var(--text-subtle); }
 
 /* ============================================================
    Selection sidebar
@@ -1370,8 +1364,19 @@ button.CreateBooking-unit:hover,
 (function () {
 'use strict';
 
+// ── Feature flags / tenant config ──────────────────────────────────────────
+// The Resource Breakdown menu item is fully gated by the Gantt Aggregation
+// flag. MVP only breaks down by Role, so a customer without roles configured
+// has nothing to aggregate on and never sees the item (DEVO-29502).
+var FLAGS = {
+    ganttAggregation: true,
+    rolesEnabled: true
+};
+
+function breakdownAvailable() { return FLAGS.ganttAggregation && FLAGS.rolesEnabled; }
+
 // ── Calendar ───────────────────────────────────────────────────────────────
-var WEEK_COUNT = 12;
+var WEEK_COUNT = 52;
 var WEEK_W = 112.6;
 var DAY_W = WEEK_W / 5;
 
@@ -1392,8 +1397,8 @@ function snapMonday(d) {
 }
 function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
 
-var FIRST_MONDAY = snapMonday(new Date(2021, 5, 21));  // w/c 21 June 2021
-var TODAY = addDays(FIRST_MONDAY, 8);                  // Tue of week 2
+var FIRST_MONDAY = snapMonday(new Date(2021, 0, 4));   // w/c 4 Jan 2021 — full year
+var TODAY = addDays(FIRST_MONDAY, 8 * 7 + 1);          // Tue of week 9 (early March)
 
 var WEEKS = [];
 for (var w = 0; w < WEEK_COUNT; w++) WEEKS.push(addDays(FIRST_MONDAY, w * 7));
@@ -1420,68 +1425,161 @@ var ROLE_ORDER   = ['Partner', 'Principal', 'Senior Manager', 'Manager', 'Projec
 // Engagement spec: [jobName, code, phase, role, bookingType, resourceRequirement,
 //                   startWeek, spanWeeks, hoursPerWeek]
 // null on a dimension means "no value" — those items fall into the Other row.
+// Weeks are 0–51 across the 2021 calendar year.
 var DATA = [
     { dept: 'ACTUARIAL SERVICES', workers: [
         { id: 'w-ferguson', name: 'Ferguson Abramam', grade: 'MAN', cap: 37.5, items: [
-            ['Audit of Angelo Co 18/19',      'ANCO1819-433', 'Preparation',   'Partner',          'Audit',              'MAN / Tax Community Clients / London', 0, 3, 13],
-            ['Audit of Angelo LP 16/17',      'ANLP1617-393', 'Preparation',   'Senior Manager',   'Audit',              'SRM / Tax Community Clients / London', 2, 4, 10],
-            ['Angelo Group tax planning',     'ANG-34',       'First Review',  'Principal',        'Tax Advisory',       'MAN / Tax Community Clients / London', 0, 2, 15],
-            ['Angelo SLP 21/22 sign-off',     'ANSLP2122-84', 'Second Review', 'Partner',          'Audit',              'MAN / Tax Community Clients / London', 1, 5, 12],
-            ['Firmwide QA sampling',          'QA-101',       'Second Review', null,               'Regulatory Review',  null,                                   4, 3, 6],
-            ['Annual leave',                  '',             null,            null,               null,                 null,                                   6, 1, 7.5, 'unavailability']
+            ['Audit of Angelo Co 18/19',      'ANCO1819-433', 'Preparation',   'Partner',          'Audit',              'MAN / Tax Community Clients / London', 0, 4, 13],
+            ['Audit of Angelo LP 16/17',      'ANLP1617-393', 'Preparation',   'Senior Manager',   'Audit',              'SRM / Tax Community Clients / London', 3, 5, 10],
+            ['Angelo Group tax planning',     'ANG-34',       'First Review',  'Principal',        'Tax Advisory',       'MAN / Tax Community Clients / London', 8, 3, 15],
+            ['Angelo SLP 21/22 sign-off',     'ANSLP2122-84', 'Second Review', 'Partner',          'Audit',              'MAN / Tax Community Clients / London', 12, 6, 12],
+            ['Q2 interim review',             'ANG-Q2',       'First Review',  'Partner',          'Audit',              'MAN / Tax Community Clients / London', 18, 4, 10],
+            ['Firmwide QA sampling',          'QA-101',       'Second Review', null,               'Regulatory Review',  null,                                   26, 4, 6],
+            ['Year-end planning',             'ANG-YE',       'Preparation',   'Partner',          'Audit',              'MAN / Tax Community Clients / London', 40, 5, 14],
+            ['Annual leave',                  '',             null,            null,               null,                 null,                                   28, 2, 7.5, 'unavailability']
         ]},
         { id: 'w-hannah', name: "Hannah O'Brien", grade: 'MAN', cap: 37.5, link: true, items: [
-            ['Audit of Angelo Co 2021',       'ANCO2021-432', 'Preparation',   'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          0, 4, 10],
-            ['Hawksworth Energy Audit',       'HEA-4521',     'Preparation',   'Senior Associate', 'Audit',              'A3 / Corporate / Edinburgh',           1, 3, 26],
-            ['Hawksworth first review',       'HEA-4521',     'First Review',  'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          2, 3, 20],
-            ['Angelo LP 2016 review',         'ANLP16-236',   'Second Review', 'Senior Manager',   'Audit',              'SRM / Corporate / Edinburgh',          0, 6, 11],
-            ['Busy-season coaching',          'TRN-12',       'First Review',  'Manager',          'Training',           null,                                   5, 2, 4],
-            ['Study leave',                   '',             null,            null,               null,                 null,                                   3, 2, 7.5, 'unavailability']
+            ['Audit of Angelo Co 2021',       'ANCO2021-432', 'Preparation',   'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          0, 5, 10],
+            ['Hawksworth Energy Audit',       'HEA-4521',     'Preparation',   'Senior Associate', 'Audit',              'A3 / Corporate / Edinburgh',           4, 4, 26],
+            ['Hawksworth first review',       'HEA-4521',     'First Review',  'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          8, 4, 20],
+            ['Angelo LP 2016 review',         'ANLP16-236',   'Second Review', 'Senior Manager',   'Audit',              'SRM / Corporate / Edinburgh',          14, 6, 11],
+            ['Busy-season coaching',          'TRN-12',       'First Review',  'Manager',          'Training',           null,                                   22, 3, 4],
+            ['H2 fieldwork',                  'HEA-H2',       'Preparation',   'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          30, 5, 16],
+            ['Year-end wrap',                 'ANCO-YE',      'Second Review', 'Manager',          'Audit',              'MAN / Corporate / Edinburgh',          44, 4, 12],
+            ['Study leave',                   '',             null,            null,               null,                 null,                                   10, 2, 7.5, 'unavailability']
         ]},
         { id: 'w-mariana', name: 'Mariana Abramamovh', grade: 'AM', cap: 37.5, items: [
-            ['Audit of Angelo SLP 16/17',     'ANSLP1617-238','Preparation',   'Senior Associate', 'Audit',              'A3 / Tax Community Clients / London',  0, 5, 10],
-            ['Angelo Co 2017 fieldwork',      'ANCO2017-124', 'Preparation',   'Associate',        'Audit',              'A2 / Tax Community Clients / London',  1, 4, 20],
-            ['Angelo Co 2017 first review',   'ANCO2017-124', 'First Review',  'Manager',          'Audit',              'MAN / Tax Community Clients / London', 2, 5, 10],
-            ['Maritime Consulting Review',    'MCR-7823',     'Second Review', 'Project Manager',  'Consulting',         'MAN / Advisory / London',              3, 4, 30],
-            ['Uncoded prep work',             'ANG-11',       'Preparation',   null,               null,                 null,                                   6, 3, 5]
+            ['Audit of Angelo SLP 16/17',     'ANSLP1617-238','Preparation',   'Senior Associate', 'Audit',              'A3 / Tax Community Clients / London',  0, 6, 10],
+            ['Angelo Co 2017 fieldwork',      'ANCO2017-124', 'Preparation',   'Associate',        'Audit',              'A2 / Tax Community Clients / London',  5, 5, 20],
+            ['Angelo Co 2017 first review',   'ANCO2017-124', 'First Review',  'Manager',          'Audit',              'MAN / Tax Community Clients / London', 10, 5, 10],
+            ['Maritime Consulting Review',    'MCR-7823',     'Second Review', 'Project Manager',  'Consulting',         'MAN / Advisory / London',              16, 5, 30],
+            ['Summer advisory',               'MCR-SUM',      'Preparation',   'Senior Associate', 'Consulting',         'A3 / Tax Community Clients / London',  24, 4, 12],
+            ['Autumn fieldwork',              'ANCO-AUT',     'First Review',  'Associate',        'Audit',              'A2 / Tax Community Clients / London',  34, 5, 18],
+            ['Uncoded prep work',             'ANG-11',       'Preparation',   null,               null,                 null,                                   42, 4, 5]
+        ]},
+        { id: 'w-elise', name: 'Elise Fairweather', grade: 'A3', cap: 37.5, items: [
+            ['Pension scheme audit',          'PEN-110',      'Preparation',   'Associate',        'Audit',              'A2 / Tax Community Clients / London',  2, 6, 22],
+            ['Pension first review',          'PEN-110',      'First Review',  'Senior Associate', 'Audit',              'A3 / Tax Community Clients / London',  8, 4, 14],
+            ['Life office modelling',         'ACT-55',       'Preparation',   'Associate',        'Consulting',         'A2 / Actuarial / London',              18, 6, 20],
+            ['Solvency II support',           'SVY-9',        'Second Review', 'Associate',        'Regulatory Review',  'A2 / Actuarial / London',              28, 5, 16],
+            ['Christmas leave',               '',             null,            null,               null,                 null,                                   50, 2, 7.5, 'unavailability']
+        ]},
+        { id: 'w-niall', name: 'Niall Corbett', grade: 'SRM', cap: 37.5, items: [
+            ['Group actuarial review',        'GAR-01',       'Preparation',   'Senior Manager',   'Audit',              'SRM / Tax Community Clients / London', 1, 5, 12],
+            ['Group actuarial sign-off',      'GAR-01',       'Second Review', 'Principal',        'Audit',              'PRI / Tax Community Clients / London', 10, 4, 8],
+            ['Client workshop',               'GAR-WS',       'First Review',  'Senior Manager',   'Training',           'SRM / Tax Community Clients / London', 20, 2, 15],
+            ['Q3 portfolio review',           'GAR-Q3',       'First Review',  'Senior Manager',   'Audit',              'SRM / Tax Community Clients / London', 32, 4, 10],
+            ['Year-end partner review',       'GAR-YE',       'Second Review', 'Partner',          'Audit',              'MAN / Tax Community Clients / London', 46, 3, 9]
         ]}
     ]},
     { dept: 'INTERNAL CONTROLS', workers: [
         { id: 'w-clarette', name: 'Clarette Absolon', grade: 'AM', cap: 37.5, items: [
-            ['Audit of Angelo Co 2021 (433)', 'ANCO2021-433', 'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     0, 2, 20],
-            ['Audit of Angelo LP 16/17 (55)', 'ANLP1617-55',  'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     0, 6, 19],
-            ['Audit of Angelo SLP 16/17',     'ANSLP1617-46', 'Preparation',   'Senior Associate', 'Audit',              'A3 / Internal Controls / London',      0, 8, 1],
-            ['Controls first review',         'AU-300',       'First Review',  'Senior Manager',   'Regulatory Review',  'SRM / Internal Controls / London',     1, 6, 8],
-            ['Risk Framework sign-off',       'AU-261',       'Second Review', 'Principal',        'Regulatory Review',  'PRI / Internal Controls / London',     2, 5, 5],
-            ['Public holiday',                '',             null,            null,               null,                 null,                                   4, 1, 7.5, 'unavailability']
+            ['Audit of Angelo Co 2021 (433)', 'ANCO2021-433', 'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     0, 4, 20],
+            ['Audit of Angelo LP 16/17 (55)', 'ANLP1617-55',  'Preparation',   'Manager',          'Audit',              'MAN / Internal Controls / London',     2, 8, 19],
+            ['Audit of Angelo SLP 16/17',     'ANSLP1617-46', 'Preparation',   'Senior Associate', 'Audit',              'A3 / Internal Controls / London',      4, 10, 1],
+            ['Controls first review',         'AU-300',       'First Review',  'Senior Manager',   'Regulatory Review',  'SRM / Internal Controls / London',     14, 6, 8],
+            ['Risk Framework sign-off',       'AU-261',       'Second Review', 'Principal',        'Regulatory Review',  'PRI / Internal Controls / London',     22, 5, 5],
+            ['SOX walkthroughs',              'SOX-12',       'Preparation',   'Manager',          'Regulatory Review',  'MAN / Internal Controls / London',     34, 6, 14],
+            ['Public holiday',                '',             null,            null,               null,                 null,                                   16, 1, 7.5, 'unavailability']
+        ]},
+        { id: 'w-priya', name: 'Priya Mehta', grade: 'MAN', cap: 37.5, items: [
+            ['Access control review',         'ACR-44',       'Preparation',   'Manager',          'Regulatory Review',  'MAN / Internal Controls / London',     0, 5, 18],
+            ['Access control testing',        'ACR-44',       'First Review',  'Senior Associate', 'Regulatory Review',  'A3 / Internal Controls / London',      6, 5, 22],
+            ['ITGC remediations',             'ITG-7',        'Preparation',   'Manager',          'Consulting',         'MAN / Internal Controls / London',     16, 6, 12],
+            ['ITGC sign-off',                 'ITG-7',        'Second Review', 'Senior Manager',   'Consulting',         'SRM / Internal Controls / London',     26, 4, 8],
+            ['Year-end controls pack',        'YE-CTRL',      'Second Review', 'Manager',          'Regulatory Review',  'MAN / Internal Controls / London',     44, 5, 15]
+        ]},
+        { id: 'w-owen', name: 'Owen Blake', grade: 'A2', cap: 37.5, items: [
+            ['Sample testing wave 1',         'SMP-1',        'Preparation',   'Associate',        'Audit',              'A2 / Internal Controls / London',      1, 7, 25],
+            ['Sample testing wave 2',         'SMP-2',        'Preparation',   'Associate',        'Audit',              'A2 / Internal Controls / London',      12, 6, 25],
+            ['Documentation tidy',            'DOC-3',        'First Review',  'Audit Assistant',  'Audit',              'AA / Internal Controls / London',      22, 4, 10],
+            ['Sample testing wave 3',         'SMP-3',        'Preparation',   'Associate',        'Audit',              'A2 / Internal Controls / London',      36, 7, 20],
+            ['Training day',                  'TRN-IC',       null,            null,               'Training',           null,                                   30, 1, 7.5]
         ]}
     ]},
     { dept: 'CONSULTING', workers: [
         { id: 'w-holden', name: 'Holden Absolon', grade: 'AM', cap: 37.5, items: [
-            ['Maritime Consulting Review',    'MCR-7823',     'Preparation',   'Manager',          'Consulting',         'MAN / Advisory / London',              0, 5, 10],
-            ['Maritime first review',         'MCR-7823',     'First Review',  'Manager',          'Consulting',         'MAN / Advisory / London',              1, 5, 20],
-            ['Angelo tax structuring',        'ANG-34',       'Second Review', 'Senior Associate', 'Tax Advisory',       'A3 / Advisory / London',               2, 5, 10],
-            ['Unassigned advisory support',   'MCR-7900',     'Preparation',   null,               'Consulting',         null,                                   5, 3, 10]
+            ['Maritime Consulting Review',    'MCR-7823',     'Preparation',   'Manager',          'Consulting',         'MAN / Advisory / London',              0, 6, 10],
+            ['Maritime first review',         'MCR-7823',     'First Review',  'Manager',          'Consulting',         'MAN / Advisory / London',              5, 6, 20],
+            ['Angelo tax structuring',        'ANG-34',       'Second Review', 'Senior Associate', 'Tax Advisory',       'A3 / Advisory / London',               14, 5, 10],
+            ['Strategy sprint',               'STR-2',        'Preparation',   'Manager',          'Consulting',         'MAN / Advisory / London',              24, 3, 30],
+            ['Unassigned advisory support',   'MCR-7900',     'Preparation',   null,               'Consulting',         null,                                   36, 4, 10],
+            ['Year-end advisory',             'MCR-YE',       'Second Review', 'Manager',          'Consulting',         'MAN / Advisory / London',              46, 4, 12]
         ]},
         { id: 'w-stanislas', name: 'Stanislas Abramamovh', grade: 'AM', cap: 37.5, items: [
-            ['Angelo LP 2016 (337)',          'ANLP16-337',   'Preparation',   'Senior Associate', 'Audit',              'A3 / Advisory / London',               0, 6, 41],
-            ['Angelo LP 2016 first review',   'ANLP16-337',   'First Review',  'Manager',          'Audit',              'MAN / Advisory / London',              1, 5, 20],
-            ['Technology advisory scoping',   'TAS-88',       'Second Review', 'Associate',        'Consulting',         'A2 / Advisory / London',               0, 7, 10],
-            ['Internal training day',         'TRN-04',       null,            null,               'Training',           null,                                   4, 1, 7.5]
+            ['Angelo LP 2016 (337)',          'ANLP16-337',   'Preparation',   'Senior Associate', 'Audit',              'A3 / Advisory / London',               0, 7, 41],
+            ['Angelo LP 2016 first review',   'ANLP16-337',   'First Review',  'Manager',          'Audit',              'MAN / Advisory / London',              6, 5, 20],
+            ['Technology advisory scoping',   'TAS-88',       'Second Review', 'Associate',        'Consulting',         'A2 / Advisory / London',               14, 8, 10],
+            ['Digital transformation',        'DIG-14',       'Preparation',   'Senior Associate', 'Consulting',         'A3 / Advisory / London',               28, 6, 18],
+            ['Internal training day',         'TRN-04',       null,            null,               'Training',           null,                                   20, 1, 7.5],
+            ['Annual leave',                  '',             null,            null,               null,                 null,                                   40, 2, 7.5, 'unavailability']
+        ]},
+        { id: 'w-amira', name: 'Amira Hassan', grade: 'MAN', cap: 37.5, items: [
+            ['Ops excellence programme',      'OEP-3',        'Preparation',   'Manager',          'Consulting',         'MAN / Advisory / London',              2, 8, 16],
+            ['Ops excellence review',         'OEP-3',        'First Review',  'Senior Manager',   'Consulting',         'SRM / Advisory / London',              12, 4, 12],
+            ['Change management workshops',   'CMW-1',        'Preparation',   'Manager',          'Training',           'MAN / Advisory / London',              22, 5, 20],
+            ['Board readiness pack',          'BRD-9',        'Second Review', 'Principal',        'Consulting',         'PRI / Advisory / London',              38, 5, 10]
+        ]},
+        { id: 'w-luca', name: 'Luca Bianchi', grade: 'A3', cap: 37.5, items: [
+            ['Data migration support',        'DMS-5',        'Preparation',   'Senior Associate', 'Consulting',         'A3 / Advisory / London',               0, 6, 24],
+            ['UAT coordination',              'UAT-2',        'First Review',  'Senior Associate', 'Consulting',         'A3 / Advisory / London',               10, 5, 18],
+            ['Hypercare',                     'HYP-1',        'Preparation',   'Associate',        'Consulting',         'A2 / Advisory / London',               20, 4, 30],
+            ['Knowledge transfer',            'KT-8',         'Second Review', 'Senior Associate', 'Training',           'A3 / Advisory / London',               32, 3, 8],
+            ['Q4 backlog',                    'BLG-4',        'Preparation',   'Senior Associate', 'Consulting',         'A3 / Advisory / London',               42, 6, 15]
         ]}
     ]},
     { dept: 'SOLUTIONS', workers: [
         { id: 'w-karina', name: 'Karina Abramamovh', grade: 'AM', cap: 37.5, items: [
-            ['Financial advisory planning',   'FIN-220',      'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    0, 5, 20],
-            ['Financial advisory review',     'FIN-220',      'First Review',  'Senior Associate', 'Consulting',         'A3 / Financial Advisory / London',     1, 5, 10],
-            ['Angelo Co 2021 sign-off',       'ANCO2021-432', 'Second Review', 'Partner',          'Audit',              'MAN / Financial Advisory / London',    2, 4, 10],
-            ['Recruitment panel',             '',             null,            null,               null,                 null,                                   7, 1, 3.5, 'unavailability']
+            ['Financial advisory planning',   'FIN-220',      'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    0, 6, 20],
+            ['Financial advisory review',     'FIN-220',      'First Review',  'Senior Associate', 'Consulting',         'A3 / Financial Advisory / London',     5, 6, 10],
+            ['Angelo Co 2021 sign-off',       'ANCO2021-432', 'Second Review', 'Partner',          'Audit',              'MAN / Financial Advisory / London',    14, 4, 10],
+            ['Mid-year valuation',            'FIN-MY',       'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    24, 5, 18],
+            ['Year-end valuation',            'FIN-YE',       'Second Review', 'Manager',          'Consulting',         'MAN / Financial Advisory / London',    44, 5, 16],
+            ['Recruitment panel',             '',             null,            null,               null,                 null,                                   30, 1, 3.5, 'unavailability']
         ]},
         { id: 'w-donall', name: 'Donall Absolon', grade: 'A3', cap: 37.5, items: [
-            ['Angelo SLP 16/17 (239)',        'ANSLP1617-239','Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     0, 6, 10],
-            ['Angelo SLP 16/17 review',       'ANSLP1617-239','First Review',  'Senior Associate', 'Audit',              'A3 / Financial Advisory / London',     1, 5, 20],
-            ['Tax computations',              'ANG-34',       'Second Review', 'Associate',        'Tax Advisory',       'A2 / Financial Advisory / London',     2, 5, 10],
-            ['Ledger clean-up',               'FIN-301',      'Preparation',   'Associate',        null,                 'A2 / Financial Advisory / London',     6, 3, 6]
+            ['Angelo SLP 16/17 (239)',        'ANSLP1617-239','Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     0, 7, 10],
+            ['Angelo SLP 16/17 review',       'ANSLP1617-239','First Review',  'Senior Associate', 'Audit',              'A3 / Financial Advisory / London',     6, 5, 20],
+            ['Tax computations',              'ANG-34',       'Second Review', 'Associate',        'Tax Advisory',       'A2 / Financial Advisory / London',     14, 6, 10],
+            ['Ledger clean-up',               'FIN-301',      'Preparation',   'Associate',        null,                 'A2 / Financial Advisory / London',     26, 4, 6],
+            ['Autumn tax pack',               'TAX-AUT',      'First Review',  'Associate',        'Tax Advisory',       'A2 / Financial Advisory / London',     36, 5, 14],
+            ['December close',                'FIN-DEC',      'Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     48, 3, 12]
+        ]},
+        { id: 'w-sofia', name: 'Sofia Alvarez', grade: 'MAN', cap: 37.5, items: [
+            ['Deal support — Project North',  'PN-01',        'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    3, 5, 28],
+            ['Deal support — diligence',      'PN-01',        'First Review',  'Senior Manager',   'Consulting',         'SRM / Financial Advisory / London',    10, 4, 22],
+            ['Model build',                   'MOD-3',        'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    20, 6, 25],
+            ['Model review',                  'MOD-3',        'Second Review', 'Partner',          'Consulting',         'MAN / Financial Advisory / London',    30, 3, 8],
+            ['Pitch support',                 'PIT-6',        'Preparation',   'Manager',          'Consulting',         'MAN / Financial Advisory / London',    40, 4, 15]
+        ]},
+        { id: 'w-james', name: 'James Okonkwo', grade: 'A2', cap: 37.5, items: [
+            ['Working papers pack A',         'WPA-1',        'Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     1, 8, 30],
+            ['Working papers pack B',         'WPB-1',        'Preparation',   'Associate',        'Audit',              'A2 / Financial Advisory / London',     12, 7, 28],
+            ['Query clearance',               'QRY-2',        'First Review',  'Associate',        'Audit',              'A2 / Financial Advisory / London',     24, 5, 12],
+            ['File tidy-up',                  'FTU-1',        'Second Review', 'Audit Assistant',  'Audit',              'AA / Financial Advisory / London',     38, 4, 8],
+            ['Study leave',                   '',             null,            null,               null,                 null,                                   18, 2, 7.5, 'unavailability']
+        ]}
+    ]},
+    { dept: 'TAX', workers: [
+        { id: 'w-helen', name: 'Helen Park', grade: 'MAN', cap: 37.5, items: [
+            ['CT computations 20/21',         'CT-2021',      'Preparation',   'Manager',          'Tax Advisory',       'MAN / Tax Community Clients / London', 0, 6, 18],
+            ['CT review',                     'CT-2021',      'First Review',  'Senior Manager',   'Tax Advisory',       'SRM / Tax Community Clients / London', 8, 4, 10],
+            ['R&D claim support',             'RD-44',        'Preparation',   'Manager',          'Tax Advisory',       'MAN / Tax Community Clients / London', 16, 5, 20],
+            ['VAT partial exemption',         'VAT-9',        'First Review',  'Manager',          'Tax Advisory',       'MAN / Tax Community Clients / London', 28, 4, 14],
+            ['Tax year-end pack',             'TAX-YE',       'Second Review', 'Partner',          'Tax Advisory',       'MAN / Tax Community Clients / London', 46, 4, 12]
+        ]},
+        { id: 'w-tom', name: 'Tom Ridley', grade: 'A3', cap: 37.5, items: [
+            ['Personal tax returns batch 1',  'PTR-1',        'Preparation',   'Senior Associate', 'Tax Advisory',       'A3 / Tax Community Clients / London',  2, 8, 22],
+            ['Personal tax returns batch 2',  'PTR-2',        'Preparation',   'Senior Associate', 'Tax Advisory',       'A3 / Tax Community Clients / London',  14, 8, 22],
+            ['HMRC enquiry support',          'HMRC-3',       'First Review',  'Senior Associate', 'Tax Advisory',       'A3 / Tax Community Clients / London',  26, 5, 16],
+            ['Batch 3 filings',               'PTR-3',        'Preparation',   'Associate',        'Tax Advisory',       'A2 / Tax Community Clients / London',  36, 7, 20],
+            ['Annual leave',                  '',             null,            null,               null,                 null,                                   32, 2, 7.5, 'unavailability']
+        ]},
+        { id: 'w-maya', name: 'Maya Chen', grade: 'SRM', cap: 37.5, items: [
+            ['Transfer pricing review',       'TP-12',        'Preparation',   'Senior Manager',   'Tax Advisory',       'SRM / Tax Community Clients / London', 4, 6, 14],
+            ['TP first review',               'TP-12',        'First Review',  'Principal',        'Tax Advisory',       'PRI / Tax Community Clients / London', 12, 4, 8],
+            ['International structuring',     'INT-5',        'Second Review', 'Partner',          'Tax Advisory',       'MAN / Tax Community Clients / London', 22, 5, 10],
+            ['Q4 advisory pipeline',          'ADV-Q4',       'Preparation',   'Senior Manager',   'Tax Advisory',       'SRM / Tax Community Clients / London', 40, 6, 12]
         ]}
     ]}
 ];
@@ -1512,10 +1610,12 @@ DATA.forEach(function (group) {
 });
 
 // ── State ──────────────────────────────────────────────────────────────────
+// slimView / grouping / hoursMode start on the user's saved preferences.
+// Breakdown overrides them for the duration and hands them back afterwards.
 var state = {
-    breakdown: 'phase',
+    breakdown: 'none',
     showAvailability: true,
-    slimView: true,
+    slimView: false,
     grouping: 'day',
     hoursMode: 'consumed',
     tasksInGrey: false,
@@ -1523,10 +1623,43 @@ var state = {
     collapsedDepts: {},
     selectedCell: null,        // "workerId|rowKey|week" — hour-cell highlight only
     selection: [],             // booking selection (drives the side panel)
+    prefs: null,               // display prefs parked while breakdown is active
     menu: null                 // null | 'root'
 };
 
 function breakdownOn() { return state.breakdown !== 'none'; }
+
+/**
+ * Single-select breakdown switch (DEVO-29670). Turning a breakdown on forces
+ * the display settings aggregation needs (DEVO-29673) — Slim View, Consumed
+ * hours, and a grouping coarser than By Day. The user's own preferences are
+ * parked rather than overwritten, and restored when breakdown returns to None.
+ */
+function setBreakdown(key) {
+    var was = breakdownOn();
+    var now = key !== 'none';
+
+    if (now && !was) {
+        state.prefs = { slimView: state.slimView, grouping: state.grouping, hoursMode: state.hoursMode };
+    }
+
+    state.breakdown = key;
+
+    if (now) {
+        state.slimView = true;
+        state.hoursMode = 'consumed';
+        if (state.grouping === 'day') state.grouping = 'week';
+    } else if (was && state.prefs) {
+        state.slimView = state.prefs.slimView;
+        state.grouping = state.prefs.grouping;
+        state.hoursMode = state.prefs.hoursMode;
+        state.prefs = null;
+    }
+
+    state.selection = [];
+    state.selectedCell = null;
+    state.expandedRows = {};
+}
 
 // ── Aggregation ────────────────────────────────────────────────────────────
 function dimValueOf(item, dim) {
@@ -1975,8 +2108,11 @@ function renderMenu() {
     rowLayout.appendChild(staticItem('Resource Data'));
     rowLayout.appendChild(staticItem('Resource Sorting'));
 
-    var bd = submenuItem('Resource Breakdown', 'breakdown');
-    rowLayout.appendChild(bd);
+    var bd = null;
+    if (breakdownAvailable()) {
+        bd = submenuItem('Resource Breakdown', 'breakdown');
+        rowLayout.appendChild(bd);
+    }
     menu.appendChild(rowLayout);
 
     // ── Time Settings ─────────────────────────────────────────────────
@@ -2020,7 +2156,7 @@ function renderMenu() {
     layer.appendChild(menu);
 
     var flyout = null, flyoutAnchor = null;
-    if (state.flyout === 'breakdown') { flyout = breakdownFlyout(); flyoutAnchor = bd; }
+    if (state.flyout === 'breakdown' && bd) { flyout = breakdownFlyout(); flyoutAnchor = bd; }
     if (state.flyout === 'availability') { flyout = availabilityFlyout(); flyoutAnchor = av; }
     if (flyout) layer.appendChild(flyout);
 
@@ -2061,22 +2197,21 @@ function placeFlyout(f, menu, anchorEl) {
     f.style.top = Math.max(8, Math.min(a.top, window.innerHeight - f.offsetHeight - 8)) + 'px';
 }
 
+// MVP is a single-select None / Role (DEVO-29670). The other dimensions are
+// aggregated for later phases but are not exposed in the menu yet.
+var BREAKDOWN_OPTIONS = ['none', 'role'];
+
 function breakdownFlyout() {
     var f = el('div', 'Flyout');
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Resource Breakdown'));
 
-    ['none', 'role', 'bookingType', 'phase', 'req'].forEach(function (key) {
-        var def = DIMENSIONS[key];
+    BREAKDOWN_OPTIONS.forEach(function (key) {
         var r = el('div', 'Radio' + (state.breakdown === key ? ' is-checked' : ''));
         r.appendChild(el('div', 'Radio-dot'));
-        r.appendChild(el('span', null, def.label));
-        if (def.deferred) r.appendChild(el('span', 'Radio-tag', 'Deferred'));
+        r.appendChild(el('span', null, DIMENSIONS[key].label));
         r.addEventListener('click', function () {
-            state.breakdown = key;
-            if (breakdownOn()) state.slimView = true;
-            state.selection = [];
-            state.expandedRows = {};
+            setBreakdown(key);
             state.menu = null; state.flyout = null;
             renderMenu(); render();
         });
@@ -2087,31 +2222,41 @@ function breakdownFlyout() {
 }
 
 function availabilityFlyout() {
+    var locked = breakdownOn();
     var f = el('div', 'Flyout');
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Availability Display Settings'));
 
-    var slim = el('div', 'Radio is-checked' + (breakdownOn() ? ' is-disabled' : ''));
-    slim.appendChild(el('div', 'Radio-dot'));
-    slim.appendChild(el('span', null, 'Display Slim View'));
-    f.appendChild(slim);
+    // Slim/Full stay visible while a breakdown is active, but locked to Slim.
+    [[true, 'Display Slim View'], [false, 'Display Full View']].forEach(function (v) {
+        var r = el('div', 'Radio' + (state.slimView === v[0] ? ' is-checked' : '') + (locked ? ' is-disabled' : ''));
+        r.appendChild(el('div', 'Radio-dot'));
+        r.appendChild(el('span', null, v[1]));
+        if (!locked) {
+            r.addEventListener('click', function () { state.slimView = v[0]; renderMenu(); render(); });
+        }
+        f.appendChild(r);
+    });
 
-    var full = el('div', 'Radio is-disabled');
-    full.appendChild(el('div', 'Radio-dot'));
-    full.appendChild(el('span', null, 'Display Full View'));
-    f.appendChild(full);
-
+    // By Day cannot represent an aggregated week, so it drops out during
+    // breakdown; By Week and By Month stay selectable.
     var seg = el('div', 'Seg');
     [['day', 'By Day'], ['week', 'By Week'], ['month', 'By Month']].forEach(function (g) {
+        var off = locked && g[0] === 'day';
         var b = el('button', state.grouping === g[0] ? 'is-active' : '', g[1]);
-        b.addEventListener('click', function () { state.grouping = g[0]; renderMenu(); });
+        b.disabled = off;
+        if (!off) b.addEventListener('click', function () { state.grouping = g[0]; renderMenu(); render(); });
         seg.appendChild(b);
     });
     f.appendChild(seg);
 
-    var hrs = el('div', 'Seg is-disabled');
-    hrs.appendChild(el('button', '', 'Consumed hours'));
-    hrs.appendChild(el('button', '', 'Available hours'));
+    var hrs = el('div', 'Seg');
+    [['consumed', 'Consumed hours'], ['available', 'Available hours']].forEach(function (h) {
+        var b = el('button', state.hoursMode === h[0] ? 'is-active' : '', h[1]);
+        b.disabled = locked;
+        if (!locked) b.addEventListener('click', function () { state.hoursMode = h[0]; renderMenu(); render(); });
+        hrs.appendChild(b);
+    });
     f.appendChild(hrs);
 
     f.appendChild(el('div', 'Flyout-title', 'Availability Colour Settings'));
@@ -2635,6 +2780,11 @@ document.getElementById('gantt').addEventListener('click', function (e) {
 });
 
 document.getElementById('gantt').addEventListener('scroll', syncHeadScroll, { passive: true });
+
+// Open on the Role breakdown when it is available, so the prototype lands on
+// the state under review. Goes through setBreakdown so the display-setting
+// locks and the parked preferences behave exactly as they do at runtime.
+if (breakdownAvailable()) setBreakdown('role');
 
 render();
 })();
