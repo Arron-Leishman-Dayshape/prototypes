@@ -1520,18 +1520,25 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     display: inline-flex; align-items: center; justify-content: center;
 }
 .RModal-close:hover { background: var(--surface-subtle-dark); color: var(--text-default); }
-.RModal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; border-left: 1px solid var(--border-default); border-right: 1px solid var(--border-default); }
-.RModal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); flex: 0 0 auto; }
-.RModal-sectionTitle { font-size: 18px; font-weight: var(--font-weight-regular); color: var(--text-default); margin: 0; }
-.RModal-divider { height: 0; border: 0; border-top: 1px solid var(--border-subtle); margin: 0; width: 100%; }
+.RModal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; border-left: 1px solid var(--border-default); border-right: 1px solid var(--border-default); }
+.RModal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); flex: 0 0 auto; }
+.RModal-sectionTitle { font-size: 18px; font-weight: var(--font-weight-regular); color: var(--text-default); margin: 0; line-height: normal; }
+.RModal-divider { height: 0; border: 0; border-top: 1px solid var(--border-subtle); margin: 0; width: 100%; flex: 0 0 auto; }
+.RModal-pane { display: flex; flex-direction: column; gap: 24px; width: 100%; }
 .RModal-pane[hidden] { display: none !important; }
+.RModal-block { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.RModal-block--schedule { gap: 24px; }
+.RModal-block--traits { gap: 16px; }
 .RField { margin: 0; display: flex; flex-direction: column; gap: 12px; }
 .RField-label { display: flex; align-items: flex-start; gap: 4px; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default); margin: 0; line-height: 20px; }
 .RField-label .req { color: var(--text-danger); }
 .RField-row { display: flex; gap: 16px; align-items: flex-end; width: 100%; }
 .RField-row > .RField { flex: 1 1 0; min-width: 0; }
 .RField-effortRow { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
-.RField-effort { width: 174px; flex: 0 0 auto; }
+.RField-effort { width: 174px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.RField-effort--bare { padding-top: 0; }
+.RField-effortLabel { font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default); line-height: 20px; margin: 0; }
+.RCheck { display: flex; align-items: center; gap: 8px; cursor: pointer; height: 35px; margin: 0 0 0 0; padding-bottom: 0; align-self: flex-end; }
 .RInputGroup { display: flex; align-items: stretch; height: 35px; width: 100%; border-radius: var(--border-radius-default); overflow: hidden; }
 .RInputGroup-input {
     flex: 1 1 auto; min-width: 0; height: 35px; border: 1px solid var(--border-default);
@@ -1585,11 +1592,11 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .RCheck { display: flex; align-items: center; gap: 8px; cursor: pointer; height: 35px; }
 .RCheck input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; margin: 0; }
 .RTraitsEmpty {
-    width: 100%; min-height: 120px; display: flex; align-items: center; justify-content: center;
+    width: 100%; min-height: 88px; display: flex; align-items: center; justify-content: center;
     color: var(--text-subtle); font-size: var(--font-size-medium); border: 1px solid var(--border-subtle);
-    border-top: 0; background: #fff;
+    border-top: 0; background: #fff; margin: 0;
 }
-.RTraitsTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.RTraitsTable { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 0; }
 .RTraitsTable th {
     text-align: left; padding: 12px; min-height: 40px; background: var(--surface-subtle-dark);
     border-top: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle);
@@ -1597,7 +1604,8 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     box-shadow: inset 0 -2px 0 0 var(--border-default);
 }
 .RTraitsTable th:last-child { border-right: 0; }
-.RTraitsWarn { display: flex; align-items: center; gap: 8px; color: var(--text-warning); font-size: var(--font-size-medium); margin: 0; }
+.RTraitsTableWrap { display: flex; flex-direction: column; width: 100%; margin: 0; }
+.RTraitsWarn { display: flex; align-items: center; gap: 8px; color: var(--text-warning); font-size: var(--font-size-medium); margin: 8px 0 0; }
 .RTraitsWarn i { color: #fba645; }
 
 /* view switching */
@@ -1884,13 +1892,15 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
         </div>
         <div class="RModal-body">
             <div class="RModal-pane" id="rtab-booking">
-                <div class="RField">
-                    <label class="RField-label" for="rEngagement">Engagement <span class="req">*</span></label>
-                    <div class="RInputGroup">
-                        <select id="rEngagement" class="RInputGroup-select" required aria-label="Search for engagement">
-                            <option value="">Search for engagement</option>
-                        </select>
-                        <button type="button" class="RInputGroup-btn" title="Search engagements" aria-label="Search engagements"><i class="fa-solid fa-magnifying-glass"></i></button>
+                <div class="RModal-block">
+                    <div class="RField">
+                        <label class="RField-label" for="rEngagement">Engagement <span class="req">*</span></label>
+                        <div class="RInputGroup">
+                            <select id="rEngagement" class="RInputGroup-select" required aria-label="Search for engagement">
+                                <option value="">Search for engagement</option>
+                            </select>
+                            <button type="button" class="RInputGroup-btn" title="Search engagements" aria-label="Search engagements"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </div>
                     </div>
                     <label class="RToggle">
                         <input type="checkbox" id="rFilterViewable" checked />
@@ -1901,116 +1911,124 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 
                 <hr class="RModal-divider" />
 
-                <h4 class="RModal-sectionTitle">Scheduling Details</h4>
+                <div class="RModal-block RModal-block--schedule">
+                    <h4 class="RModal-sectionTitle">Scheduling Details</h4>
 
-                <div class="RField-row">
+                    <div class="RField-row">
+                        <div class="RField">
+                            <label class="RField-label" for="rFrom">From</label>
+                            <div class="RInputGroup">
+                                <input id="rFrom" class="RInputGroup-input" type="text" value="07/05/21 09:00AM" />
+                                <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                            </div>
+                        </div>
+                        <div class="RField">
+                            <label class="RField-label" for="rTo">To</label>
+                            <div class="RInputGroup">
+                                <input id="rTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                                <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="RField-effortRow">
+                        <div class="RField-effort">
+                            <label class="RField-effortLabel" for="rEffortM">Effort</label>
+                            <div class="RInputGroup">
+                                <input id="rEffortM" class="RInputGroup-input" type="text" value="7" inputmode="numeric" />
+                                <span class="RInputGroup-addon">m</span>
+                            </div>
+                        </div>
+                        <div class="RField-effort RField-effort--bare">
+                            <div class="RInputGroup">
+                                <input id="rEffortH" class="RInputGroup-input" type="text" value="30" inputmode="numeric" aria-label="Effort hours" />
+                                <span class="RInputGroup-addon">h</span>
+                            </div>
+                        </div>
+                        <div class="RField-effort RField-effort--bare">
+                            <div class="RInputGroup">
+                                <input id="rEffortPct" class="RInputGroup-input" type="text" value="100" inputmode="numeric" aria-label="Effort percent" />
+                                <span class="RInputGroup-addon">%</span>
+                            </div>
+                        </div>
+                        <label class="RCheck"><input type="checkbox" id="rRepeat" /> Repeat</label>
+                    </div>
+
                     <div class="RField">
-                        <label class="RField-label" for="rFrom">From</label>
+                        <label class="RField-label" for="rAssign">Assign Resource</label>
                         <div class="RInputGroup">
-                            <input id="rFrom" class="RInputGroup-input" type="text" value="07/05/21 09:00AM" />
-                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                            <select id="rAssign" class="RInputGroup-select" aria-label="Assign Resource">
+                                <option value="">Select resource</option>
+                                <option selected>(MAN) Priya Patel</option>
+                                <option>(SA) Sofia Rossi</option>
+                                <option>(A2) Noah Williams</option>
+                                <option>(SA) Mia Fernandez</option>
+                                <option>(MAN) Tom Becker</option>
+                                <option>(A2) Jordan Blake</option>
+                                <option>(SRM) Olivia Chen</option>
+                                <option>(DIR) Marcus Webb</option>
+                                <option>(A2) Aisha Khan</option>
+                                <option>(SA) Harry Collins</option>
+                                <option>(PTR) Liam O'Connor</option>
+                                <option>(MAN) Emma Johnson</option>
+                            </select>
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--clear" title="Clear resource" aria-label="Clear resource" onclick="document.getElementById('rAssign').value=''"><i class="fa-solid fa-xmark"></i></button>
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick resource" aria-label="Pick resource"><i class="fa-solid fa-user"></i></button>
                         </div>
-                    </div>
-                    <div class="RField">
-                        <label class="RField-label" for="rTo">To</label>
-                        <div class="RInputGroup">
-                            <input id="rTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
-                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="RField-effortRow">
-                    <div class="RField RField-effort">
-                        <label class="RField-label" for="rEffortM">Effort</label>
-                        <div class="RInputGroup">
-                            <input id="rEffortM" class="RInputGroup-input" type="text" value="7" inputmode="numeric" />
-                            <span class="RInputGroup-addon">m</span>
-                        </div>
-                    </div>
-                    <div class="RField RField-effort">
-                        <label class="RField-label" for="rEffortH" style="visibility:hidden">Hours</label>
-                        <div class="RInputGroup">
-                            <input id="rEffortH" class="RInputGroup-input" type="text" value="30" inputmode="numeric" />
-                            <span class="RInputGroup-addon">h</span>
-                        </div>
-                    </div>
-                    <div class="RField RField-effort">
-                        <label class="RField-label" for="rEffortPct" style="visibility:hidden">Percent</label>
-                        <div class="RInputGroup">
-                            <input id="rEffortPct" class="RInputGroup-input" type="text" value="100" inputmode="numeric" />
-                            <span class="RInputGroup-addon">%</span>
-                        </div>
-                    </div>
-                    <label class="RCheck"><input type="checkbox" id="rRepeat" /> Repeat</label>
-                </div>
-
-                <div class="RField">
-                    <label class="RField-label" for="rAssign">Assign Resource</label>
-                    <div class="RInputGroup">
-                        <select id="rAssign" class="RInputGroup-select" aria-label="Assign Resource">
-                            <option value="">Select resource</option>
-                            <option selected>(MAN) Priya Patel</option>
-                            <option>(SA) Sofia Rossi</option>
-                            <option>(A2) Noah Williams</option>
-                            <option>(SA) Mia Fernandez</option>
-                            <option>(MAN) Tom Becker</option>
-                            <option>(A2) Jordan Blake</option>
-                            <option>(SRM) Olivia Chen</option>
-                            <option>(DIR) Marcus Webb</option>
-                            <option>(A2) Aisha Khan</option>
-                            <option>(SA) Harry Collins</option>
-                            <option>(PTR) Liam O'Connor</option>
-                            <option>(MAN) Emma Johnson</option>
-                        </select>
-                        <button type="button" class="RInputGroup-btn RInputGroup-btn--clear" title="Clear resource" aria-label="Clear resource" onclick="document.getElementById('rAssign').value=''"><i class="fa-solid fa-xmark"></i></button>
-                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick resource" aria-label="Pick resource"><i class="fa-solid fa-user"></i></button>
                     </div>
                 </div>
 
                 <hr class="RModal-divider" />
 
-                <h4 class="RModal-sectionTitle">Booking Traits</h4>
-                <button type="button" class="Btn Btn--secondary" id="rAddTraitsBtn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Traits</button>
-                <table class="RTraitsTable" aria-label="Booking traits">
-                    <thead>
-                        <tr>
-                            <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Name</th>
-                            <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Primary</th>
-                            <th>Remove</th>
-                        </tr>
-                    </thead>
-                </table>
-                <div class="RTraitsEmpty">Nothing to display</div>
-                <p class="RTraitsWarn"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Select engagement to edit the task's traits.</p>
+                <div class="RModal-block RModal-block--traits">
+                    <h4 class="RModal-sectionTitle">Booking Traits</h4>
+                    <div>
+                        <button type="button" class="Btn Btn--secondary" id="rAddTraitsBtn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Traits</button>
+                    </div>
+                    <div class="RTraitsTableWrap">
+                        <table class="RTraitsTable" aria-label="Booking traits">
+                            <thead>
+                                <tr>
+                                    <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Name</th>
+                                    <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Primary</th>
+                                    <th>Remove</th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div class="RTraitsEmpty">Nothing to display</div>
+                    </div>
+                    <p class="RTraitsWarn"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Select engagement to edit the task's traits.</p>
+                </div>
             </div>
 
             <div class="RModal-pane" id="rtab-unavailability" hidden>
-                <div class="RField">
-                    <label class="RField-label" for="rUnaFrom">From</label>
-                    <div class="RInputGroup">
-                        <input id="rUnaFrom" class="RInputGroup-input" type="text" placeholder="Select date and time" />
-                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                <div class="RModal-block">
+                    <div class="RField">
+                        <label class="RField-label" for="rUnaFrom">From</label>
+                        <div class="RInputGroup">
+                            <input id="rUnaFrom" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                        </div>
                     </div>
-                </div>
-                <div class="RField">
-                    <label class="RField-label" for="rUnaTo">To</label>
-                    <div class="RInputGroup">
-                        <input id="rUnaTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
-                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
+                    <div class="RField">
+                        <label class="RField-label" for="rUnaTo">To</label>
+                        <div class="RInputGroup">
+                            <input id="rUnaTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
+                        </div>
                     </div>
-                </div>
-                <div class="RField">
-                    <label class="RField-label" for="rUnaType">Type</label>
-                    <div class="RInputGroup">
-                        <select id="rUnaType" class="RInputGroup-select">
-                            <option>Annual leave</option>
-                            <option>Sick leave</option>
-                            <option>Study leave</option>
-                            <option>Public holiday</option>
-                            <option>Training</option>
-                        </select>
-                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" aria-hidden="true" tabindex="-1"><i class="fa-solid fa-chevron-down"></i></button>
+                    <div class="RField">
+                        <label class="RField-label" for="rUnaType">Type</label>
+                        <div class="RInputGroup">
+                            <select id="rUnaType" class="RInputGroup-select">
+                                <option>Annual leave</option>
+                                <option>Sick leave</option>
+                                <option>Study leave</option>
+                                <option>Public holiday</option>
+                                <option>Training</option>
+                            </select>
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" aria-hidden="true" tabindex="-1"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
