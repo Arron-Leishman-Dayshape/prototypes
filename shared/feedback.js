@@ -185,7 +185,9 @@
       el.closest('.ProtoFeedback-launch') ||
       el.closest('.ProtoFeedback-panel') ||
       el.closest('.ProtoFeedback-pickTip') ||
-      el.id === 'protoFeedbackPickTip'
+      el.closest('.ProtoFeedback-pickOverlay') ||
+      el.id === 'protoFeedbackPickTip' ||
+      el.id === 'protoFeedbackPickOverlay'
     );
   }
 
@@ -309,25 +311,58 @@
     tip.innerHTML = '<strong>Click a component</strong> you’re referring to · Esc to cancel';
     document.body.appendChild(tip);
 
+    var overlay = document.createElement('div');
+    overlay.className = 'ProtoFeedback-pickOverlay';
+    overlay.id = 'protoFeedbackPickOverlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(overlay);
+    document.body.classList.add('ProtoFeedback-isPicking');
+
     var hoverEl = null;
+
+    function placeOverlay(el) {
+      if (!el) {
+        overlay.classList.remove('is-on');
+        return;
+      }
+      var rect = el.getBoundingClientRect();
+      var pad = 2;
+      overlay.style.left = Math.max(0, rect.left - pad) + 'px';
+      overlay.style.top = Math.max(0, rect.top - pad) + 'px';
+      overlay.style.width = Math.max(0, rect.width + pad * 2) + 'px';
+      overlay.style.height = Math.max(0, rect.height + pad * 2) + 'px';
+      overlay.classList.add('is-on');
+    }
+
     function onMove(e) {
       var under = document.elementFromPoint(e.clientX, e.clientY);
       if (!under || under === tip || tip.contains(under) || isFeedbackChrome(under)) return;
       var el = resolvePickTarget(under);
-      if (!el || el === hoverEl) return;
-      if (hoverEl) hoverEl.classList.remove('ProtoFeedback-pickTarget');
+      if (!el) return;
+      if (el === hoverEl) {
+        placeOverlay(el);
+        return;
+      }
       hoverEl = el;
-      hoverEl.classList.add('ProtoFeedback-pickTarget');
+      placeOverlay(el);
+    }
+
+    function onScrollOrResize() {
+      if (hoverEl) placeOverlay(hoverEl);
     }
 
     function cleanup() {
       document.removeEventListener('mousemove', onMove, true);
       document.removeEventListener('click', onClick, true);
       document.removeEventListener('keydown', onKey, true);
-      if (hoverEl) hoverEl.classList.remove('ProtoFeedback-pickTarget');
+      window.removeEventListener('scroll', onScrollOrResize, true);
+      window.removeEventListener('resize', onScrollOrResize);
+      document.body.classList.remove('ProtoFeedback-isPicking');
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       if (tip.parentNode) tip.parentNode.removeChild(tip);
       if (launch) launch.style.display = '';
       if (panel) panel.hidden = false;
+      hoverEl = null;
     }
 
     function onKey(e) {
@@ -363,6 +398,8 @@
     document.addEventListener('mousemove', onMove, true);
     document.addEventListener('click', onClick, true);
     document.addEventListener('keydown', onKey, true);
+    window.addEventListener('scroll', onScrollOrResize, true);
+    window.addEventListener('resize', onScrollOrResize);
   }
 
   function mount() {

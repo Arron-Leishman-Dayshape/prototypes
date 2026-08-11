@@ -245,9 +245,22 @@
   box-shadow: 0 8px 24px rgba(26, 29, 38, 0.28);
   pointer-events: none;
 }
-.ProtoFeedback-pickTarget {
-  outline: 3px solid #4f3fa0 !important;
-  outline-offset: 2px !important;
+.ProtoFeedback-pickOverlay {
+  position: fixed;
+  z-index: 2147483645;
+  box-sizing: border-box;
+  border: 3px solid #4f3fa0;
+  border-radius: 6px;
+  background: rgba(79, 63, 160, 0.12);
+  box-shadow: 0 0 0 9999px rgba(26, 29, 38, 0.18);
+  pointer-events: none;
+  display: none;
+}
+.ProtoFeedback-pickOverlay.is-on {
+  display: block;
+}
+body.ProtoFeedback-isPicking,
+body.ProtoFeedback-isPicking * {
   cursor: crosshair !important;
 }
 
