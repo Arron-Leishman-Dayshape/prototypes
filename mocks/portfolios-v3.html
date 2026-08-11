@@ -115,6 +115,38 @@
     --gantt-line-height: 30px;
     --gantt-head-height: 72px;
     --gantt-label-width: 300px;
+
+    /* Portfolio Team Gantt (resource-breakdown parity) */
+    --pf-team-left-w: 405px;
+    --pf-team-week-w: 112.6px;
+    --pf-team-col-select-w: 48px;
+    --pf-team-col-name-w: 195px;
+    --pf-team-col-grade-w: 69px;
+    --pf-team-col-expand-w: 25px;
+    --pf-team-col-dim-w: 115px;
+    --pf-team-sub-row-h: 24px;
+    --pf-team-group-h: 27px;
+    --pf-team-slim-h: 5px;
+    --pf-team-bar-h: 23px;
+    --pf-team-bar-border: rgb(0 0 0 / 30%);
+    --pf-team-menu-inset: 25px;
+    --border-xs: 1px;
+    --border-emphasis: #babfd1;
+    --surface-row-alt: #f8f8fa;
+    --surface-header: #f8f8f8;
+    --surface-unavailability: #d4d4dc;
+    --surface-list-item-selected-light: #f0effb;
+    --surface-icon-hover: #e2e3e9;
+    --text-label: #4c5172;
+    --text-white: #fff;
+    --font-size-label: 0.8125rem;
+    --font-size-xsmall: 0.625rem;
+    --utilisation-level-1: #b2bee1;
+    --utilisation-level-2: #a4d9c1;
+    --utilisation-level-3: #f3dd8e;
+    --utilisation-level-4: #ffae52;
+    --utilisation-level-5: #e26bab;
+    --today-marker: #f4645f;
 }
 
 * { box-sizing: border-box; }
@@ -126,7 +158,7 @@ a:hover { text-decoration: underline; }
 /* ============================================================
    App shell + NavBar (NavBar.css)
    ============================================================ */
-.App { display: flex; min-height: 100vh; }
+.App { display: flex; min-height: 100vh; height: 100%; }
 .NavBar { width: 48px; flex: 0 0 48px; background-color: var(--deep-black); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: clip; }
 .NavBar-logoWrapper { height: 42px; margin: 5px 5px 24px; display: flex; align-items: center; justify-content: center; }
 .NavBar-dayshapeIcon { background-color: #fff; border-radius: 2px; height: 38px; width: 38px; object-fit: cover; }
@@ -141,10 +173,10 @@ a:hover { text-decoration: underline; }
 .NavBar-menuBottom { display: flex; flex-direction: column; align-items: flex-end; padding-bottom: 12px; }
 .NavBar-expandButton { background-color: var(--neutral-deep-grey-14); height: 31px; width: 40px; display: flex; align-items: center; justify-content: center; border-radius: 5px 0 0 5px; border: 0; cursor: pointer; color: var(--deep-black); }
 
-.Main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.Main { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
 
 /* ---- Header ---- */
-.TopBar { background: var(--surface-default); border-bottom: 1px solid var(--border-subtle); padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-sm); position: sticky; top: 0; z-index: 30; }
+.TopBar { background: var(--surface-default); border-bottom: 1px solid var(--border-subtle); padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-sm); position: sticky; top: 0; z-index: 30; flex: 0 0 auto; }
 .TopBar--noBorder { border-bottom: none; }
 .EntityIcon-badge { height: 2.25rem; width: 2.25rem; border-radius: 10rem; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; flex: 0 0 auto; font-size: 15px; }
 .TopBar-title { font-size: var(--font-size-h1); font-weight: var(--font-weight-semibold); color: var(--text-default); margin: 0; }
@@ -367,7 +399,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .Pill--primary { background: var(--surface-primary-subtle); color: var(--text-primary); border-color: var(--border-primary-subtle); }
 
 /* ---- Tabs ---- */
-.Tab-navBar { display: flex; align-items: flex-end; padding: 0 var(--padding-lg); gap: 4px; border-bottom: 1px solid var(--border-subtle); background: var(--surface-default); position: sticky; top: var(--topbar-h, 58px); z-index: 28; }
+.Tab-navBar { display: flex; align-items: flex-end; padding: 0 var(--padding-lg); gap: 4px; border-bottom: 1px solid var(--border-subtle); background: var(--surface-default); position: sticky; top: var(--topbar-h, 58px); z-index: 28; flex: 0 0 auto; }
 .Tab-navItem { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 0; background: none; border: none; cursor: pointer; font-family: var(--font-family); }
 .Tab-navItem-inner { display: flex; align-items: center; gap: 4px; height: 35px; padding: 4px 8px; box-sizing: border-box; border: 2px solid transparent; border-radius: 4px 4px 0 0; font-weight: var(--font-weight-semibold); font-size: 14px; line-height: 21px; color: var(--text-accent); white-space: nowrap; }
 .Tab-navItem-bar { height: 2px; width: 100%; border-radius: var(--border-radius-lg, 8px); background: transparent; }
@@ -484,19 +516,9 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 }
 
 /* ============================================================
-   Team tab — MOCKUP styling only (engagement-view Gantt look)
-   v1: deep-link to main Gantt (GanttDeeplinks.mjs) — see HTML comment on #tab-team
+   Team tab — portfolio Gantt (resource / engagement pivot)
+   Visual basis: gantt-resource-breakdown.html
    ============================================================ */
-.Gantt { background: #fff; display: flex; flex-direction: column; overflow: hidden; }
-.Gantt-titlebar { display: flex; align-items: center; gap: var(--padding-sm); padding: var(--padding-lg) var(--padding-lg) var(--padding-md); position: relative; }
-/* display settings popover */
-.DisplaySettings { position: relative; }
-.DisplaySettings-panel { position: absolute; right: 0; top: 40px; width: 250px; background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default); box-shadow: 0 2px 8px 2px rgb(178 178 178 / 30%); z-index: 60; padding: 6px 0; display: none; }
-.DisplaySettings.is-open .DisplaySettings-panel { display: block; }
-.DisplaySettings-title { font-size: var(--font-size-extra-small); font-weight: var(--font-weight-bold); letter-spacing: .04em; text-transform: uppercase; color: var(--text-subtle); padding: 8px 14px 4px; }
-.DisplaySettings-row { display: flex; align-items: center; gap: 10px; padding: 8px 14px; font-size: var(--font-size-medium); color: var(--text-accent); cursor: pointer; }
-.DisplaySettings-row:hover { background: var(--surface-list-item-hover); }
-.DisplaySettings-row input { accent-color: var(--primary); }
 /* Performance "Settings" dropdown menu (Job Groups Editor design) */
 .SettingsMenu { position: relative; }
 .SettingsMenu-panel { position: absolute; right: 0; top: 40px; width: 300px; background: #fff; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); box-shadow: 0 2px 4px 2px rgb(178 178 178 / 30%); z-index: 60; padding: 16px; display: none; }
@@ -509,60 +531,321 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .SettingsMenu-field { margin-top: 16px; }
 .SettingsMenu-fieldLabel { display: block; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default); margin-bottom: 8px; }
 .Select--full { width: 100%; height: 35px; color: var(--text-emphasis); }
-.Gantt-body { display: flex; overflow: auto; max-height: 640px; border-top: 1px solid var(--border-subtle); }
 
-/* left labels column */
-.Gantt-labels { flex: 0 0 var(--gantt-label-width); width: var(--gantt-label-width); position: sticky; left: 0; z-index: 3; background: #fff; border-right: 1px solid var(--border-default); }
-.Gantt-labels-head { height: var(--gantt-head-height); border-bottom: 1px solid var(--border-default); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 8px 12px; font-weight: var(--font-weight-semibold); color: var(--text-emphasis); background: var(--surface-subtle-light); position: sticky; top: 0; z-index: 2; font-size: var(--font-size-small); }
-.Gantt-labels-headLabel { color: var(--text-emphasis); }
+#tab-team.PfTeam,
+.PfTeam {
+    background: var(--surface-default);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+.PfTeam-titlebar {
+    display: flex;
+    align-items: center;
+    gap: var(--padding-sm);
+    padding: var(--padding-md) var(--padding-lg);
+    position: relative;
+    flex: 0 0 auto;
+}
+.PfTeam-headTools .Btn.is-active {
+    background: var(--surface-primary-subtle);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
 
-/* grouping header rows = JOB (gantt-headers.css: .gantt-row-grouping/.unit-row/.gantt-job-header) */
-.gantt-grouprow {
-    height: 27px; display: flex; align-items: center;
-    background-color: var(--surface-accent); color: var(--text-default);
-    text-transform: uppercase; font-weight: 500; font-size: 11px; letter-spacing: 0.33px;
+/* Job-editor Gantt actions — Dayshape Btn secondary / tertiary */
+.PfTeam-head {
+    position: sticky; top: 0; z-index: 30;
+    min-height: 71px; overflow: visible; background: var(--surface-header);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    display: flex; align-items: stretch;
+}
+.PfTeam-headScroll {
+    width: max-content; display: flex; flex-direction: column; flex: 1 1 auto; min-width: 0;
+    justify-content: flex-end;
+}
+.PfTeam-headCorner {
+    position: sticky; left: 0; z-index: 4;
+    width: var(--pf-team-left-w); flex: 0 0 var(--pf-team-left-w);
+    background: var(--surface-header);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    display: flex; flex-direction: column; justify-content: flex-start;
+    box-sizing: border-box;
+}
+.PfTeam-headTools {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px var(--padding-lg);
+    min-height: 51px;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+}
+.PfTeam-headTools .Btn {
+    flex: 0 0 auto;
+    min-height: 35px;
+    height: 35px;
+    padding: 0 var(--padding-sm);
+    font-weight: var(--font-weight-regular);
+}
+.PfTeam-headTools .Btn.Btn--tertiary {
+    width: 35px;
+    padding: 0;
+    justify-content: center;
+}
+.PfTeam-headCols {
+    display: flex; align-items: flex-end;
+    padding: 0 0 4px;
+    border-top: 1px solid var(--border-subtle);
+    min-height: 27px;
+    box-sizing: border-box;
+}
+.PfTeam-headCol {
+    font-size: 10px; font-weight: var(--font-weight-semibold);
+    color: var(--text-subtle); letter-spacing: .02em;
+    padding: 4px 8px; white-space: nowrap;
+}
+.PfTeam-headCol--name { width: var(--pf-team-col-name-w); flex: 0 0 var(--pf-team-col-name-w); }
+.PfTeam-headCol--grade { width: var(--pf-team-col-grade-w); flex: 0 0 var(--pf-team-col-grade-w); }
+.PfTeam-headCol--hours { flex: 1 1 auto; text-align: right; padding-right: 12px; }
+
+.PfTeam-headRow { display: flex; }
+.PfTeam-headLeft { display: none; }
+.PfTeam-scroller {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    border-top: 1px solid var(--border-subtle);
+    position: relative;
+    background: var(--surface-default);
+}
+.PfTeam-inner { position: relative; width: max-content; min-width: 100%; }
+.PfTeam-months, .PfTeam-weeks, .PfTeam-days { display: flex; }
+.PfTeam-month {
+    flex: 0 0 auto; height: 27px;
+    border-right: var(--border-xs) solid var(--border-emphasis);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-small); color: var(--text-default);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.PfTeam-week {
+    width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); height: 22px;
+    border-right: var(--border-xs) solid var(--border-emphasis);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-xsmall); color: var(--text-subtle);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.PfTeam-dayset { width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
+.PfTeam-day {
+    flex: 1; height: 22px;
+    border-right: var(--border-xs) solid var(--border-subtle);
+    border-bottom: var(--border-xs) solid var(--border-emphasis);
+    font-size: 10px; color: var(--text-subtle);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-header);
+}
+.PfTeam-day:last-child { border-right: 0; }
+.PfTeam-day.is-today { color: var(--text-danger); font-weight: 700; }
+
+.PfTeam-row { display: flex; }
+.PfTeam-rowLeft {
+    position: sticky; left: 0; z-index: 25;
+    width: var(--pf-team-left-w); flex: 0 0 var(--pf-team-left-w);
+    background: var(--surface-default);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    display: flex;
+}
+.PfTeam-rowTrack { position: relative; display: flex; }
+
+.PfTeam-group .PfTeam-rowLeft,
+.PfTeam-group .PfTeam-rowTrack {
+    height: var(--pf-team-group-h);
+    background: var(--surface-accent);
     border-top: 2px solid var(--border-default);
+    border-bottom: 0;
+}
+.PfTeam-group .PfTeam-rowLeft {
+    align-items: center; padding-left: 10px; gap: 7px;
+    font-size: var(--font-size-xsmall); font-weight: 500;
+    letter-spacing: .04em; text-transform: uppercase;
+    color: var(--text-accent); cursor: pointer;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.gantt-grouprow .caret { margin-right: 6px; color: var(--interactive-primary-d2); width: 10px; flex: 0 0 auto; }
+.PfTeam-group .PfTeam-rowLeft i { font-size: 10px; color: var(--icon-default); width: 9px; flex: 0 0 auto; }
 
-/* resource rows (name + grade) */
-.gantt-label-row { height: var(--gantt-line-height); display: flex; align-items: center; border-bottom: 1px solid #f0f0f3; font-size: var(--font-size-small); padding: 0 12px; white-space: nowrap; overflow: hidden; }
-.gantt-res { display: flex; align-items: center; gap: 8px; overflow: hidden; width: 100%; }
-.gantt-res .gantt-avatar { width: 20px; height: 20px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 9px; font-weight: var(--font-weight-bold); display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; text-transform: uppercase; }
-.gantt-res .nm { overflow: hidden; text-overflow: ellipsis; color: var(--text-default); }
-.gantt-res .grade { color: var(--text-subtle); font-size: var(--font-size-extra-small); margin-left: auto; padding-left: 8px; flex: 0 0 auto; }
+.PfTeam-worker { border-bottom: var(--border-xs) solid var(--border-subtle); }
+.PfTeam-worker .PfTeam-rowLeft { align-items: stretch; }
+.PfTeam-worker.is-alt .PfTeam-rowLeft,
+.PfTeam-worker.is-alt .PfTeam-rowTrack { background: var(--surface-row-alt); }
 
-/* timeline */
-.Gantt-timeline { position: relative; flex: 1 1 auto; }
-.Gantt-head { height: var(--gantt-head-height); position: sticky; top: 0; z-index: 2; background: var(--surface-subtle-light); border-bottom: 1px solid var(--border-default); display: flex; flex-direction: column; }
-.gantt-head-row { height: 24px; display: flex; white-space: nowrap; }
-.gantt-head-row.month-row { border-bottom: 1px solid #dddddd; }
-.gantt-head-row.week-row { border-bottom: 1px solid #dddddd; }
-.gantt-month-col { font-size: 11px; color: var(--deep-black); display: flex; align-items: center; padding-left: 8px; border-right: 1px solid #ddd; font-weight: var(--font-weight-semibold); overflow: hidden; }
-.gantt-week-col { font-size: 11px; color: var(--text-subtle); display: flex; align-items: center; padding-left: 6px; border-right: 1px solid #e4e4ea; overflow: hidden; }
-.gantt-day-col { border-right: 1px dashed #e4e4ea; display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 11px; color: var(--deep-black); white-space: nowrap; overflow: hidden; }
-.gantt-day-col .dow { color: var(--text-subtle); }
-.gantt-day-col.is-today { color: var(--deep-black); font-weight: var(--font-weight-bold); }
-.gantt-day-col.is-today .dow { color: var(--deep-black); }
-.gantt-day-col.is-weekend { background: rgba(152,155,182,.06); }
+.PfTeam-cellName {
+    width: var(--pf-team-col-name-w); flex: 0 0 var(--pf-team-col-name-w);
+    padding: 0 5px 0 var(--pf-team-col-select-w);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-label); color: var(--text-label);
+    overflow: hidden; display: flex; align-items: flex-start; gap: 6px;
+}
+.PfTeam-cellName > * { height: var(--pf-team-sub-row-h); display: flex; align-items: center; }
+.PfTeam-cellName span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* add-resource button (job editor pattern) */
-.gantt-add-resource { height: var(--gantt-line-height); display: flex; align-items: center; border-bottom: 1px solid #f0f0f3; padding-left: 24px; }
-.gantt-add-resource button { background: none; border: 1px dashed var(--border-default); border-radius: var(--border-radius-default); color: var(--text-primary); font-family: var(--font-family); font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); padding: 3px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-.gantt-add-resource button:hover { background: var(--surface-primary-subtle); border-color: var(--border-primary); }
-.gantt-add-row-spacer { height: var(--gantt-line-height); border-bottom: 1px solid #f0f0f3; }
+.PfTeam-cellGrade {
+    width: var(--pf-team-col-grade-w); flex: 0 0 var(--pf-team-col-grade-w);
+    height: var(--pf-team-sub-row-h); padding-left: 5px;
+    display: flex; align-items: center;
+    font-size: var(--font-size-label); color: var(--text-label);
+}
+.PfTeam-cellExpand {
+    width: var(--pf-team-col-expand-w); flex: 0 0 var(--pf-team-col-expand-w);
+    height: var(--pf-team-sub-row-h);
+    border-right: var(--border-xs) solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: center;
+}
+.PfTeam-expander {
+    width: 15px; height: 15px; border: 0; border-radius: 0;
+    background: transparent; color: var(--interactive-primary-d2);
+    font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 2px;
+}
+.PfTeam-expander:hover { background: var(--surface-icon-hover); color: #7a7a7a; }
 
-.gantt-grouprow.timeline-grouprow { padding: 0; }
-.gantt-grid-row { height: var(--gantt-line-height); position: relative; border-bottom: 1px solid #f0f0f3; }
-.gantt-grid-row .daygrid { position: absolute; inset: 0; display: flex; pointer-events: none; }
-.gantt-grid-row .daygrid span { border-right: 1px dashed #eeeef2; }
-.gantt-grid-row .daygrid span.weekend { background: rgba(152,155,182,.06); }
+.PfTeam-dims { width: var(--pf-team-col-dim-w); flex: 0 0 var(--pf-team-col-dim-w); display: flex; flex-direction: column; }
+.PfTeam-dimLabel {
+    height: var(--pf-team-sub-row-h);
+    display: flex; align-items: center;
+    padding: 2px 4px 2px 6px;
+    border-left: 3px solid var(--border-subtle);
+    border-bottom: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-small); font-weight: 500; line-height: 1.2;
+    color: var(--text-subtle);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; gap: 8px;
+}
+.PfTeam-dimLabel:last-child { border-bottom: 0; }
+.PfTeam-dimLabel.is-expanded { background: var(--surface-list-item-selected-light); font-weight: 600; }
 
-/* booking bar — matches gantt.css .gantt-item / .gantt-item-content exactly */
-.gantt-item { position: absolute; top: 3px; height: 23px; border: 1px solid rgba(0,0,0,.3); border-radius: 2px; color: #fff; overflow: hidden; cursor: pointer; box-sizing: border-box; }
-.gantt-item .gantt-item-content { height: 21px; line-height: 21px; font-size: 13px; font-weight: 300; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 6px; color: inherit; }
-.gantt-item:hover { box-shadow: 1px 1px 6px 2px rgba(64,64,64,.3); }
+.PfTeam-slimGutter { height: var(--pf-team-slim-h); }
+.PfTeam-trackWeeks { display: flex; flex-direction: column; }
+.PfTeam-subrow { display: flex; height: var(--pf-team-sub-row-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
+.PfTeam-subrow:last-child { border-bottom: 0; }
+.PfTeam-hours {
+    display: flex;
+    height: calc(var(--pf-team-sub-row-h) - var(--border-xs));
+    flex: 0 0 calc(var(--pf-team-sub-row-h) - var(--border-xs));
+}
+.PfTeam-cellw {
+    width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w);
+    display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+    border-right: var(--border-xs) solid var(--border-subtle);
+    font-size: var(--font-size-small); color: var(--text-subtle);
+    position: relative; cursor: default; user-select: none;
+}
+.PfTeam-cellwHours {
+    flex: 1 0 0; min-width: 0; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.PfTeam-cellw.is-zero { color: var(--text-disabled); }
+.PfTeam-cellw.is-clickable { cursor: pointer; }
+.PfTeam-cellw.is-clickable:hover { background: var(--surface-list-item-hover); }
+.PfTeam-cellw.is-selected { background: var(--surface-default); }
+
+.PfTeam-grid { position: absolute; inset: 0; display: flex; pointer-events: none; z-index: 1; }
+.PfTeam-grid > i { width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
+.PfTeam-grid > i > b { flex: 1; border-right: var(--border-xs) solid #f2f2f5; }
+.PfTeam-grid > i > b:last-child { border-right: 0; }
+.PfTeam-bars > .PfTeam-grid { z-index: 0; }
+.PfTeam-bars { z-index: 10; }
+
+.PfTeam-bar {
+    position: absolute; height: var(--pf-team-bar-h); min-width: 2px;
+    border: var(--border-xs) solid var(--pf-team-bar-border);
+    border-radius: 3px; background-color: #4f4970; color: var(--text-white);
+    display: flex; justify-content: space-between;
+    transition: box-shadow .1s, opacity .1s; cursor: pointer;
+}
+.PfTeam-bar:hover { box-shadow: 1px 1px 6px 2px rgba(64, 64, 64, .3); }
+.PfTeam-barContent {
+    flex: 1 1 auto; min-width: 0; display: flex; height: 21px; line-height: 22px;
+    font-size: var(--font-size-label); font-weight: 300; padding-left: 2px; margin-right: 7px;
+    border-radius: 2px; overflow: hidden; white-space: nowrap;
+}
+.PfTeam-barName { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+.PfTeam-barHandle {
+    position: absolute; right: 0; width: 7px; height: 22px;
+    background: rgba(0, 0, 0, .2); border-radius: 0 2px 2px 0; cursor: col-resize;
+}
+.PfTeam-bar--unavail {
+    background-color: var(--surface-unavailability);
+    background-image: linear-gradient(transparent 50%, rgba(255, 255, 255, .15) 50%);
+    background-size: 10px 10px; color: var(--text-default);
+}
+
+.PfTeam-slim { display: flex; height: var(--pf-team-slim-h); position: relative; z-index: 2; }
+.PfTeam-slimCell { width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); height: var(--pf-team-slim-h); }
+.PfTeam-slimCell i { display: block; width: 100%; height: 100%; }
+
+.PfTeam-today {
+    position: absolute; top: 71px; bottom: 0; width: 2px;
+    background: var(--today-marker); z-index: 20; pointer-events: none;
+}
+
+/* Settings menu / Resource Breakdown flyout (ported from gantt-resource-breakdown) */
+.PfTeam-menuLayer { position: fixed; inset: 0; z-index: 200; }
+.PfTeam-menu {
+    position: absolute; background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: var(--border-radius-default);
+    padding: 13px 0; width: 275px;
+    display: flex; flex-direction: column; gap: 8px;
+    box-shadow: 0 2px 8px 2px rgb(178 178 178 / 30%);
+}
+.PfTeam-menuGroup { display: flex; flex-direction: column; }
+.PfTeam-menuSection {
+    padding: 15px var(--pf-team-menu-inset) 0;
+    border-top: var(--border-xs) solid var(--border-subtle);
+}
+.PfTeam-menuGroup:first-child > .PfTeam-menuSection { border-top: 0; padding-top: 0; }
+.PfTeam-menuTitle {
+    font-size: var(--font-size-medium); color: var(--text-subtle);
+    text-transform: uppercase; line-height: normal;
+}
+.PfTeam-menuItem {
+    padding: 8px 33px 8px 24px; font-size: var(--font-size-medium); color: var(--text-default);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    cursor: pointer; line-height: normal;
+}
+.PfTeam-menuItem:hover, .PfTeam-menuItem.is-open { background: var(--surface-list-item-hover); }
+.PfTeam-menuItem.is-static { cursor: default; }
+.PfTeam-menuItem i.fa-chevron-left { font-size: 10px; color: var(--text-default); opacity: 0; }
+.PfTeam-menuItem:hover i.fa-chevron-left, .PfTeam-menuItem.is-open i.fa-chevron-left { opacity: 1; }
+.PfTeam-menuItem i.fa-check { font-size: 11px; color: var(--icon-default); }
+.PfTeam-flyout {
+    position: absolute; background: var(--surface-default);
+    border: var(--border-xs) solid var(--border-subtle);
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+    padding: 13px var(--pf-team-menu-inset); width: 320px; box-sizing: border-box;
+    display: flex; flex-direction: column; gap: 12px;
+    box-shadow: 0 2px 8px 2px rgb(178 178 178 / 30%);
+}
+.PfTeam-flyoutTitle {
+    font-size: var(--font-size-medium); color: #6c757d;
+    text-transform: uppercase; line-height: normal;
+}
+.PfTeam-radio {
+    display: flex; align-items: center; gap: 8px;
+    font-size: var(--font-size-medium); line-height: 21px;
+    color: var(--text-default); cursor: pointer;
+}
+.PfTeam-radioDot {
+    width: 16px; height: 16px; flex: 0 0 16px; box-sizing: border-box;
+    border-radius: 50%; border: var(--border-xs) solid var(--border-default); background: #fff;
+}
+.PfTeam-radio.is-checked .PfTeam-radioDot { border: 5px solid var(--primary); }
+.PfTeam-radioTag {
+    margin-left: auto; font-size: var(--font-size-xsmall); color: var(--text-subtle);
+    background: var(--surface-subtle-dark); border-radius: 9px; padding: 1px 7px;
+}
 
 /* ============================================================
    Modal (Create / Edit portfolio) — Figma 1378×928
@@ -1245,9 +1528,15 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 
 /* view switching */
 .view { display: none; }
-.view.is-active { display: block; }
+.view.is-active { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
 .tabpane { display: none; }
 .tabpane.is-active { display: block; }
+#tab-team.tabpane.is-active {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
 </style>
 </head>
 <body>
@@ -1349,31 +1638,15 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
                 </div>
             </div>
 
-            <!-- TEAM TAB (MOCKUP ONLY — styling reference)
-                 v1 product decision (Jul 2026): Team tab deep-links to the main Gantt
-                 engagement view with portfolio job IDs pre-loaded (GanttDeeplinks.mjs).
-                 Do NOT ship an embedded duplicate Gantt in portfolio detail.
-                 This mock renders inline for visual/styling parity with engagement-view Gantt. -->
-            <div id="tab-team" class="tabpane">
-                <div class="Gantt">
-                    <div class="Gantt-titlebar">
-                        <h2 class="Perf-title">Team</h2>
-                        <div class="TopBar-spacer"></div>
-                        <div class="DisplaySettings" id="displaySettings">
-                            <button class="Btn Btn--sm" onclick="toggleDisplaySettings(event)"><i class="fa-solid fa-sliders"></i> Display settings</button>
-                            <div class="DisplaySettings-panel">
-                                <div class="DisplaySettings-title">Display settings</div>
-                                <label class="DisplaySettings-row"><input type="checkbox" id="ds-hours" checked onchange="updateGanttSetting('hours', this.checked)" /> Show booking hours</label>
-                                <label class="DisplaySettings-row"><input type="checkbox" id="ds-weekends" checked onchange="updateGanttSetting('weekends', this.checked)" /> Highlight weekends</label>
-                                <label class="DisplaySettings-row"><input type="checkbox" id="ds-today" checked onchange="updateGanttSetting('today', this.checked)" /> Highlight today</label>
-                                <label class="DisplaySettings-row"><input type="checkbox" id="ds-types" checked onchange="updateGanttSetting('types', this.checked)" /> Booking type colours</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="Gantt-body">
-                        <div class="Gantt-labels" id="ganttLabels"><div class="Gantt-labels-head"><button class="Btn Btn--primary Btn--sm" onclick="openResourceModal()"><i class="fa-solid fa-plus"></i> Add resource</button><span class="Gantt-labels-headLabel">Job / Resource</span></div></div>
-                        <div class="Gantt-timeline" id="ganttTimeline"><div class="Gantt-head" id="ganttHead"></div></div>
-                    </div>
+            <!-- TEAM TAB — portfolio Gantt prototype (Resource view default + Engagement pivot)
+                 Design review: person-first resource Gantt with breakdown + engagement pivot.
+                 Visual/interaction basis: mocks/gantt-resource-breakdown.html -->
+            <div id="tab-team" class="tabpane PfTeam">
+                <div class="PfTeam-titlebar">
+                    <h2 class="Perf-title">Team</h2>
+                </div>
+                <div class="PfTeam-scroller" id="pfTeamScroller">
+                    <div class="PfTeam-inner" id="pfTeamInner"></div>
                 </div>
             </div>
         </section>
@@ -1532,6 +1805,11 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
             <button class="RModal-close" title="Close without saving" onclick="closeResourceModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="RModal-body">
+            <div class="RField">
+                <label class="RField-label">Engagement <span class="req">*</span></label>
+                <div class="RField-control"><i class="fa-solid fa-briefcase lead"></i><select id="rEngagement" class="RField-select" required><option value="">Choose engagement</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+            </div>
+
             <div class="RModal-tabs">
                 <button class="RModal-tab" data-rtype="specific" onclick="switchResourceTab('specific')">Specific</button>
                 <button class="RModal-tab is-active" data-rtype="flexible" onclick="switchResourceTab('flexible')">Flexible</button>
@@ -1542,7 +1820,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
             <div id="rtab-specific" class="rtab" hidden>
                 <div class="RField">
                     <label class="RField-label">Worker Name <span class="req">*</span></label>
-                    <div class="RField-control"><i class="fa-solid fa-user lead"></i><select id="rWorker" class="RField-select" onchange="onResourceWorkerChange()"><option value="">Choose worker</option><option>Priya Patel</option><option>Sofia Rossi</option><option>Noah Williams</option><option>Mia Fernandez</option><option>Tom Becker</option><option>Jordan Blake</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                    <div class="RField-control"><i class="fa-solid fa-user lead"></i><select id="rWorker" class="RField-select" onchange="onResourceWorkerChange()"><option value="">Choose worker</option><option>Priya Patel</option><option>Sofia Rossi</option><option>Noah Williams</option><option>Mia Fernandez</option><option>Tom Becker</option><option>Jordan Blake</option><option>Olivia Chen</option><option>Marcus Webb</option><option>Aisha Khan</option><option>Harry Collins</option><option>Liam O'Connor</option><option>Emma Johnson</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
                 </div>
                 <div class="RSummary" id="rWorkerSummary" style="display:none">
                     <div><label>Grade</label><div class="val" id="rwGrade">—</div></div>
@@ -3673,81 +3951,807 @@ function renderMetricsTable() {
 }
 
 /* ============================================================
-   Team tab mock — inline Gantt for styling reference only.
-   Production v1: "Open in Gantt" deep link, not embedded chart.
+   Team tab — portfolio Gantt (resource-first + engagement pivot)
+   Visual/interaction basis: gantt-resource-breakdown.html
    ============================================================ */
-const TRAIT = { planning:"#226666", controls:"#AA8439", fieldwork:"#2E4172", stock:"#AA6C39", statutory:"#003333", review:"#226666" };
-/* --- Gantt item colouring, matching Dayshape (Colors.mjs): complementary text colour by WCAG luminance + darker border --- */
-function ganttHexToRgb(hex) { const n = parseInt(hex.slice(1), 16); return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 }; }
-function ganttTextColor(hex) {
-    const { r, g, b } = ganttHexToRgb(hex);
-    const ch = [r, g, b].map(c => { c /= 255; return c <= 0.03928 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); });
-    const L = 0.2126*ch[0] + 0.7152*ch[1] + 0.0722*ch[2];
-    return L > 0.179 ? "#000000" : "#FFFFFF";
-}
-function ganttDarken(hex, amt) {
-    const { r, g, b } = ganttHexToRgb(hex);
-    const c = v => Math.max(0, v - amt).toString(16).padStart(2, "0");
-    return `#${c(r)}${c(g)}${c(b)}`;
-}
-const DAYS = 42, TODAY_INDEX = 9;            // 6 weeks
-const GANTT_START = new Date(2024, 0, 1);    // Mon 1 Jan 2024
-const DOW3 = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const GANTT_LABEL_W = 300;
-let ganttZoomLevel = 1;
-const ganttSettings = { hours:true, weekends:true, today:true, types:true };
+const PF_WEEK_COUNT = 12;
+const PF_WEEK_W = 112.6;
+const PF_DAY_W = PF_WEEK_W / 5;
+const PF_BAR_H = 23;
+const PF_BAR_PITCH = PF_BAR_H + 2;
+const PF_BAR_PAD = 2;
+const PF_MENU_W = 275;
+const PF_LEFT_W = 405;
+const PF_MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-/* top level = the job; under it = resources (name + grade); bars show hours only */
-const ganttJobs = [
-    { job:"Financial Statement Audit — NovaTech Manufacturing", resources:[
-        { name:"Liam O'Connor",  grade:"Partner",          trait:"planning",  bars:[ {start:0,days:5,hours:38},  {start:22,days:6,hours:46} ] },
-        { name:"Priya Patel",    grade:"Manager",           trait:"fieldwork", bars:[ {start:2,days:8,hours:64},  {start:24,days:11,hours:84} ] },
-        { name:"Sofia Rossi",    grade:"Senior Associate",  trait:"controls",  bars:[ {start:5,days:13,hours:104} ] }
+function pfBarsHeight(count, pad) { return count * PF_BAR_PITCH + (pad == null ? PF_BAR_PAD : pad); }
+function pfSnapMonday(d) {
+    const r = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const dow = r.getDay();
+    r.setDate(r.getDate() + (dow === 0 ? -6 : 1 - dow));
+    return r;
+}
+function pfAddDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function pfPad2(n) { return n < 10 ? "0" + n : "" + n; }
+function pfWcLabel(d) { return "w.c. " + pfPad2(d.getDate()) + "/" + pfPad2(d.getMonth() + 1); }
+
+const PF_FIRST_MONDAY = pfSnapMonday(new Date(2026, 0, 5)); // w/c 5 Jan 2026
+const PF_TODAY = pfAddDays(PF_FIRST_MONDAY, 8);
+const PF_WEEKS = [];
+for (let w = 0; w < PF_WEEK_COUNT; w++) PF_WEEKS.push(pfAddDays(PF_FIRST_MONDAY, w * 7));
+
+const PF_DIMENSIONS = {
+    none:        { label: "None" },
+    role:        { label: "Role",                 field: "role" },
+    bookingType: { label: "Primary Booking Type", field: "bookingType" },
+    phase:       { label: "Phase",                field: "phase", deferred: true },
+    req:         { label: "Resource Requirement", field: "req" }
+};
+const PF_PHASE_ORDER = ["Preparation", "First Review", "Second Review"];
+const PF_PHASE_COLOUR = { "Preparation": "#2398f2", "First Review": "#2d7d46", "Second Review": "#7b3fa0" };
+const PF_ROLE_ORDER = ["Partner", "Director", "Senior Manager", "Manager", "Senior Associate", "Associate"];
+
+/* Portfolio engagements (UK Assurance — London Office). Used by Add Resource select + Engagement view. */
+const PORTFOLIO_ENGAGEMENTS = [
+    "Financial Statement Audit — NovaTech Manufacturing",
+    "Internal Controls Assessment — Meridian Bank",
+    "Statutory Audit — Thames Water Utilities",
+    "Group Audit — Apex Holdings plc",
+    "Interim Review — Sterling Capital",
+    "SOX Controls Testing — BrightPath Retail",
+    "Pension Scheme Audit — Orion Pensions",
+    "Revenue Recognition Review — Cloudspan Software",
+    "Inventory Observation — Northern Foods Ltd",
+    "Related Party Review — Harbour Estates",
+    "Going Concern Assessment — Metro Logistics",
+    "Fair Value Review — Crestbridge Assets",
+    "Lease Accounting — Urban Space REIT",
+    "ITGC Assessment — FinServe Digital",
+    "Year-end Audit — Calder Ceramics",
+    "Component Audit — Alpine Components",
+    "Consolidation Review — Westbridge Group",
+    "Tax Provision Support — NovaTech Manufacturing",
+    "ESG Assurance — Greenfield Energy",
+    "Cut-off Testing — Meridian Bank",
+    "Subsequent Events — Apex Holdings plc",
+    "Cash Confirmation — Sterling Capital",
+    "Impairment Review — BrightPath Retail",
+    "Provisions Testing — Orion Pensions",
+    "Contingent Liabilities — Cloudspan Software",
+    "Bank Confirmation — Harbour Estates",
+    "Journal Entry Testing — Metro Logistics",
+    "Payroll Substantive — Urban Space REIT",
+    "Debt Covenant Review — FinServe Digital",
+    "Completion Memo — Calder Ceramics"
+];
+
+/* Compact item: [job, code, phase, role, bookingType, req, startWeek, span, hours, kind?] */
+const PF_WORKER_SPECS = [
+    { id: "w-liam", name: "Liam O'Connor", grade: "PTR", cap: 37.5, items: [
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 0, 4, 8],
+        ["Group Audit — Apex Holdings plc", "AHP-4410", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 2, 5, 10],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "First Review", "Partner", "Audit", "PTR / Assurance / London", 5, 3, 6],
+        ["ESG Assurance — Greenfield Energy", "GFE-90", "Preparation", "Partner", "Regulatory Review", "PTR / Assurance / London", 8, 3, 5],
+        ["Annual leave", "", null, null, null, null, 11, 1, 7.5, "unavailability"]
     ]},
-    { job:"Internal Controls Assessment — Meridian Bank", resources:[
-        { name:"Emma Johnson",   grade:"Manager",           trait:"statutory", bars:[ {start:14,days:9,hours:70} ] },
-        { name:"Noah Williams",  grade:"Associate",         trait:"stock",     bars:[ {start:18,days:16,hours:120}, {start:32,days:8,hours:66} ] }
+    { id: "w-marcus", name: "Marcus Webb", grade: "DIR", cap: 37.5, items: [
+        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Second Review", "Director", "Audit", "DIR / Assurance / London", 0, 5, 12],
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "First Review", "Director", "Audit", "DIR / Assurance / London", 3, 4, 14],
+        ["Debt Covenant Review — FinServe Digital", "FSD-412", "Preparation", "Director", "Audit", "DIR / Assurance / London", 6, 4, 10],
+        ["Consolidation Review — Westbridge Group", "WBG-201", "Second Review", "Director", "Audit", "DIR / Assurance / London", 9, 3, 8]
+    ]},
+    { id: "w-olivia", name: "Olivia Chen", grade: "SRM", cap: 37.5, items: [
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "First Review", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 0, 4, 16],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 2, 5, 18],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Senior Manager", "Audit", "SRM / Assurance / London", 5, 4, 12],
+        ["Subsequent Events — Apex Holdings plc", "AHP-SE", "Second Review", "Senior Manager", "Audit", "SRM / Assurance / London", 8, 3, 10],
+        ["Study leave", "", null, null, null, null, 4, 1, 7.5, "unavailability"]
+    ]},
+    { id: "w-priya", name: "Priya Patel", grade: "MAN", cap: 37.5, items: [
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 0, 5, 20],
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 3, 4, 15],
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 4, 18],
+        ["Tax Provision Support — NovaTech Manufacturing", "NTM-TX", "First Review", "Manager", "Tax Advisory", "MAN / Assurance / London", 7, 3, 12],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 9, 3, 8]
+    ]},
+    { id: "w-emma", name: "Emma Johnson", grade: "MAN", cap: 37.5, items: [
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Manager", "Regulatory Review", "MAN / Assurance / London", 0, 4, 18],
+        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 2, 5, 16],
+        ["Cut-off Testing — Meridian Bank", "MBK-CO", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 3, 14],
+        ["Impairment Review — BrightPath Retail", "BPR-IMP", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 7, 4, 12],
+        ["Provisions Testing — Orion Pensions", "ORP-PR", "First Review", "Manager", "Audit", "MAN / Assurance / London", 9, 3, 10]
+    ]},
+    { id: "w-tom", name: "Tom Becker", grade: "MAN", cap: 37.5, items: [
+        ["Group Audit — Apex Holdings plc", "AHP-4410", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 0, 5, 22],
+        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 3, 4, 14],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 4, 16],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 8, 3, 10],
+        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 6, 3, 8]
+    ]},
+    { id: "w-sofia", name: "Sofia Rossi", grade: "SA", cap: 37.5, items: [
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 6, 28],
+        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 2, 2, 30],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 4, 5, 24],
+        ["Component Audit — Alpine Components", "ALC-22", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 20],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 9, 3, 16]
+    ]},
+    { id: "w-mia", name: "Mia Fernandez", grade: "SA", cap: 37.5, items: [
+        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 5, 26],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Associate", "Regulatory Review", "SA / Assurance / London", 2, 5, 22],
+        ["Cash Confirmation — Sterling Capital", "STC-CC", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 5, 3, 18],
+        ["Contingent Liabilities — Cloudspan Software", "CSS-CL", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 14],
+        ["Public holiday", "", null, null, null, null, 10, 1, 7.5, "unavailability"]
+    ]},
+    { id: "w-harry", name: "Harry Collins", grade: "SA", cap: 37.5, items: [
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 4, 24],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 2, 4, 20],
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 4, 4, 22],
+        ["Consolidation Review — Westbridge Group", "WBG-201", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 18],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 10, 2, 12]
+    ]},
+    { id: "w-noah", name: "Noah Williams", grade: "A2", cap: 37.5, items: [
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 0, 5, 30],
+        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 2, 2, 35],
+        ["Cut-off Testing — Meridian Bank", "MBK-CO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 4, 4, 28],
+        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 26],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 9, 3, 20]
+    ]},
+    { id: "w-jordan", name: "Jordan Blake", grade: "A2", cap: 37.5, items: [
+        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 0, 5, 28],
+        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 3, 4, 24],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 5, 4, 26],
+        ["Provisions Testing — Orion Pensions", "ORP-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 3, 22],
+        ["Training day", "TRN-01", null, null, "Training", null, 11, 1, 7.5]
+    ]},
+    { id: "w-aisha", name: "Aisha Khan", grade: "A2", cap: 37.5, items: [
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 0, 5, 30],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 3, 5, 28],
+        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 26],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 3, 22],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 4, 3, 16]
     ]}
 ];
 
-function buildDays() {
-    const days = [];
-    for (let i = 0; i < DAYS; i++) {
-        const d = new Date(GANTT_START); d.setDate(d.getDate() + i);
-        days.push({ i, date: d, dow: (d.getDay() + 6) % 7, dom: d.getDate(), month: d.getMonth(), year: d.getFullYear() });
-    }
-    return days;
+let PF_ITEM_SEQ = 0;
+const pfTeamWorkers = PF_WORKER_SPECS.map(function (wk) {
+    const items = wk.items.map(function (spec) {
+        const cells = {};
+        const start = spec[6], span = Math.min(spec[7], PF_WEEK_COUNT - spec[6]);
+        for (let i = 0; i < span; i++) {
+            const wi = start + i;
+            if (wi < PF_WEEK_COUNT) cells[wi] = spec[8];
+        }
+        return {
+            id: "pfit-" + (++PF_ITEM_SEQ),
+            job: spec[0], code: spec[1],
+            phase: spec[2], role: spec[3], bookingType: spec[4], req: spec[5],
+            startWeek: start, span: span, hours: spec[8],
+            cells: cells,
+            kind: spec[9] || "booking"
+        };
+    });
+    return { id: wk.id, name: wk.name, grade: wk.grade, cap: wk.cap, items: items };
+});
+
+const pfTeamState = {
+    pivot: "resource",
+    breakdown: "none",
+    showAvailability: false,
+    expandedRows: {},
+    collapsedEngagements: {},
+    selectedCell: null,
+    menu: null,
+    flyout: null,
+    viewMenu: null
+};
+
+function pfBreakdownOn() { return pfTeamState.breakdown !== "none"; }
+
+function pfEl(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+}
+function pfEsc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c];
+    });
 }
 
-function ganttDayWidth() {
-    const body = document.querySelector(".Gantt-body");
-    const avail = (body && body.clientWidth ? body.clientWidth : window.innerWidth - 96) - GANTT_LABEL_W;
-    const fit = Math.floor(avail / DAYS);
-    return Math.min(110, Math.max(24, Math.round(fit * ganttZoomLevel)));
+function pfDimValueOf(item, dim) {
+    if (item.kind === "unavailability") return null;
+    const field = PF_DIMENSIONS[dim].field;
+    return item[field] || null;
+}
+function pfOrderIndex(dim, value) {
+    if (dim === "phase") return PF_PHASE_ORDER.indexOf(value);
+    if (dim === "role") { const i = PF_ROLE_ORDER.indexOf(value); return i === -1 ? 999 : i; }
+    return 999;
+}
+function pfBuildBreakdownRows(worker, dim) {
+    if (dim === "none") return null;
+    const map = {}, order = [], other = [];
+    worker.items.forEach(function (it) {
+        const v = pfDimValueOf(it, dim);
+        if (!v) { other.push(it); return; }
+        if (!map[v]) { map[v] = []; order.push(v); }
+        map[v].push(it);
+    });
+    order.sort(function (a, b) {
+        const d = pfOrderIndex(dim, a) - pfOrderIndex(dim, b);
+        return d !== 0 ? d : a.localeCompare(b);
+    });
+    const rows = order.map(function (v) {
+        return { key: v, label: v, items: map[v], accent: dim === "phase" ? PF_PHASE_COLOUR[v] : null };
+    });
+    rows.push({ key: "__other", label: "Other", items: other, isOther: true });
+    return rows;
+}
+function pfCellHours(row, week) {
+    let total = 0;
+    row.items.forEach(function (it) { total += it.cells[week] || 0; });
+    return Math.round(total * 10) / 10;
+}
+function pfCellItems(row, week) {
+    return row.items.filter(function (it) { return it.cells[week]; });
+}
+function pfFmtHours(h) { return h ? (Math.round(h * 10) / 10) + " h" : "0"; }
+function pfWeekConsumed(worker, week) {
+    let total = 0;
+    worker.items.forEach(function (it) { total += it.cells[week] || 0; });
+    return total;
+}
+function pfSlimColour(consumed, capacity) {
+    if (capacity <= 0) return "var(--utilisation-level-5)";
+    const p = consumed / capacity;
+    if (p === 0) return "var(--utilisation-level-1)";
+    if (p < 1) return "var(--utilisation-level-2)";
+    if (p === 1) return "var(--utilisation-level-3)";
+    if (p < 1.25) return "var(--utilisation-level-4)";
+    return "var(--utilisation-level-5)";
+}
+function pfRowExpanded(worker, row) { return !!pfTeamState.expandedRows[worker.id + "|" + row.key]; }
+
+function pfPortfolioEngagementNames() {
+    const set = {};
+    PORTFOLIO_ENGAGEMENTS.forEach(function (j) { set[j] = true; });
+    pfTeamWorkers.forEach(function (wk) {
+        wk.items.forEach(function (it) {
+            if (it.kind !== "unavailability" && it.job) set[it.job] = true;
+        });
+    });
+    return Object.keys(set).sort(function (a, b) { return a.localeCompare(b); });
 }
 
-function toggleDisplaySettings(e) {
+function pfPopulateEngagementSelect() {
+    const sel = document.getElementById("rEngagement");
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Choose engagement</option>';
+    pfPortfolioEngagementNames().forEach(function (name) {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+    });
+    if (cur && [...sel.options].some(function (o) { return o.value === cur; })) sel.value = cur;
+}
+
+function setTeamPivot(pivot) {
+    pfTeamState.pivot = pivot;
+    pfTeamState.expandedRows = {};
+    pfTeamState.selectedCell = null;
+    pfTeamState.menu = null;
+    pfTeamState.flyout = null;
+    pfTeamState.viewMenu = null;
+    renderGantt();
+    pfRenderMenu();
+}
+
+function toggleTeamSettings(e) {
     e.stopPropagation();
-    document.getElementById("displaySettings").classList.toggle("is-open");
+    pfTeamState.viewMenu = null;
+    pfTeamState.menu = pfTeamState.menu ? null : "root";
+    pfTeamState.flyout = null;
+    pfRenderMenu();
 }
-function updateGanttSetting(key, val) { ganttSettings[key] = val; renderGantt(); }
-function ganttZoom(dir) { ganttZoomLevel = Math.min(2.4, Math.max(0.6, ganttZoomLevel + dir * 0.2)); renderGantt(); }
-/* ---- Add Resource Requirement modal (replicates the Job Editor modal) ---- */
+
+function toggleTeamViewMenu(e) {
+    e.stopPropagation();
+    pfTeamState.menu = null;
+    pfTeamState.flyout = null;
+    pfTeamState.viewMenu = pfTeamState.viewMenu ? null : "open";
+    pfRenderMenu();
+}
+
+function pfBuildHeadCorner() {
+    const corner = pfEl("div", "PfTeam-headCorner");
+    const tools = pfEl("div", "PfTeam-headTools");
+
+    const addBtn = pfEl("button", "Btn Btn--secondary");
+    addBtn.type = "button";
+    addBtn.id = "pfTeamAddResourceBtn";
+    addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Resource</span>';
+    addBtn.addEventListener("click", function (e) { e.stopPropagation(); openResourceModal(); });
+    tools.appendChild(addBtn);
+
+    const viewBtn = pfEl("button", "Btn Btn--secondary");
+    viewBtn.type = "button";
+    viewBtn.id = "pfTeamViewBtn";
+    viewBtn.title = pfTeamState.pivot === "engagement" ? "Engagement view" : "Resource view";
+    viewBtn.setAttribute("aria-haspopup", "true");
+    viewBtn.setAttribute("aria-label", "Pivot view");
+    viewBtn.innerHTML = '<i class="fa-solid fa-right-left" aria-hidden="true"></i><span>Pivot View</span>';
+    viewBtn.addEventListener("click", toggleTeamViewMenu);
+    tools.appendChild(viewBtn);
+
+    const filterBtn = pfEl("button", "Btn Btn--tertiary");
+    filterBtn.type = "button";
+    filterBtn.id = "pfTeamFilterBtn";
+    filterBtn.title = "Filter";
+    filterBtn.setAttribute("aria-label", "Filter");
+    filterBtn.innerHTML = '<i class="fa-solid fa-filter" aria-hidden="true"></i>';
+    tools.appendChild(filterBtn);
+
+    const settingsBtn = pfEl("button", "Btn Btn--tertiary");
+    settingsBtn.type = "button";
+    settingsBtn.id = "pfTeamSettingsBtn";
+    settingsBtn.title = "Settings";
+    settingsBtn.setAttribute("aria-haspopup", "true");
+    settingsBtn.setAttribute("aria-label", "Gantt settings");
+    settingsBtn.innerHTML = '<i class="fa-solid fa-gear" aria-hidden="true"></i>';
+    settingsBtn.addEventListener("click", toggleTeamSettings);
+    tools.appendChild(settingsBtn);
+
+    corner.appendChild(tools);
+
+    const cols = pfEl("div", "PfTeam-headCols");
+    cols.appendChild(pfEl("div", "PfTeam-headCol PfTeam-headCol--name", "Name"));
+    cols.appendChild(pfEl("div", "PfTeam-headCol PfTeam-headCol--grade", "Grade"));
+    cols.appendChild(pfEl("div", "PfTeam-headCol PfTeam-headCol--hours", "Hours"));
+    corner.appendChild(cols);
+    return corner;
+}
+
+function pfBuildHeader() {
+    const head = pfEl("div", "PfTeam-head");
+    head.appendChild(pfBuildHeadCorner());
+
+    const scroller = pfEl("div", "PfTeam-headScroll");
+    head.appendChild(scroller);
+
+    const mRow = pfEl("div", "PfTeam-headRow");
+    const months = pfEl("div", "PfTeam-months");
+    let run = null;
+    PF_WEEKS.forEach(function (d) {
+        const key = d.getFullYear() + "-" + d.getMonth();
+        if (!run || run.key !== key) {
+            run = { key: key, label: PF_MONTH_NAMES[d.getMonth()] + " " + d.getFullYear(), n: 0, node: null };
+            const n = pfEl("div", "PfTeam-month", run.label);
+            run.node = n;
+            months.appendChild(n);
+        }
+        run.n++;
+        run.node.style.width = (run.n * PF_WEEK_W) + "px";
+    });
+    mRow.appendChild(months);
+    scroller.appendChild(mRow);
+
+    const wRow = pfEl("div", "PfTeam-headRow");
+    const wks = pfEl("div", "PfTeam-weeks");
+    PF_WEEKS.forEach(function (d) { wks.appendChild(pfEl("div", "PfTeam-week", pfWcLabel(d))); });
+    wRow.appendChild(wks);
+    scroller.appendChild(wRow);
+
+    const dRow = pfEl("div", "PfTeam-headRow");
+    const days = pfEl("div", "PfTeam-days");
+    PF_WEEKS.forEach(function (d) {
+        const set = pfEl("div", "PfTeam-dayset");
+        for (let i = 1; i <= 5; i++) {
+            const cell = pfEl("div", "PfTeam-day", String(i));
+            const date = pfAddDays(d, i - 1);
+            if (date.toDateString() === PF_TODAY.toDateString()) cell.classList.add("is-today");
+            set.appendChild(cell);
+        }
+        days.appendChild(set);
+    });
+    dRow.appendChild(days);
+    scroller.appendChild(dRow);
+    return head;
+}
+
+function pfBuildGroupRow(label, collapseKey) {
+    const row = pfEl("div", "PfTeam-row PfTeam-group");
+    const left = pfEl("div", "PfTeam-rowLeft");
+    const collapsed = !!pfTeamState.collapsedEngagements[collapseKey];
+    left.innerHTML = '<i class="fa-solid fa-chevron-' + (collapsed ? "right" : "down") + '"></i><span>' + pfEsc(label) + "</span>";
+    left.title = label;
+    left.addEventListener("click", function () {
+        pfTeamState.collapsedEngagements[collapseKey] = !collapsed;
+        renderGantt();
+    });
+    const track = pfEl("div", "PfTeam-rowTrack");
+    track.style.width = (PF_WEEKS.length * PF_WEEK_W) + "px";
+    row.appendChild(left);
+    row.appendChild(track);
+    return row;
+}
+
+function pfBuildWorkerRow(worker, index) {
+    const rows = pfBuildBreakdownRows(worker, pfTeamState.breakdown);
+    const row = pfEl("div", "PfTeam-row PfTeam-worker" + (index % 2 === 0 ? " is-alt" : ""));
+    row.dataset.worker = worker.id;
+
+    const left = pfEl("div", "PfTeam-rowLeft");
+    const name = pfEl("div", "PfTeam-cellName");
+    name.appendChild(pfEl("span", null, worker.name));
+    left.appendChild(name);
+    left.appendChild(pfEl("div", "PfTeam-cellGrade", worker.grade));
+
+    const expandCell = pfEl("div", "PfTeam-cellExpand");
+    if (rows) {
+        const allOpen = rows.every(function (r) { return pfRowExpanded(worker, r); });
+        const btn = pfEl("button", "PfTeam-expander");
+        btn.type = "button";
+        btn.innerHTML = '<i class="far fa-' + (allOpen ? "minus-square" : "plus-square") + '"></i>';
+        btn.title = allOpen ? "Collapse all breakdown rows" : "Expand all breakdown rows";
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            rows.forEach(function (r) { pfTeamState.expandedRows[worker.id + "|" + r.key] = !allOpen; });
+            renderGantt();
+        });
+        expandCell.appendChild(btn);
+    }
+    left.appendChild(expandCell);
+
+    const dims = pfEl("div", "PfTeam-dims");
+    left.appendChild(dims);
+
+    const track = pfEl("div", "PfTeam-rowTrack");
+    track.style.width = (PF_WEEKS.length * PF_WEEK_W) + "px";
+    const weeksCol = pfEl("div", "PfTeam-trackWeeks");
+    weeksCol.style.width = "100%";
+    track.appendChild(weeksCol);
+
+    if (pfTeamState.showAvailability) {
+        dims.appendChild(pfEl("div", "PfTeam-slimGutter"));
+        const slim = pfEl("div", "PfTeam-slim");
+        PF_WEEKS.forEach(function (d, wi) {
+            const c = pfEl("div", "PfTeam-slimCell");
+            const bar = document.createElement("i");
+            bar.style.background = pfSlimColour(pfWeekConsumed(worker, wi), worker.cap);
+            c.appendChild(bar);
+            c.title = Math.round(pfWeekConsumed(worker, wi) * 10) / 10 + " h of " + worker.cap + " h — " + pfWcLabel(d);
+            slim.appendChild(c);
+        });
+        weeksCol.appendChild(slim);
+    }
+
+    if (!rows) {
+        const flatH = pfBarsHeight(Math.max(1, worker.items.length), PF_BAR_PAD);
+        const flat = pfEl("div", "PfTeam-subrow");
+        flat.style.height = flatH + "px";
+        flat.style.position = "relative";
+        PF_WEEKS.forEach(function () { flat.appendChild(pfEl("div", "PfTeam-cellw")); });
+        const bars = pfBuildBars(worker, { key: "__flat", items: worker.items }, PF_BAR_PAD);
+        bars.style.position = "absolute";
+        bars.style.inset = "0";
+        flat.appendChild(bars);
+        weeksCol.appendChild(flat);
+        const emptyLbl = pfEl("div", "PfTeam-dimLabel", "");
+        emptyLbl.style.height = flatH + "px";
+        dims.appendChild(emptyLbl);
+    } else {
+        rows.forEach(function (r) {
+            const open = pfRowExpanded(worker, r);
+            const itemCount = open ? r.items.length : 0;
+            const h = 24 + (itemCount ? pfBarsHeight(itemCount, PF_BAR_PAD) : 0);
+
+            const lbl = pfEl("div", "PfTeam-dimLabel" + (open ? " is-expanded" : ""));
+            lbl.style.height = h + "px";
+            if (h > 24) lbl.style.alignItems = "flex-start";
+            if (r.accent) lbl.style.borderLeftColor = r.accent;
+            lbl.appendChild(pfEl("span", null, r.label));
+            lbl.title = r.isOther
+                ? "Other — unavailabilities and items with no " + PF_DIMENSIONS[pfTeamState.breakdown].label.toLowerCase()
+                : r.label;
+            lbl.style.cursor = r.items.length ? "pointer" : "default";
+            if (r.items.length) {
+                lbl.addEventListener("click", function () {
+                    pfTeamState.expandedRows[worker.id + "|" + r.key] = !open;
+                    renderGantt();
+                });
+            }
+            dims.appendChild(lbl);
+
+            const sub = pfEl("div", "PfTeam-subrow");
+            sub.style.height = h + "px";
+            sub.style.flexDirection = "column";
+            sub.style.position = "relative";
+
+            const hoursRow = pfEl("div", "PfTeam-hours");
+            PF_WEEKS.forEach(function (d, wi) { hoursRow.appendChild(pfBuildCell(worker, r, wi)); });
+            sub.appendChild(hoursRow);
+            if (open && r.items.length) sub.appendChild(pfBuildBars(worker, r, PF_BAR_PAD));
+            weeksCol.appendChild(sub);
+        });
+    }
+
+    row.appendChild(left);
+    row.appendChild(track);
+    return row;
+}
+
+function pfBuildCell(worker, row, wi) {
+    const hours = pfCellHours(row, wi);
+    const items = pfCellItems(row, wi);
+    const c = pfEl("div", "PfTeam-cellw" + (hours ? "" : " is-zero"));
+    c.appendChild(pfEl("span", "PfTeam-cellwHours", pfFmtHours(hours)));
+    const key = worker.id + "|" + row.key + "|" + wi;
+    const rowKey = worker.id + "|" + row.key;
+    if (pfTeamState.selectedCell === key) c.classList.add("is-selected");
+    c.classList.add("is-clickable");
+    c.addEventListener("click", function () {
+        if (!items.length) {
+            pfTeamState.selectedCell = null;
+            renderGantt();
+            return;
+        }
+        if (pfTeamState.selectedCell === key && pfTeamState.expandedRows[rowKey]) {
+            pfTeamState.selectedCell = null;
+            delete pfTeamState.expandedRows[rowKey];
+        } else {
+            pfTeamState.selectedCell = key;
+            if (row.items.length) pfTeamState.expandedRows[rowKey] = true;
+        }
+        renderGantt();
+    });
+    return c;
+}
+
+function pfGridLines() {
+    const g = pfEl("div", "PfTeam-grid");
+    PF_WEEKS.forEach(function () {
+        const week = document.createElement("i");
+        for (let d = 0; d < 5; d++) week.appendChild(document.createElement("b"));
+        g.appendChild(week);
+    });
+    return g;
+}
+
+function pfBuildBars(worker, row, topPad) {
+    const pad = topPad == null ? PF_BAR_PAD : topPad;
+    const box = pfEl("div", "PfTeam-bars");
+    box.style.position = "relative";
+    box.style.height = pfBarsHeight(Math.max(1, row.items.length), pad) + "px";
+    box.appendChild(pfGridLines());
+
+    row.items.forEach(function (it, idx) {
+        const bar = pfEl("div", "PfTeam-bar" + (it.kind === "unavailability" ? " PfTeam-bar--unavail" : ""));
+        bar.style.left = (it.startWeek * PF_WEEK_W + 2) + "px";
+        bar.style.width = (it.span * PF_WEEK_W - 5) + "px";
+        bar.style.top = (pad + idx * PF_BAR_PITCH) + "px";
+        if (it.kind !== "unavailability") {
+            bar.style.backgroundColor = PF_PHASE_COLOUR[it.phase] || "#4f4970";
+        }
+        const perWeek = it.cells[it.startWeek] || it.hours || 0;
+        const content = pfEl("div", "PfTeam-barContent");
+        content.appendChild(pfEl("span", "PfTeam-barName", perWeek + "h " + it.job));
+        bar.appendChild(content);
+        bar.appendChild(pfEl("div", "PfTeam-barHandle"));
+        bar.title = it.job + (it.code ? " (" + it.code + ")" : "") + " — " + perWeek + " h/week";
+        box.appendChild(bar);
+    });
+    return box;
+}
+
+function pfBuildTodayMarker() {
+    const diff = Math.round((PF_TODAY - PF_FIRST_MONDAY) / 86400000);
+    const wi = Math.floor(diff / 7);
+    const di = diff % 7;
+    const m = pfEl("div", "PfTeam-today");
+    m.style.left = (PF_LEFT_W + wi * PF_WEEK_W + Math.min(di, 4) * PF_DAY_W + PF_DAY_W / 2) + "px";
+    return m;
+}
+
+function pfEngagementGroups() {
+    const map = {};
+    pfTeamWorkers.forEach(function (wk) {
+        wk.items.forEach(function (it) {
+            if (it.kind === "unavailability" || !it.job) return;
+            if (!map[it.job]) map[it.job] = [];
+            let entry = map[it.job].find(function (e) { return e.worker.id === wk.id; });
+            if (!entry) {
+                entry = { worker: wk, items: [] };
+                map[it.job].push(entry);
+            }
+            entry.items.push(it);
+        });
+    });
+    return Object.keys(map).sort(function (a, b) { return a.localeCompare(b); }).map(function (job) {
+        return { job: job, people: map[job] };
+    });
+}
+
+function renderGantt() {
+    const inner = document.getElementById("pfTeamInner");
+    const host = document.getElementById("pfTeamScroller");
+    if (!inner || !host) return;
+    const scrollLeft = host.scrollLeft;
+    const scrollTop = host.scrollTop;
+    inner.innerHTML = "";
+    inner.appendChild(pfBuildHeader());
+
+    let rowIndex = 0;
+    if (pfTeamState.pivot === "engagement") {
+        pfEngagementGroups().forEach(function (group) {
+            inner.appendChild(pfBuildGroupRow(group.job, group.job));
+            if (pfTeamState.collapsedEngagements[group.job]) return;
+            group.people.forEach(function (entry) {
+                const scoped = {
+                    id: entry.worker.id + "::" + group.job,
+                    name: entry.worker.name,
+                    grade: entry.worker.grade,
+                    cap: entry.worker.cap,
+                    items: entry.items
+                };
+                inner.appendChild(pfBuildWorkerRow(scoped, rowIndex++));
+            });
+        });
+    } else {
+        inner.appendChild(pfBuildGroupRow("Assigned", "__assigned"));
+        if (!pfTeamState.collapsedEngagements.__assigned) {
+            pfTeamWorkers.forEach(function (wk) {
+                inner.appendChild(pfBuildWorkerRow(wk, rowIndex++));
+            });
+        }
+    }
+
+    inner.appendChild(pfBuildTodayMarker());
+    host.scrollLeft = scrollLeft;
+    host.scrollTop = scrollTop;
+    // Re-anchor open menus after DOM rebuild
+    if (pfTeamState.menu || pfTeamState.viewMenu) pfRenderMenu();
+}
+
+function pfRenderMenu() {
+    const existing = document.getElementById("pfTeamMenuLayer");
+    if (existing) existing.remove();
+
+    const settingsBtn = document.getElementById("pfTeamSettingsBtn");
+    const viewBtn = document.getElementById("pfTeamViewBtn");
+    if (settingsBtn) settingsBtn.classList.toggle("is-active", !!pfTeamState.menu);
+    if (viewBtn) viewBtn.classList.toggle("is-active", !!pfTeamState.viewMenu);
+
+    if (!pfTeamState.menu && !pfTeamState.viewMenu) return;
+
+    const layer = pfEl("div", "PfTeam-menuLayer");
+    layer.id = "pfTeamMenuLayer";
+    layer.addEventListener("click", function () {
+        pfTeamState.menu = null;
+        pfTeamState.flyout = null;
+        pfTeamState.viewMenu = null;
+        pfRenderMenu();
+    });
+
+    if (pfTeamState.viewMenu && viewBtn) {
+        const anchor = viewBtn.getBoundingClientRect();
+        const menu = pfEl("div", "PfTeam-menu");
+        menu.style.width = "220px";
+        menu.style.left = Math.max(8, anchor.left) + "px";
+        menu.style.top = (anchor.bottom + 4) + "px";
+        menu.addEventListener("click", function (e) { e.stopPropagation(); });
+
+        const section = pfEl("div", "PfTeam-menuSection");
+        section.appendChild(pfEl("div", "PfTeam-menuTitle", "Gantt view"));
+        menu.appendChild(section);
+
+        [
+            { key: "resource", label: "Resource view" },
+            { key: "engagement", label: "Engagement view" }
+        ].forEach(function (opt) {
+            const item = pfEl("div", "PfTeam-menuItem");
+            item.innerHTML = "<span>" + opt.label + "</span>" + (pfTeamState.pivot === opt.key ? '<i class="fa-solid fa-check"></i>' : "");
+            item.addEventListener("click", function () { setTeamPivot(opt.key); });
+            menu.appendChild(item);
+        });
+        layer.appendChild(menu);
+        document.body.appendChild(layer);
+        return;
+    }
+
+    if (!pfTeamState.menu || !settingsBtn) {
+        document.body.appendChild(layer);
+        return;
+    }
+
+    const anchor = settingsBtn.getBoundingClientRect();
+    const menu = pfEl("div", "PfTeam-menu");
+    menu.style.left = Math.max(8, anchor.right - PF_MENU_W) + "px";
+    menu.style.top = (anchor.bottom + 4) + "px";
+    menu.addEventListener("click", function (e) { e.stopPropagation(); });
+
+    const rowLayout = pfEl("div", "PfTeam-menuGroup");
+    const section = pfEl("div", "PfTeam-menuSection");
+    section.appendChild(pfEl("div", "PfTeam-menuTitle", "Row Layout"));
+    rowLayout.appendChild(section);
+
+    const bd = pfEl("div", "PfTeam-menuItem" + (pfTeamState.flyout === "breakdown" ? " is-open" : ""));
+    bd.innerHTML = "<span>Resource Breakdown</span><i class=\"fa-solid fa-chevron-left\"></i>";
+    bd.addEventListener("mouseenter", function () {
+        pfTeamState.flyout = "breakdown";
+        pfRenderMenu();
+    });
+    rowLayout.appendChild(bd);
+
+    const sa = pfEl("div", "PfTeam-menuItem");
+    sa.innerHTML = "<span>Show Availability</span>" + (pfTeamState.showAvailability ? '<i class="fa-solid fa-check"></i>' : "");
+    sa.addEventListener("click", function () {
+        pfTeamState.showAvailability = !pfTeamState.showAvailability;
+        pfRenderMenu();
+        renderGantt();
+    });
+    rowLayout.appendChild(sa);
+    menu.appendChild(rowLayout);
+    layer.appendChild(menu);
+
+    if (pfTeamState.flyout === "breakdown") {
+        const flyout = pfEl("div", "PfTeam-flyout");
+        flyout.addEventListener("click", function (e) { e.stopPropagation(); });
+        flyout.appendChild(pfEl("div", "PfTeam-flyoutTitle", "Resource Breakdown"));
+        ["none", "role", "bookingType", "phase", "req"].forEach(function (key) {
+            const def = PF_DIMENSIONS[key];
+            const r = pfEl("div", "PfTeam-radio" + (pfTeamState.breakdown === key ? " is-checked" : ""));
+            r.appendChild(pfEl("div", "PfTeam-radioDot"));
+            r.appendChild(pfEl("span", null, def.label));
+            if (def.deferred) r.appendChild(pfEl("span", "PfTeam-radioTag", "Deferred"));
+            r.addEventListener("click", function () {
+                pfTeamState.breakdown = key;
+                pfTeamState.expandedRows = {};
+                pfTeamState.selectedCell = null;
+                pfTeamState.menu = null;
+                pfTeamState.flyout = null;
+                pfRenderMenu();
+                renderGantt();
+            });
+            flyout.appendChild(r);
+        });
+        layer.appendChild(flyout);
+        document.body.appendChild(layer);
+        const a = bd.getBoundingClientRect();
+        flyout.style.left = (parseFloat(menu.style.left) + PF_MENU_W - 1) + "px";
+        flyout.style.top = Math.max(8, Math.min(a.top, window.innerHeight - flyout.offsetHeight - 8)) + "px";
+    } else {
+        document.body.appendChild(layer);
+    }
+}
+
+/* ---- Add Resource Requirement modal (Job Editor replica + engagement) ---- */
 const WORKER_INFO = {
-    "Priya Patel":    { grade:"Manager",          fu:"Audit",         gu:"London" },
-    "Sofia Rossi":    { grade:"Senior Associate", fu:"Tax",           gu:"Manchester" },
-    "Noah Williams":  { grade:"Associate",        fu:"Advisory",      gu:"Edinburgh" },
-    "Mia Fernandez":  { grade:"Senior Associate", fu:"Risk Assurance", gu:"Bristol" },
-    "Tom Becker":     { grade:"Manager",          fu:"Audit",         gu:"London" },
-    "Jordan Blake":   { grade:"Associate",        fu:"Advisory",      gu:"Manchester" }
+    "Priya Patel":    { grade: "Manager",          fu: "Audit",           gu: "London" },
+    "Sofia Rossi":    { grade: "Senior Associate", fu: "Audit",           gu: "London" },
+    "Noah Williams":  { grade: "Associate",        fu: "Audit",           gu: "London" },
+    "Mia Fernandez":  { grade: "Senior Associate", fu: "Risk Assurance",  gu: "London" },
+    "Tom Becker":     { grade: "Manager",          fu: "Audit",           gu: "London" },
+    "Jordan Blake":   { grade: "Associate",        fu: "Audit",           gu: "London" },
+    "Olivia Chen":    { grade: "Senior Manager",   fu: "Audit",           gu: "London" },
+    "Marcus Webb":    { grade: "Director",         fu: "Audit",           gu: "London" },
+    "Aisha Khan":     { grade: "Associate",        fu: "Audit",           gu: "London" },
+    "Harry Collins":  { grade: "Senior Associate", fu: "Audit",           gu: "London" },
+    "Liam O'Connor":  { grade: "Partner",          fu: "Audit",           gu: "London" },
+    "Emma Johnson":   { grade: "Manager",          fu: "Audit",           gu: "London" }
 };
 let resourceTab = "flexible";
 function openResourceModal() {
     switchResourceTab("flexible");
+    pfPopulateEngagementSelect();
+    const eng = document.getElementById("rEngagement");
+    if (eng) eng.value = "";
     document.getElementById("rWorker").value = "";
     onResourceWorkerChange();
-    document.getElementById("continuity").checked = false;
+    const cont = document.getElementById("continuity");
+    if (cont) cont.checked = false;
     document.getElementById("resourceModal").classList.add("is-open");
 }
 function closeResourceModal() { document.getElementById("resourceModal").classList.remove("is-open"); }
@@ -3767,108 +4771,65 @@ function onResourceWorkerChange() {
         document.getElementById("rwGu").textContent = info.gu;
     }
 }
-const TRAIT_BY_TAB = { specific:"fieldwork", flexible:"planning", unassignable:"controls" };
 function submitResource() {
     const v = id => { const el = document.getElementById(id); return el ? el.value : ""; };
-    let res;
-    if (resourceTab === "specific") {
-        const name = v("rWorker") || "New resource";
-        const info = WORKER_INFO[name] || {};
-        res = { name, grade: info.grade || "Associate", trait:"fieldwork", bars:[] };
-    } else if (resourceTab === "unassignable") {
-        const g = v("rUnGrade") || "Associate";
-        res = { name: `${g} (Unassignable)`, grade: g, trait:"controls", bars:[] };
-    } else {
-        const g = v("rGrade") || "Associate";
-        res = { name: `Flexible \u2014 ${g}`, grade: g, trait:"planning", bars:[] };
+    const engagement = v("rEngagement");
+    if (!engagement) {
+        const sel = document.getElementById("rEngagement");
+        if (sel) { sel.focus(); sel.style.outline = "2px solid var(--text-danger)"; setTimeout(() => { sel.style.outline = ""; }, 1200); }
+        return;
     }
-    ganttJobs[0].resources.push(res);
+    let name, grade, role, kindName;
+    if (resourceTab === "specific") {
+        name = v("rWorker") || "New resource";
+        const info = WORKER_INFO[name] || {};
+        grade = info.grade || "Associate";
+        role = grade;
+        kindName = name;
+    } else if (resourceTab === "unassignable") {
+        grade = v("rUnGrade") || "Associate";
+        name = grade + " (Unassignable)";
+        role = grade;
+        kindName = name;
+    } else {
+        grade = v("rGrade") || "Associate";
+        name = "Flexible — " + grade;
+        role = grade;
+        kindName = name;
+    }
+    const gradeCode = ({ Partner: "PTR", Director: "DIR", "Senior Manager": "SRM", Manager: "MAN", "Senior Associate": "SA", Associate: "A2" })[grade] || "A2";
+    let worker = pfTeamWorkers.find(function (w) { return w.name === kindName; });
+    if (!worker) {
+        worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: kindName, grade: gradeCode, cap: 37.5, items: [] };
+        pfTeamWorkers.push(worker);
+    }
+    const startWeek = 2, span = 3, hours = 10;
+    const cells = {};
+    for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
+    worker.items.push({
+        id: "pfit-" + (++PF_ITEM_SEQ),
+        job: engagement,
+        code: "",
+        phase: "Preparation",
+        role: role,
+        bookingType: "Audit",
+        req: gradeCode + " / Assurance / London",
+        startWeek: startWeek,
+        span: span,
+        hours: hours,
+        cells: cells,
+        kind: "booking"
+    });
+    if (pfTeamState.pivot === "engagement") {
+        delete pfTeamState.collapsedEngagements[engagement];
+    }
     renderGantt();
     closeResourceModal();
 }
 
-function renderGantt() {
-    const days = buildDays();
-    const DAY_W = ganttDayWidth();
-    const showDayName = DAY_W >= 46;
-    const timelineW = DAYS * DAY_W;
+/* sticky head + labels handle scroll sync */
 
-    /* ---- month / week / day header tiers (mirrors gantt.css .gantt-head) ---- */
-    let monthRow = "", i = 0;
-    while (i < DAYS) {
-        const m = days[i].month, y = days[i].year; let span = 0;
-        while (i + span < DAYS && days[i + span].month === m) span++;
-        monthRow += `<div class="gantt-month-col" style="width:${span * DAY_W}px">${MONTHS[m]} ${y}</div>`;
-        i += span;
-    }
-    let weekRow = "", w = 0;
-    while (w < DAYS) {
-        const span = Math.min(7 - days[w].dow, DAYS - w);
-        const wc = days[w].date;
-        weekRow += `<div class="gantt-week-col" style="width:${span * DAY_W}px">w/c ${wc.getDate()} ${MONTHS[wc.getMonth()].slice(0,3)}</div>`;
-        w += span;
-    }
-    let dayRow = "";
-    days.forEach(d => {
-        const weekend = d.dow >= 5 && ganttSettings.weekends;
-        const today = d.i === TODAY_INDEX && ganttSettings.today;
-        const label = showDayName ? `<span class="dow">${DOW3[d.dow]}</span><span>${d.dom}</span>` : `<span>${d.dom}</span>`;
-        dayRow += `<div class="gantt-day-col ${today ? "is-today" : ""} ${weekend ? "is-weekend" : ""}" style="width:${DAY_W}px">${label}</div>`;
-    });
-    const headEl = document.getElementById("ganttHead");
-    headEl.style.width = timelineW + "px";
-    headEl.innerHTML = `<div class="gantt-head-row month-row">${monthRow}</div><div class="gantt-head-row week-row">${weekRow}</div><div class="gantt-head-row day-row">${dayRow}</div>`;
-
-    const labels = document.getElementById("ganttLabels");
-    const timeline = document.getElementById("ganttTimeline");
-    timeline.style.width = timelineW + "px";
-    labels.querySelectorAll(".gantt-label-row, .gantt-grouprow, .gantt-add-resource").forEach(n => n.remove());
-    timeline.querySelectorAll(".gantt-grid-row, .timeline-grouprow, .gantt-add-row-spacer").forEach(n => n.remove());
-
-    const dayGridHtml = '<div class="daygrid">' + days.map(d => `<span class="${d.dow >= 5 && ganttSettings.weekends ? "weekend" : ""}" style="width:${DAY_W}px"></span>`).join("") + "</div>";
-
-    ganttJobs.forEach((job, jobIndex) => {
-        /* JOB header row (no icon — caret only) */
-        const lab = document.createElement("div");
-        lab.className = "gantt-grouprow";
-        lab.style.paddingLeft = "8px";
-        lab.innerHTML = `<i class="fa-solid fa-caret-down caret"></i>${job.job}`;
-        labels.appendChild(lab);
-        const g = document.createElement("div");
-        g.className = "gantt-grouprow timeline-grouprow";
-        g.style.width = timelineW + "px";
-        timeline.appendChild(g);
-
-        /* RESOURCE rows */
-        job.resources.forEach(res => {
-            const rl = document.createElement("div");
-            rl.className = "gantt-label-row";
-            rl.style.paddingLeft = "24px";
-            rl.innerHTML = `<span class="gantt-res"><span class="nm">${res.name}</span><span class="grade">${res.grade}</span></span>`;
-            labels.appendChild(rl);
-
-            const grid = document.createElement("div");
-            grid.className = "gantt-grid-row";
-            grid.style.width = timelineW + "px";
-            grid.innerHTML = dayGridHtml;
-            res.bars.forEach(b => {
-                const bar = document.createElement("div");
-                bar.className = "gantt-item";
-                bar.style.left = (b.start * DAY_W + 1) + "px";
-                bar.style.width = (b.days * DAY_W - 2) + "px";
-                const fill = ganttSettings.types ? TRAIT[res.trait] : "#8a8fa6";
-                bar.style.background = fill;
-                bar.style.borderColor = ganttDarken(fill, 28);
-                bar.style.color = ganttTextColor(fill);
-                bar.innerHTML = ganttSettings.hours ? `<div class="gantt-item-content">${b.hours}h</div>` : "";
-                grid.appendChild(bar);
-            });
-            timeline.appendChild(grid);
-        });
-    });
-}
 function togglePerfSettings(e) { e.stopPropagation(); document.getElementById("perfSettings").classList.toggle("is-open"); }
-document.addEventListener("click", e => { if (!e.target.closest("#displaySettings")) document.getElementById("displaySettings")?.classList.remove("is-open"); });
 document.addEventListener("click", e => { if (!e.target.closest("#perfSettings")) document.getElementById("perfSettings")?.classList.remove("is-open"); });
 
 /* Floating tooltips for elements inside overflow containers (e.g. rule-card +N) */
