@@ -211,7 +211,7 @@
       start = start.closest('svg');
     }
 
-    var INTERACTIVE = /^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL|IMG|VIDEO|CANVAS|TABLE|FORM|FIELDSET|DETAILS|TEXTAREA)$/i;
+    var INTERACTIVE = /^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL|IMG|VIDEO|CANVAS|TABLE|FORM|FIELDSET|DETAILS)$/i;
     var BLOCK = /^(SECTION|ARTICLE|ASIDE|NAV|HEADER|FOOTER|MAIN|LI|TR|TD|TH|FIGURE|DIALOG|UL|OL|DL|DT|DD)$/i;
     var ROLE_OK = /^(button|link|menuitem|tab|checkbox|radio|textbox|combobox|option|switch|listitem|article|region|group|dialog|navigation|toolbar|banner|contentinfo)$/i;
 
