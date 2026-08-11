@@ -1496,35 +1496,109 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .BlankSlate-sub { font-size: 14px; line-height: 21px; font-weight: var(--font-weight-regular); color: #6A708F; margin: 0; text-align: center; max-width: 100%; }
 .Btn--applied { background: var(--surface-success) !important; border-color: var(--surface-success) !important; }
 
-/* ---- Add Resource Requirement modal (Job Editor replica) ---- */
-.RModal-backdrop { position: fixed; inset: 0; background: rgba(31,32,45,.5); display: none; align-items: flex-start; justify-content: center; z-index: 120; padding: 56px 16px; }
+/* ---- Create a New Booking modal (Figma High-Volume 3816:104509) ---- */
+.RModal-backdrop { position: fixed; inset: 0; background: rgba(31,32,45,.5); display: none; align-items: flex-start; justify-content: center; z-index: 120; padding: 40px 16px; }
 .RModal-backdrop.is-open { display: flex; }
-.RModal { background: #fff; border-radius: var(--border-radius-lg, 8px); width: 100%; max-width: 600px; max-height: calc(100vh - 112px); display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
-.RModal-header { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); }
-.RModal-title { font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold); margin: 0; color: var(--text-emphasis); }
-.RModal-close { margin-left: auto; border: none; background: none; font-size: 18px; color: var(--icon-subtle); cursor: pointer; }
-.RModal-body { padding: 20px; overflow-y: auto; }
-.RModal-footer { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); }
-.RModal-mandatoryNote { color: var(--text-subtle); font-size: var(--font-size-small); }
-.RModal-mandatoryNote .req, .RField .req { color: var(--text-danger); }
-.RModal-tabs { display: flex; width: 100%; margin-bottom: 18px; }
-.RModal-tab { flex: 1 1 0; border: 1px solid var(--border-default); background: #fff; color: var(--text-accent); padding: 7px 12px; font-family: var(--font-family); font-weight: var(--font-weight-semibold); font-size: var(--font-size-medium); cursor: pointer; }
-.RModal-tab + .RModal-tab { border-left: none; }
-.RModal-tab:first-child { border-radius: var(--border-radius-default) 0 0 var(--border-radius-default); }
-.RModal-tab:last-child { border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0; }
-.RModal-tab.is-active { background: var(--surface-primary); border-color: var(--surface-primary); color: #fff; }
-.RField { margin-bottom: 16px; }
-.RField-label { display: block; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-emphasis); margin-bottom: 5px; }
-.RField-control { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); padding: 8px 10px; background: #fff; }
-.RField-control .lead { color: var(--icon-subtle); flex: 0 0 auto; }
-.RField-control .chev { color: var(--icon-subtle); flex: 0 0 auto; font-size: 11px; }
-.RField-select { border: none; outline: none; flex: 1 1 auto; background: transparent; font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default); appearance: none; -webkit-appearance: none; cursor: pointer; }
-.RSummary { display: flex; gap: 36px; margin: 2px 0 14px; }
-.RSummary label { display: block; font-size: var(--font-size-extra-small); color: var(--text-subtle); text-transform: uppercase; font-weight: var(--font-weight-bold); letter-spacing: .03em; margin-bottom: 2px; }
-.RSummary .val { color: var(--text-default); }
-.RCheck { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; }
-.RCheck input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-.RSkills-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px dashed var(--border-default); border-radius: var(--border-radius-default); padding: 14px 16px; color: var(--text-subtle); font-size: var(--font-size-small); }
+.RModal { background: #fff; border-radius: var(--border-radius-default); width: 100%; max-width: 1040px; max-height: calc(100vh - 80px); display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,.25); border: 1px solid var(--border-subtle); }
+.RModal-header { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border-subtle); position: relative; flex: 0 0 auto; }
+.RModal-title { font-size: var(--font-size-h2); font-weight: var(--font-weight-regular); margin: 0; color: var(--text-default); flex: 1 1 auto; min-width: 0; }
+.RModal-headerTabs { display: flex; align-items: flex-end; gap: 8px; margin-right: 8px; }
+.RModal-headerTab {
+    appearance: none; background: none; border: none; cursor: pointer;
+    font-family: var(--font-family); font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
+    color: var(--text-accent); padding: 4px 8px; height: 35px; display: inline-flex; align-items: center;
+    border-radius: 4px 4px 0 0; position: relative;
+}
+.RModal-headerTab.is-active { color: var(--text-primary); }
+.RModal-headerTab.is-active::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px;
+    background: var(--surface-primary); border-radius: 8px;
+}
+.RModal-close {
+    flex: 0 0 auto; width: 28px; height: 28px; padding: 0; border: none; background: none;
+    border-radius: var(--border-radius-default); color: var(--icon-subtle); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.RModal-close:hover { background: var(--surface-subtle-dark); color: var(--text-default); }
+.RModal-body { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 24px; border-left: 1px solid var(--border-default); border-right: 1px solid var(--border-default); }
+.RModal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); flex: 0 0 auto; }
+.RModal-sectionTitle { font-size: 18px; font-weight: var(--font-weight-regular); color: var(--text-default); margin: 0; }
+.RModal-divider { height: 0; border: 0; border-top: 1px solid var(--border-subtle); margin: 0; width: 100%; }
+.RModal-pane[hidden] { display: none !important; }
+.RField { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.RField-label { display: flex; align-items: flex-start; gap: 4px; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default); margin: 0; line-height: 20px; }
+.RField-label .req { color: var(--text-danger); }
+.RField-row { display: flex; gap: 16px; align-items: flex-end; width: 100%; }
+.RField-row > .RField { flex: 1 1 0; min-width: 0; }
+.RField-effortRow { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+.RField-effort { width: 174px; flex: 0 0 auto; }
+.RInputGroup { display: flex; align-items: stretch; height: 35px; width: 100%; border-radius: var(--border-radius-default); overflow: hidden; }
+.RInputGroup-input {
+    flex: 1 1 auto; min-width: 0; height: 35px; border: 1px solid var(--border-default);
+    border-right: 0; border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+    padding: 0 12px; font-family: var(--font-family); font-size: var(--font-size-medium);
+    color: var(--text-default); background: #fff; outline: none;
+}
+.RInputGroup-input::placeholder { color: var(--text-subtle); }
+.RInputGroup-input:focus { border-color: var(--border-primary); z-index: 1; }
+.RInputGroup-select {
+    flex: 1 1 auto; min-width: 0; height: 35px; border: 1px solid var(--border-default);
+    border-right: 0; border-radius: var(--border-radius-default) 0 0 var(--border-radius-default);
+    padding: 0 12px; font-family: var(--font-family); font-size: var(--font-size-medium);
+    color: var(--text-default); background: #fff; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;
+}
+.RInputGroup-input + .RInputGroup-btn--clear,
+.RInputGroup-select + .RInputGroup-btn--clear { border-left: 0; }
+.RInputGroup-btn {
+    flex: 0 0 35px; width: 35px; height: 35px; border: none; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-primary); color: #fff; cursor: pointer;
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+}
+.RInputGroup-btn--emphasis { background: var(--surface-emphasis); }
+.RInputGroup-btn--clear {
+    background: #fff; color: var(--icon-subtle);
+    border-top: 1px solid var(--border-default); border-bottom: 1px solid var(--border-default); border-radius: 0;
+}
+.RInputGroup-btn--clear:hover { color: var(--text-default); background: var(--surface-subtle-light); }
+.RInputGroup-addon {
+    flex: 0 0 35px; width: 35px; height: 35px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-subtle-dark); color: var(--text-emphasis);
+    border: 1px solid var(--border-default); border-left: 0;
+    border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0;
+    font-size: var(--font-size-medium);
+}
+.RToggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.RToggle input { position: absolute; opacity: 0; width: 0; height: 0; }
+.RToggle-track {
+    width: 28px; height: 16px; border-radius: 40px; background: var(--border-default);
+    border: 1px solid var(--border-default); position: relative; flex: 0 0 auto; transition: background .15s ease, border-color .15s ease;
+}
+.RToggle-track::after {
+    content: ""; position: absolute; top: 1px; left: 1px; width: 12px; height: 12px;
+    border-radius: 50%; background: #fff; transition: transform .15s ease;
+}
+.RToggle input:checked + .RToggle-track { background: var(--primary); border-color: var(--primary); }
+.RToggle input:checked + .RToggle-track::after { transform: translateX(12px); }
+.RToggle-label { font-size: var(--font-size-medium); color: var(--text-default); line-height: 18px; }
+.RCheck { display: flex; align-items: center; gap: 8px; cursor: pointer; height: 35px; }
+.RCheck input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; margin: 0; }
+.RTraitsEmpty {
+    width: 100%; min-height: 120px; display: flex; align-items: center; justify-content: center;
+    color: var(--text-subtle); font-size: var(--font-size-medium); border: 1px solid var(--border-subtle);
+    border-top: 0; background: #fff;
+}
+.RTraitsTable { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.RTraitsTable th {
+    text-align: left; padding: 12px; min-height: 40px; background: var(--surface-subtle-dark);
+    border-top: 1px solid var(--border-subtle); border-right: 1px solid var(--border-subtle);
+    font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-default);
+    box-shadow: inset 0 -2px 0 0 var(--border-default);
+}
+.RTraitsTable th:last-child { border-right: 0; }
+.RTraitsWarn { display: flex; align-items: center; gap: 8px; color: var(--text-warning); font-size: var(--font-size-medium); margin: 0; }
+.RTraitsWarn i { color: #fba645; }
 
 /* view switching */
 .view { display: none; }
@@ -1797,81 +1871,154 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     </div>
 </div>
 
-<!-- ===================== Add Resource Requirement modal (Job Editor replica) ===================== -->
+<!-- ===================== Create a New Booking modal (Figma High-Volume) ===================== -->
 <div class="RModal-backdrop" id="resourceModal">
-    <div class="RModal">
+    <div class="RModal" role="dialog" aria-modal="true" aria-labelledby="rModalTitle">
         <div class="RModal-header">
-            <h3 class="RModal-title">Add Resource Requirement</h3>
-            <button class="RModal-close" title="Close without saving" onclick="closeResourceModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 class="RModal-title" id="rModalTitle">Create a New Booking</h3>
+            <div class="RModal-headerTabs" role="tablist" aria-label="Booking type">
+                <button type="button" class="RModal-headerTab" role="tab" id="rTabUnavailability" aria-selected="false" onclick="switchBookingModalTab('unavailability')">Unavailability</button>
+                <button type="button" class="RModal-headerTab is-active" role="tab" id="rTabBooking" aria-selected="true" onclick="switchBookingModalTab('booking')">Booking</button>
+            </div>
+            <button class="RModal-close" title="Close without saving" aria-label="Close" onclick="closeResourceModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="RModal-body">
-            <div class="RField">
-                <label class="RField-label">Engagement <span class="req">*</span></label>
-                <div class="RField-control"><i class="fa-solid fa-briefcase lead"></i><select id="rEngagement" class="RField-select" required><option value="">Choose engagement</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+            <div class="RModal-pane" id="rtab-booking">
+                <div class="RField">
+                    <label class="RField-label" for="rEngagement">Engagement <span class="req">*</span></label>
+                    <div class="RInputGroup">
+                        <select id="rEngagement" class="RInputGroup-select" required aria-label="Search for engagement">
+                            <option value="">Search for engagement</option>
+                        </select>
+                        <button type="button" class="RInputGroup-btn" title="Search engagements" aria-label="Search engagements"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                    <label class="RToggle">
+                        <input type="checkbox" id="rFilterViewable" checked />
+                        <span class="RToggle-track" aria-hidden="true"></span>
+                        <span class="RToggle-label">Filter Engagement based on Viewable Units</span>
+                    </label>
+                </div>
+
+                <hr class="RModal-divider" />
+
+                <h4 class="RModal-sectionTitle">Scheduling Details</h4>
+
+                <div class="RField-row">
+                    <div class="RField">
+                        <label class="RField-label" for="rFrom">From</label>
+                        <div class="RInputGroup">
+                            <input id="rFrom" class="RInputGroup-input" type="text" value="07/05/21 09:00AM" />
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                        </div>
+                    </div>
+                    <div class="RField">
+                        <label class="RField-label" for="rTo">To</label>
+                        <div class="RInputGroup">
+                            <input id="rTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                            <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="RField-effortRow">
+                    <div class="RField RField-effort">
+                        <label class="RField-label" for="rEffortM">Effort</label>
+                        <div class="RInputGroup">
+                            <input id="rEffortM" class="RInputGroup-input" type="text" value="7" inputmode="numeric" />
+                            <span class="RInputGroup-addon">m</span>
+                        </div>
+                    </div>
+                    <div class="RField RField-effort">
+                        <label class="RField-label" for="rEffortH" style="visibility:hidden">Hours</label>
+                        <div class="RInputGroup">
+                            <input id="rEffortH" class="RInputGroup-input" type="text" value="30" inputmode="numeric" />
+                            <span class="RInputGroup-addon">h</span>
+                        </div>
+                    </div>
+                    <div class="RField RField-effort">
+                        <label class="RField-label" for="rEffortPct" style="visibility:hidden">Percent</label>
+                        <div class="RInputGroup">
+                            <input id="rEffortPct" class="RInputGroup-input" type="text" value="100" inputmode="numeric" />
+                            <span class="RInputGroup-addon">%</span>
+                        </div>
+                    </div>
+                    <label class="RCheck"><input type="checkbox" id="rRepeat" /> Repeat</label>
+                </div>
+
+                <div class="RField">
+                    <label class="RField-label" for="rAssign">Assign Resource</label>
+                    <div class="RInputGroup">
+                        <select id="rAssign" class="RInputGroup-select" aria-label="Assign Resource">
+                            <option value="">Select resource</option>
+                            <option selected>(MAN) Priya Patel</option>
+                            <option>(SA) Sofia Rossi</option>
+                            <option>(A2) Noah Williams</option>
+                            <option>(SA) Mia Fernandez</option>
+                            <option>(MAN) Tom Becker</option>
+                            <option>(A2) Jordan Blake</option>
+                            <option>(SRM) Olivia Chen</option>
+                            <option>(DIR) Marcus Webb</option>
+                            <option>(A2) Aisha Khan</option>
+                            <option>(SA) Harry Collins</option>
+                            <option>(PTR) Liam O'Connor</option>
+                            <option>(MAN) Emma Johnson</option>
+                        </select>
+                        <button type="button" class="RInputGroup-btn RInputGroup-btn--clear" title="Clear resource" aria-label="Clear resource" onclick="document.getElementById('rAssign').value=''"><i class="fa-solid fa-xmark"></i></button>
+                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick resource" aria-label="Pick resource"><i class="fa-solid fa-user"></i></button>
+                    </div>
+                </div>
+
+                <hr class="RModal-divider" />
+
+                <h4 class="RModal-sectionTitle">Booking Traits</h4>
+                <button type="button" class="Btn Btn--secondary" id="rAddTraitsBtn"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Traits</button>
+                <table class="RTraitsTable" aria-label="Booking traits">
+                    <thead>
+                        <tr>
+                            <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Name</th>
+                            <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Primary</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                </table>
+                <div class="RTraitsEmpty">Nothing to display</div>
+                <p class="RTraitsWarn"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Select engagement to edit the task's traits.</p>
             </div>
 
-            <div class="RModal-tabs">
-                <button class="RModal-tab" data-rtype="specific" onclick="switchResourceTab('specific')">Specific</button>
-                <button class="RModal-tab is-active" data-rtype="flexible" onclick="switchResourceTab('flexible')">Flexible</button>
-                <button class="RModal-tab" data-rtype="unassignable" onclick="switchResourceTab('unassignable')">Unassignable</button>
-            </div>
-
-            <!-- TAB: Specific -->
-            <div id="rtab-specific" class="rtab" hidden>
+            <div class="RModal-pane" id="rtab-unavailability" hidden>
                 <div class="RField">
-                    <label class="RField-label">Worker Name <span class="req">*</span></label>
-                    <div class="RField-control"><i class="fa-solid fa-user lead"></i><select id="rWorker" class="RField-select" onchange="onResourceWorkerChange()"><option value="">Choose worker</option><option>Priya Patel</option><option>Sofia Rossi</option><option>Noah Williams</option><option>Mia Fernandez</option><option>Tom Becker</option><option>Jordan Blake</option><option>Olivia Chen</option><option>Marcus Webb</option><option>Aisha Khan</option><option>Harry Collins</option><option>Liam O'Connor</option><option>Emma Johnson</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="RSummary" id="rWorkerSummary" style="display:none">
-                    <div><label>Grade</label><div class="val" id="rwGrade">—</div></div>
-                    <div><label>Functional Unit</label><div class="val" id="rwFu">—</div></div>
-                    <div><label>Geographical Unit</label><div class="val" id="rwGu">—</div></div>
-                </div>
-                <label class="RCheck"><input type="checkbox" id="continuity" /> Continuity</label>
-            </div>
-
-            <!-- TAB: Flexible -->
-            <div id="rtab-flexible" class="rtab">
-                <div class="RField">
-                    <label class="RField-label">Project Role</label>
-                    <div class="RField-control"><i class="fa-solid fa-briefcase lead"></i><select class="RField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                    <label class="RField-label" for="rUnaFrom">From</label>
+                    <div class="RInputGroup">
+                        <input id="rUnaFrom" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick from date" aria-label="Pick from date"><i class="fa-regular fa-calendar"></i></button>
+                    </div>
                 </div>
                 <div class="RField">
-                    <label class="RField-label">Grade <span class="req">*</span></label>
-                    <div class="RField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="rGrade" class="RField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                    <label class="RField-label" for="rUnaTo">To</label>
+                    <div class="RInputGroup">
+                        <input id="rUnaTo" class="RInputGroup-input" type="text" placeholder="Select date and time" />
+                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" title="Pick to date" aria-label="Pick to date"><i class="fa-regular fa-calendar"></i></button>
+                    </div>
                 </div>
                 <div class="RField">
-                    <label class="RField-label">Functional Unit</label>
-                    <div class="RField-control"><i class="fa-solid fa-building lead"></i><select class="RField-select"><option value="">Choose functional unit</option><option>Audit</option><option>Tax</option><option>Advisory</option><option>Risk Assurance</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="RField">
-                    <label class="RField-label">Geographical Unit</label>
-                    <div class="RField-control"><i class="fa-solid fa-map lead"></i><select class="RField-select"><option value="">Choose geographical unit</option><option>London</option><option>Manchester</option><option>Edinburgh</option><option>Bristol</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-            </div>
-
-            <!-- TAB: Unassignable -->
-            <div id="rtab-unassignable" class="rtab" hidden>
-                <div class="RField">
-                    <label class="RField-label">Grade <span class="req">*</span></label>
-                    <div class="RField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="rUnGrade" class="RField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-            </div>
-
-            <!-- Required Skills (Specific & Flexible) -->
-            <div id="rSkills" class="RField">
-                <label class="RField-label">Required Skills</label>
-                <div class="RSkills-box">
-                    <span>No skills added yet.</span>
-                    <button class="Btn Btn--sm" type="button"><i class="fa-solid fa-plus"></i> Add Skills</button>
+                    <label class="RField-label" for="rUnaType">Type</label>
+                    <div class="RInputGroup">
+                        <select id="rUnaType" class="RInputGroup-select">
+                            <option>Annual leave</option>
+                            <option>Sick leave</option>
+                            <option>Study leave</option>
+                            <option>Public holiday</option>
+                            <option>Training</option>
+                        </select>
+                        <button type="button" class="RInputGroup-btn RInputGroup-btn--emphasis" aria-hidden="true" tabindex="-1"><i class="fa-solid fa-chevron-down"></i></button>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="RModal-footer">
-            <span class="RModal-mandatoryNote"><span class="req">*</span> Mandatory fields</span>
-            <span class="TopBar-spacer"></span>
-            <button class="Btn" onclick="closeResourceModal()">Cancel</button>
-            <button class="Btn Btn--primary" onclick="submitResource()">Confirm</button>
+            <button type="button" class="Btn Btn--tertiary">More Options</button>
+            <button type="button" class="Btn Btn--secondary" onclick="closeResourceModal()">Cancel</button>
+            <button type="button" class="Btn Btn--primary" onclick="submitResource()">Create</button>
         </div>
     </div>
 </div>
@@ -3954,7 +4101,7 @@ function renderMetricsTable() {
    Team tab — portfolio Gantt (resource-first + engagement pivot)
    Visual/interaction basis: gantt-resource-breakdown.html
    ============================================================ */
-const PF_WEEK_COUNT = 12;
+const PF_WEEK_COUNT = 52;
 const PF_WEEK_W = 112.6;
 const PF_DAY_W = PF_WEEK_W / 5;
 const PF_BAR_H = 23;
@@ -4025,90 +4172,119 @@ const PORTFOLIO_ENGAGEMENTS = [
     "Completion Memo — Calder Ceramics"
 ];
 
-/* Compact item: [job, code, phase, role, bookingType, req, startWeek, span, hours, kind?] */
+/* Compact item: [job, code, phase, role, bookingType, req, startWeek, span, hours, kind?]
+   Weeks span a full calendar year (0–51 from PF_FIRST_MONDAY). */
 const PF_WORKER_SPECS = [
     { id: "w-liam", name: "Liam O'Connor", grade: "PTR", cap: 37.5, items: [
-        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 0, 4, 8],
-        ["Group Audit — Apex Holdings plc", "AHP-4410", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 2, 5, 10],
-        ["Going Concern Assessment — Metro Logistics", "MLG-118", "First Review", "Partner", "Audit", "PTR / Assurance / London", 5, 3, 6],
-        ["ESG Assurance — Greenfield Energy", "GFE-90", "Preparation", "Partner", "Regulatory Review", "PTR / Assurance / London", 8, 3, 5],
-        ["Annual leave", "", null, null, null, null, 11, 1, 7.5, "unavailability"]
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 0, 5, 8],
+        ["Group Audit — Apex Holdings plc", "AHP-4410", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 6, 4, 10],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "First Review", "Partner", "Audit", "PTR / Assurance / London", 14, 3, 6],
+        ["ESG Assurance — Greenfield Energy", "GFE-90", "Preparation", "Partner", "Regulatory Review", "PTR / Assurance / London", 22, 4, 5],
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 30, 3, 8],
+        ["Debt Covenant Review — FinServe Digital", "FSD-412", "First Review", "Partner", "Audit", "PTR / Assurance / London", 38, 4, 7],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Second Review", "Partner", "Audit", "PTR / Assurance / London", 46, 3, 6],
+        ["Annual leave", "", null, null, null, null, 20, 2, 7.5, "unavailability"]
     ]},
     { id: "w-marcus", name: "Marcus Webb", grade: "DIR", cap: 37.5, items: [
-        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Second Review", "Director", "Audit", "DIR / Assurance / London", 0, 5, 12],
-        ["Fair Value Review — Crestbridge Assets", "CBA-77", "First Review", "Director", "Audit", "DIR / Assurance / London", 3, 4, 14],
-        ["Debt Covenant Review — FinServe Digital", "FSD-412", "Preparation", "Director", "Audit", "DIR / Assurance / London", 6, 4, 10],
-        ["Consolidation Review — Westbridge Group", "WBG-201", "Second Review", "Director", "Audit", "DIR / Assurance / London", 9, 3, 8]
+        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Second Review", "Director", "Audit", "DIR / Assurance / London", 1, 5, 12],
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "First Review", "Director", "Audit", "DIR / Assurance / London", 8, 4, 14],
+        ["Debt Covenant Review — FinServe Digital", "FSD-412", "Preparation", "Director", "Audit", "DIR / Assurance / London", 16, 4, 10],
+        ["Consolidation Review — Westbridge Group", "WBG-201", "Second Review", "Director", "Audit", "DIR / Assurance / London", 24, 4, 8],
+        ["Subsequent Events — Apex Holdings plc", "AHP-SE", "Second Review", "Director", "Audit", "DIR / Assurance / London", 34, 3, 10],
+        ["Impairment Review — BrightPath Retail", "BPR-IMP", "First Review", "Director", "Audit", "DIR / Assurance / London", 42, 4, 9],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Second Review", "Director", "Audit", "DIR / Assurance / London", 48, 3, 8]
     ]},
     { id: "w-olivia", name: "Olivia Chen", grade: "SRM", cap: 37.5, items: [
-        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "First Review", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 0, 4, 16],
-        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 2, 5, 18],
-        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Senior Manager", "Audit", "SRM / Assurance / London", 5, 4, 12],
-        ["Subsequent Events — Apex Holdings plc", "AHP-SE", "Second Review", "Senior Manager", "Audit", "SRM / Assurance / London", 8, 3, 10],
-        ["Study leave", "", null, null, null, null, 4, 1, 7.5, "unavailability"]
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "First Review", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 0, 5, 16],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Manager", "Regulatory Review", "SRM / Assurance / London", 7, 5, 18],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Senior Manager", "Audit", "SRM / Assurance / London", 15, 4, 12],
+        ["Subsequent Events — Apex Holdings plc", "AHP-SE", "Second Review", "Senior Manager", "Audit", "SRM / Assurance / London", 23, 3, 10],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "First Review", "Senior Manager", "Audit", "SRM / Assurance / London", 31, 4, 14],
+        ["Contingent Liabilities — Cloudspan Software", "CSS-CL", "First Review", "Senior Manager", "Audit", "SRM / Assurance / London", 39, 4, 12],
+        ["Study leave", "", null, null, null, null, 12, 1, 7.5, "unavailability"]
     ]},
     { id: "w-priya", name: "Priya Patel", grade: "MAN", cap: 37.5, items: [
-        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 0, 5, 20],
-        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 3, 4, 15],
-        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 4, 18],
-        ["Tax Provision Support — NovaTech Manufacturing", "NTM-TX", "First Review", "Manager", "Tax Advisory", "MAN / Assurance / London", 7, 3, 12],
-        ["Completion Memo — Calder Ceramics", "CCR-CM", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 9, 3, 8]
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 0, 6, 20],
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 8, 4, 15],
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "First Review", "Manager", "Audit", "MAN / Assurance / London", 14, 5, 18],
+        ["Tax Provision Support — NovaTech Manufacturing", "NTM-TX", "First Review", "Manager", "Tax Advisory", "MAN / Assurance / London", 22, 4, 12],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 30, 3, 8],
+        ["Group Audit — Apex Holdings plc", "AHP-4410", "First Review", "Manager", "Audit", "MAN / Assurance / London", 36, 5, 16],
+        ["Provisions Testing — Orion Pensions", "ORP-PR", "First Review", "Manager", "Audit", "MAN / Assurance / London", 44, 4, 14]
     ]},
     { id: "w-emma", name: "Emma Johnson", grade: "MAN", cap: 37.5, items: [
-        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Manager", "Regulatory Review", "MAN / Assurance / London", 0, 4, 18],
-        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 2, 5, 16],
-        ["Cut-off Testing — Meridian Bank", "MBK-CO", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 3, 14],
-        ["Impairment Review — BrightPath Retail", "BPR-IMP", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 7, 4, 12],
-        ["Provisions Testing — Orion Pensions", "ORP-PR", "First Review", "Manager", "Audit", "MAN / Assurance / London", 9, 3, 10]
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Manager", "Regulatory Review", "MAN / Assurance / London", 2, 5, 18],
+        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 9, 5, 16],
+        ["Cut-off Testing — Meridian Bank", "MBK-CO", "First Review", "Manager", "Audit", "MAN / Assurance / London", 17, 4, 14],
+        ["Impairment Review — BrightPath Retail", "BPR-IMP", "Second Review", "Manager", "Audit", "MAN / Assurance / London", 25, 4, 12],
+        ["Provisions Testing — Orion Pensions", "ORP-PR", "First Review", "Manager", "Audit", "MAN / Assurance / London", 33, 3, 10],
+        ["Cash Confirmation — Sterling Capital", "STC-CC", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 40, 4, 12],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "First Review", "Manager", "Audit", "MAN / Assurance / London", 47, 3, 10]
     ]},
     { id: "w-tom", name: "Tom Becker", grade: "MAN", cap: 37.5, items: [
-        ["Group Audit — Apex Holdings plc", "AHP-4410", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 0, 5, 22],
-        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 3, 4, 14],
-        ["Lease Accounting — Urban Space REIT", "USR-88", "First Review", "Manager", "Audit", "MAN / Assurance / London", 5, 4, 16],
-        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 8, 3, 10],
-        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 6, 3, 8]
+        ["Group Audit — Apex Holdings plc", "AHP-4410", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 1, 6, 22],
+        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 10, 4, 14],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "First Review", "Manager", "Audit", "MAN / Assurance / London", 18, 5, 16],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 26, 3, 10],
+        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Manager", "Audit", "MAN / Assurance / London", 32, 4, 8],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "First Review", "Manager", "Audit", "MAN / Assurance / London", 40, 4, 12],
+        ["ESG Assurance — Greenfield Energy", "GFE-90", "First Review", "Manager", "Regulatory Review", "MAN / Assurance / London", 48, 3, 10]
     ]},
     { id: "w-sofia", name: "Sofia Rossi", grade: "SA", cap: 37.5, items: [
-        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 6, 28],
-        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 2, 2, 30],
-        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 4, 5, 24],
-        ["Component Audit — Alpine Components", "ALC-22", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 20],
-        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 9, 3, 16]
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 7, 28],
+        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 8, 2, 30],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 12, 6, 24],
+        ["Component Audit — Alpine Components", "ALC-22", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 22, 5, 20],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 30, 4, 16],
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 38, 5, 22],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 46, 4, 18]
     ]},
     { id: "w-mia", name: "Mia Fernandez", grade: "SA", cap: 37.5, items: [
-        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 5, 26],
-        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Associate", "Regulatory Review", "SA / Assurance / London", 2, 5, 22],
-        ["Cash Confirmation — Sterling Capital", "STC-CC", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 5, 3, 18],
-        ["Contingent Liabilities — Cloudspan Software", "CSS-CL", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 14],
-        ["Public holiday", "", null, null, null, null, 10, 1, 7.5, "unavailability"]
+        ["Statutory Audit — Thames Water Utilities", "TWU-330", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 6, 26],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Senior Associate", "Regulatory Review", "SA / Assurance / London", 8, 5, 22],
+        ["Cash Confirmation — Sterling Capital", "STC-CC", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 16, 4, 18],
+        ["Contingent Liabilities — Cloudspan Software", "CSS-CL", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 24, 4, 14],
+        ["Consolidation Review — Westbridge Group", "WBG-201", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 32, 5, 20],
+        ["Debt Covenant Review — FinServe Digital", "FSD-412", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 40, 4, 16],
+        ["Public holiday", "", null, null, null, null, 28, 1, 7.5, "unavailability"]
     ]},
     { id: "w-harry", name: "Harry Collins", grade: "SA", cap: 37.5, items: [
-        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 0, 4, 24],
-        ["Going Concern Assessment — Metro Logistics", "MLG-118", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 2, 4, 20],
-        ["Fair Value Review — Crestbridge Assets", "CBA-77", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 4, 4, 22],
-        ["Consolidation Review — Westbridge Group", "WBG-201", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 7, 4, 18],
-        ["Completion Memo — Calder Ceramics", "CCR-CM", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 10, 2, 12]
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 2, 5, 24],
+        ["Going Concern Assessment — Metro Logistics", "MLG-118", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 10, 4, 20],
+        ["Fair Value Review — Crestbridge Assets", "CBA-77", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 18, 5, 22],
+        ["Consolidation Review — Westbridge Group", "WBG-201", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 26, 4, 18],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Preparation", "Senior Associate", "Audit", "SA / Assurance / London", 34, 3, 12],
+        ["Related Party Review — Harbour Estates", "HBE-12", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 41, 4, 16],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "First Review", "Senior Associate", "Audit", "SA / Assurance / London", 48, 3, 14]
     ]},
     { id: "w-noah", name: "Noah Williams", grade: "A2", cap: 37.5, items: [
-        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 0, 5, 30],
-        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 2, 2, 35],
-        ["Cut-off Testing — Meridian Bank", "MBK-CO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 4, 4, 28],
-        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 26],
-        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 9, 3, 20]
+        ["Internal Controls Assessment — Meridian Bank", "MBK-882", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 0, 6, 30],
+        ["Inventory Observation — Northern Foods Ltd", "NFL-IO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 2, 35],
+        ["Cut-off Testing — Meridian Bank", "MBK-CO", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 12, 5, 28],
+        ["Journal Entry Testing — Metro Logistics", "MLG-JE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 20, 5, 26],
+        ["Bank Confirmation — Harbour Estates", "HBE-BC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 28, 4, 20],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 36, 5, 24],
+        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 44, 5, 22]
     ]},
     { id: "w-jordan", name: "Jordan Blake", grade: "A2", cap: 37.5, items: [
-        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 0, 5, 28],
-        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 3, 4, 24],
-        ["Lease Accounting — Urban Space REIT", "USR-88", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 5, 4, 26],
-        ["Provisions Testing — Orion Pensions", "ORP-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 3, 22],
-        ["Training day", "TRN-01", null, null, "Training", null, 11, 1, 7.5]
+        ["Pension Scheme Audit — Orion Pensions", "ORP-44", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 1, 6, 28],
+        ["Related Party Review — Harbour Estates", "HBE-12", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 10, 4, 24],
+        ["Lease Accounting — Urban Space REIT", "USR-88", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 18, 5, 26],
+        ["Provisions Testing — Orion Pensions", "ORP-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 26, 4, 22],
+        ["Training day", "TRN-01", null, null, "Training", null, 14, 1, 7.5],
+        ["SOX Controls Testing — BrightPath Retail", "BPR-55", "Preparation", "Associate", "Regulatory Review", "A2 / Assurance / London", 34, 5, 24],
+        ["Impairment Review — BrightPath Retail", "BPR-IMP", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 42, 4, 20],
+        ["Cash Confirmation — Sterling Capital", "STC-CC", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 48, 3, 18]
     ]},
     { id: "w-aisha", name: "Aisha Khan", grade: "A2", cap: 37.5, items: [
-        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 0, 5, 30],
-        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 3, 5, 28],
-        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 6, 4, 26],
-        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 8, 3, 22],
-        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 4, 3, 16]
+        ["Revenue Recognition Review — Cloudspan Software", "CSS-301", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 0, 6, 30],
+        ["Year-end Audit — Calder Ceramics", "CCR-YE", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 9, 6, 28],
+        ["Component Audit — Alpine Components", "ALC-22", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 18, 5, 26],
+        ["Payroll Substantive — Urban Space REIT", "USR-PR", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 26, 4, 22],
+        ["ITGC Assessment — FinServe Digital", "FSD-IT", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 14, 4, 16],
+        ["Interim Review — Sterling Capital", "STC-19", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 34, 5, 24],
+        ["Financial Statement Audit — NovaTech Manufacturing", "NTM-2601", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 42, 5, 26],
+        ["Completion Memo — Calder Ceramics", "CCR-CM", "Preparation", "Associate", "Audit", "A2 / Assurance / London", 49, 2, 14]
     ]}
 ];
 
@@ -4228,7 +4404,7 @@ function pfPopulateEngagementSelect() {
     const sel = document.getElementById("rEngagement");
     if (!sel) return;
     const cur = sel.value;
-    sel.innerHTML = '<option value="">Choose engagement</option>';
+    sel.innerHTML = '<option value="">Search for engagement</option>';
     pfPortfolioEngagementNames().forEach(function (name) {
         const opt = document.createElement("option");
         opt.value = name;
@@ -4276,13 +4452,13 @@ function pfBuildHeadCorner() {
     addBtn.addEventListener("click", function (e) { e.stopPropagation(); openResourceModal(); });
     tools.appendChild(addBtn);
 
-    const viewBtn = pfEl("button", "Btn Btn--secondary");
+    const viewBtn = pfEl("button", "Btn Btn--tertiary");
     viewBtn.type = "button";
     viewBtn.id = "pfTeamViewBtn";
     viewBtn.title = pfTeamState.pivot === "engagement" ? "Engagement view" : "Resource view";
     viewBtn.setAttribute("aria-haspopup", "true");
     viewBtn.setAttribute("aria-label", "Pivot view");
-    viewBtn.innerHTML = '<i class="fa-solid fa-right-left" aria-hidden="true"></i><span>Pivot View</span>';
+    viewBtn.innerHTML = '<i class="fa-solid fa-right-left" aria-hidden="true"></i>';
     viewBtn.addEventListener("click", toggleTeamViewMenu);
     tools.appendChild(viewBtn);
 
@@ -4727,83 +4903,96 @@ function pfRenderMenu() {
     }
 }
 
-/* ---- Add Resource Requirement modal (Job Editor replica + engagement) ---- */
+/* ---- Create a New Booking modal ---- */
 const WORKER_INFO = {
-    "Priya Patel":    { grade: "Manager",          fu: "Audit",           gu: "London" },
-    "Sofia Rossi":    { grade: "Senior Associate", fu: "Audit",           gu: "London" },
-    "Noah Williams":  { grade: "Associate",        fu: "Audit",           gu: "London" },
-    "Mia Fernandez":  { grade: "Senior Associate", fu: "Risk Assurance",  gu: "London" },
-    "Tom Becker":     { grade: "Manager",          fu: "Audit",           gu: "London" },
-    "Jordan Blake":   { grade: "Associate",        fu: "Audit",           gu: "London" },
-    "Olivia Chen":    { grade: "Senior Manager",   fu: "Audit",           gu: "London" },
-    "Marcus Webb":    { grade: "Director",         fu: "Audit",           gu: "London" },
-    "Aisha Khan":     { grade: "Associate",        fu: "Audit",           gu: "London" },
-    "Harry Collins":  { grade: "Senior Associate", fu: "Audit",           gu: "London" },
-    "Liam O'Connor":  { grade: "Partner",          fu: "Audit",           gu: "London" },
-    "Emma Johnson":   { grade: "Manager",          fu: "Audit",           gu: "London" }
+    "Priya Patel":    { grade: "Manager",          fu: "Audit",           gu: "London", code: "MAN" },
+    "Sofia Rossi":    { grade: "Senior Associate", fu: "Audit",           gu: "London", code: "SA" },
+    "Noah Williams":  { grade: "Associate",        fu: "Audit",           gu: "London", code: "A2" },
+    "Mia Fernandez":  { grade: "Senior Associate", fu: "Risk Assurance",  gu: "London", code: "SA" },
+    "Tom Becker":     { grade: "Manager",          fu: "Audit",           gu: "London", code: "MAN" },
+    "Jordan Blake":   { grade: "Associate",        fu: "Audit",           gu: "London", code: "A2" },
+    "Olivia Chen":    { grade: "Senior Manager",   fu: "Audit",           gu: "London", code: "SRM" },
+    "Marcus Webb":    { grade: "Director",         fu: "Audit",           gu: "London", code: "DIR" },
+    "Aisha Khan":     { grade: "Associate",        fu: "Audit",           gu: "London", code: "A2" },
+    "Harry Collins":  { grade: "Senior Associate", fu: "Audit",           gu: "London", code: "SA" },
+    "Liam O'Connor":  { grade: "Partner",          fu: "Audit",           gu: "London", code: "PTR" },
+    "Emma Johnson":   { grade: "Manager",          fu: "Audit",           gu: "London", code: "MAN" }
 };
-let resourceTab = "flexible";
+let bookingModalTab = "booking";
+
 function openResourceModal() {
-    switchResourceTab("flexible");
+    switchBookingModalTab("booking");
     pfPopulateEngagementSelect();
     const eng = document.getElementById("rEngagement");
     if (eng) eng.value = "";
-    document.getElementById("rWorker").value = "";
-    onResourceWorkerChange();
-    const cont = document.getElementById("continuity");
-    if (cont) cont.checked = false;
+    const assign = document.getElementById("rAssign");
+    if (assign) assign.selectedIndex = Math.min(1, assign.options.length - 1);
+    const from = document.getElementById("rFrom");
+    if (from) from.value = "07/05/21 09:00AM";
+    const to = document.getElementById("rTo");
+    if (to) to.value = "";
+    const effortH = document.getElementById("rEffortH");
+    if (effortH) effortH.value = "30";
+    const effortM = document.getElementById("rEffortM");
+    if (effortM) effortM.value = "7";
+    const effortPct = document.getElementById("rEffortPct");
+    if (effortPct) effortPct.value = "100";
+    const repeat = document.getElementById("rRepeat");
+    if (repeat) repeat.checked = false;
     document.getElementById("resourceModal").classList.add("is-open");
 }
 function closeResourceModal() { document.getElementById("resourceModal").classList.remove("is-open"); }
-function switchResourceTab(t) {
-    resourceTab = t;
-    document.querySelectorAll(".RModal-tab").forEach(b => b.classList.toggle("is-active", b.dataset.rtype === t));
-    document.querySelectorAll(".rtab").forEach(p => { p.hidden = p.id !== "rtab-" + t; });
-    document.getElementById("rSkills").hidden = (t === "unassignable");
-}
-function onResourceWorkerChange() {
-    const name = document.getElementById("rWorker").value;
-    const info = WORKER_INFO[name];
-    document.getElementById("rWorkerSummary").style.display = info ? "flex" : "none";
-    if (info) {
-        document.getElementById("rwGrade").textContent = info.grade;
-        document.getElementById("rwFu").textContent = info.fu;
-        document.getElementById("rwGu").textContent = info.gu;
+function switchBookingModalTab(t) {
+    bookingModalTab = t;
+    const bookingTab = document.getElementById("rTabBooking");
+    const unaTab = document.getElementById("rTabUnavailability");
+    if (bookingTab) {
+        bookingTab.classList.toggle("is-active", t === "booking");
+        bookingTab.setAttribute("aria-selected", t === "booking" ? "true" : "false");
     }
+    if (unaTab) {
+        unaTab.classList.toggle("is-active", t === "unavailability");
+        unaTab.setAttribute("aria-selected", t === "unavailability" ? "true" : "false");
+    }
+    const bookingPane = document.getElementById("rtab-booking");
+    const unaPane = document.getElementById("rtab-unavailability");
+    if (bookingPane) bookingPane.hidden = t !== "booking";
+    if (unaPane) unaPane.hidden = t !== "unavailability";
+    const title = document.getElementById("rModalTitle");
+    if (title) title.textContent = t === "unavailability" ? "Create Unavailability" : "Create a New Booking";
+}
+function parseAssignResource(raw) {
+    const m = String(raw || "").match(/^\(([^)]+)\)\s*(.+)$/);
+    if (m) return { code: m[1], name: m[2].trim() };
+    return { code: "MAN", name: raw || "New resource" };
 }
 function submitResource() {
-    const v = id => { const el = document.getElementById(id); return el ? el.value : ""; };
-    const engagement = v("rEngagement");
-    if (!engagement) {
-        const sel = document.getElementById("rEngagement");
-        if (sel) { sel.focus(); sel.style.outline = "2px solid var(--text-danger)"; setTimeout(() => { sel.style.outline = ""; }, 1200); }
+    if (bookingModalTab === "unavailability") {
+        closeResourceModal();
         return;
     }
-    let name, grade, role, kindName;
-    if (resourceTab === "specific") {
-        name = v("rWorker") || "New resource";
-        const info = WORKER_INFO[name] || {};
-        grade = info.grade || "Associate";
-        role = grade;
-        kindName = name;
-    } else if (resourceTab === "unassignable") {
-        grade = v("rUnGrade") || "Associate";
-        name = grade + " (Unassignable)";
-        role = grade;
-        kindName = name;
-    } else {
-        grade = v("rGrade") || "Associate";
-        name = "Flexible — " + grade;
-        role = grade;
-        kindName = name;
+    const engEl = document.getElementById("rEngagement");
+    const engagement = engEl ? engEl.value : "";
+    if (!engagement) {
+        if (engEl) {
+            engEl.focus();
+            engEl.style.outline = "2px solid var(--text-danger)";
+            setTimeout(function () { engEl.style.outline = ""; }, 1200);
+        }
+        return;
     }
-    const gradeCode = ({ Partner: "PTR", Director: "DIR", "Senior Manager": "SRM", Manager: "MAN", "Senior Associate": "SA", Associate: "A2" })[grade] || "A2";
-    let worker = pfTeamWorkers.find(function (w) { return w.name === kindName; });
+    const assignRaw = (document.getElementById("rAssign") || {}).value || "";
+    const parsed = parseAssignResource(assignRaw);
+    const info = WORKER_INFO[parsed.name] || {};
+    const gradeCode = parsed.code || info.code || "A2";
+    const role = info.grade || "Manager";
+    let worker = pfTeamWorkers.find(function (w) { return w.name === parsed.name; });
     if (!worker) {
-        worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: kindName, grade: gradeCode, cap: 37.5, items: [] };
+        worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: parsed.name, grade: gradeCode, cap: 37.5, items: [] };
         pfTeamWorkers.push(worker);
     }
-    const startWeek = 2, span = 3, hours = 10;
+    const hours = parseFloat((document.getElementById("rEffortH") || {}).value) || 10;
+    const startWeek = 2, span = 3;
     const cells = {};
     for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
     worker.items.push({
