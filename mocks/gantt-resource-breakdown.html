@@ -693,16 +693,6 @@ button { font-family: inherit; }
 .Seg button.is-active { background: var(--surface-emphasis); color: var(--text-inverse); }
 .Seg.is-disabled button { color: var(--text-disabled); cursor: not-allowed; background: #fff; }
 
-.Menu-note {
-    padding: 8px 10px;
-    background: var(--surface-info-subtle);
-    border-radius: 3px;
-    font-size: var(--font-size-small);
-    color: var(--text-accent);
-    line-height: 1.45;
-}
-.Menu-note i { color: var(--primary); margin-right: 5px; }
-
 /* ============================================================
    Selection sidebar
    ============================================================ */
@@ -1265,24 +1255,6 @@ button.CreateBooking-unit:hover,
     box-shadow: 0 6px 18px rgba(0,0,0,.24);
 }
 
-/* Tooltip */
-.Tip {
-    position: fixed;
-    z-index: 250;
-    background: #fff;
-    border: var(--border-xs) solid var(--border-subtle);
-    border-radius: 3px;
-    box-shadow: 0 4px 14px rgba(0,0,0,.14);
-    padding: 7px 10px;
-    font-size: var(--font-size-small);
-    color: var(--text-default);
-    max-width: 250px;
-    pointer-events: none;
-    line-height: 1.5;
-}
-.Tip b { font-weight: 600; }
-.Tip .muted { color: var(--text-subtle); }
-
 /* Bottom-right zoom cluster (visual parity with the product) */
 .Zoom {
     position: absolute; right: 14px; bottom: 14px;
@@ -1549,7 +1521,8 @@ var state = {
     tasksInGrey: false,
     expandedRows: {},          // "workerId|rowKey" -> true
     collapsedDepts: {},
-    selection: [],             // [{workerId, rowKey, week}]
+    selectedCell: null,        // "workerId|rowKey|week" — hour-cell highlight only
+    selection: [],             // booking selection (drives the side panel)
     menu: null                 // null | 'root'
 };
 
@@ -1856,25 +1829,27 @@ function buildCell(worker, row, wi, weekDate) {
 
     var key = worker.id + '|' + row.key + '|' + wi;
     var rowKey = worker.id + '|' + row.key;
-    if (isSelected(key)) c.classList.add('is-selected');
+    if (state.selectedCell === key) c.classList.add('is-selected');
     c.classList.add('is-clickable');
 
-    // Click selects only this cell's bookings — not the whole row (DEVO-29672) —
-    // and drops the row open so those bookings are visible. Clicking the open
-    // cell again closes it.
-    c.addEventListener('click', function (e) {
-        if (!items.length) { state.selection = []; render(); return; }
-        if (e.metaKey || e.ctrlKey) {
-            if (isSelected(key)) state.selection = state.selection.filter(function (s) { return s.key !== key; });
-            else state.selection.push({ key: key, worker: worker, row: row, week: wi, items: items });
-            if (row.items.length) state.expandedRows[rowKey] = true;
-        } else if (isSelected(key) && state.expandedRows[rowKey]) {
+    // Click expands the row so this cell's bookings are visible. Clicking the
+    // open cell again closes it. Does not open the side panel — that only
+    // follows from selecting a booking bar.
+    c.addEventListener('click', function () {
+        if (!items.length) {
+            state.selectedCell = null;
             state.selection = [];
+            render();
+            return;
+        }
+        if (state.selectedCell === key && state.expandedRows[rowKey]) {
+            state.selectedCell = null;
             delete state.expandedRows[rowKey];
         } else {
-            state.selection = [{ key: key, worker: worker, row: row, week: wi, items: items }];
+            state.selectedCell = key;
             if (row.items.length) state.expandedRows[rowKey] = true;
         }
+        state.selection = [];
         render();
     });
 
@@ -1886,8 +1861,6 @@ function buildCell(worker, row, wi, weekDate) {
         openCreateModal(worker, row, weekDate);
     });
 
-    c.addEventListener('mouseenter', function (e) { showTip(e, worker, row, wi, items, hours); });
-    c.addEventListener('mouseleave', hideTip);
     return c;
 }
 
@@ -1944,6 +1917,7 @@ function buildBars(worker, row, topPad) {
             // A bar click is a single-booking selection, which opens the
             // detail sidebar rather than the multi-select one.
             state.selection = [{ key: 'bar|' + it.id, worker: worker, row: row, week: it.startWeek, items: [it], single: true }];
+            state.selectedCell = null;
             render();
         });
         box.appendChild(bar);
@@ -1969,28 +1943,6 @@ function isItemSelected(item) {
         return s.items.some(function (i) { return i.id === item.id; });
     });
 }
-
-// ── Tooltip ────────────────────────────────────────────────────────────────
-var tipNode = null;
-function showTip(e, worker, row, wi, items, hours) {
-    hideTip();
-    if (!items.length && !hours) return;
-    tipNode = el('div', 'Tip');
-    var lines = '<b>' + esc(row.label) + '</b> · ' + esc(wcLabel(WEEKS[wi])) + '<br>' +
-                '<span class="muted">' + esc(worker.name) + ' — ' + fmtHours(hours) + ' aggregated</span>';
-    if (items.length) {
-        lines += '<br>' + items.slice(0, 4).map(function (it) {
-            return '· ' + esc(it.job) + ' (' + it.cells[wi] + ' h)';
-        }).join('<br>');
-        if (items.length > 4) lines += '<br><span class="muted">+ ' + (items.length - 4) + ' more</span>';
-    }
-    tipNode.innerHTML = lines;
-    document.body.appendChild(tipNode);
-    var r = e.currentTarget.getBoundingClientRect();
-    tipNode.style.left = Math.min(r.left, window.innerWidth - 270) + 'px';
-    tipNode.style.top = (r.bottom + 6) + 'px';
-}
-function hideTip() { if (tipNode) { tipNode.remove(); tipNode = null; } }
 
 // ── Settings menu ──────────────────────────────────────────────────────────
 var settingsBtn = document.getElementById('settingsBtn');
@@ -2131,9 +2083,6 @@ function breakdownFlyout() {
         f.appendChild(r);
     });
 
-    var note = el('div', 'Menu-note');
-    note.innerHTML = '<i class="fa-solid fa-circle-info"></i>Single dimension at a time. Aggregation runs client-side on data the Gantt has already loaded.';
-    f.appendChild(note);
     return f;
 }
 
@@ -2174,12 +2123,6 @@ function availabilityFlyout() {
     grey.addEventListener('click', function () { state.tasksInGrey = !state.tasksInGrey; renderMenu(); render(); });
     f.appendChild(grey);
 
-    if (breakdownOn()) {
-        var note = el('div', 'Menu-note');
-        note.innerHTML = '<i class="fa-solid fa-lock"></i>Breakdown by <strong>' + esc(DIMENSIONS[state.breakdown].label) +
-            '</strong> forces Slim View and locks the hours toggle. Availability shows on the resource row only, not on breakdown rows.';
-        f.appendChild(note);
-    }
     return f;
 }
 
@@ -2196,7 +2139,7 @@ document.addEventListener('keydown', function (e) {
 // modes: a single booking shows its job context and phases; a multi-job
 // selection blanks the values to "--" and hides Phases (the prototype's
 // "noJobContext" dash mode).
-function clearSelection() { state.selection = []; render(); }
+function clearSelection() { state.selection = []; state.selectedCell = null; render(); }
 
 function panelBtn(icon, opts) {
     opts = opts || {};
