@@ -439,6 +439,31 @@ button { font-family: inherit; }
 }
 .DimLabel:last-child { border-bottom: 0; }
 .DimLabel.is-expanded { background: var(--surface-list-item-selected-light); font-weight: 600; }
+.DimLabel.is-clickable { cursor: pointer; }
+.DimLabel.is-clickable:hover { background: var(--surface-list-item-hover); }
+/* Role and the other colourless dimensions have no swatch to lean on, so a
+   selected row is marked structurally: accent rule plus a heavier label. */
+.DimLabel.is-selected {
+    background: var(--surface-list-item-selected-light);
+    border-left-color: var(--primary);
+    color: var(--text-default);
+    font-weight: 600;
+}
+
+/* Tasks fade in as their row opens. Only rows opened by the last click carry
+   is-revealing, so a re-render elsewhere does not replay the animation. */
+@keyframes barReveal {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+}
+.Track-bars.is-revealing .Bar { animation: barReveal .18s ease-out both; }
+.Track-bars.is-revealing .Bar:nth-child(3) { animation-delay: .02s; }
+.Track-bars.is-revealing .Bar:nth-child(4) { animation-delay: .04s; }
+.Track-bars.is-revealing .Bar:nth-child(5) { animation-delay: .06s; }
+.Track-bars.is-revealing .Bar:nth-child(n+6) { animation-delay: .08s; }
+@media (prefers-reduced-motion: reduce) {
+    .Track-bars.is-revealing .Bar { animation: none; }
+}
 
 /* Slim availability strip in the left panel gutter */
 .SlimGutter { height: var(--slim-h); }
@@ -1623,9 +1648,19 @@ var state = {
     collapsedDepts: {},
     selectedCell: null,        // "workerId|rowKey|week" — hour-cell highlight only
     selection: [],             // booking selection (drives the side panel)
+    justOpened: {},            // rows opened by the last click — animate once
     prefs: null,               // display prefs parked while breakdown is active
     menu: null                 // null | 'root'
 };
+
+/** Marks a row as expanded, and as newly opened so its tasks animate in. */
+function openRow(worker, row) {
+    var k = worker.id + '|' + row.key;
+    if (!state.expandedRows[k]) {
+        state.expandedRows[k] = true;
+        state.justOpened[k] = true;
+    }
+}
 
 function breakdownOn() { return state.breakdown !== 'none'; }
 
@@ -1752,6 +1787,7 @@ function render() {
     syncHeadScroll();
 
     renderPanel();
+    state.justOpened = {};
 }
 
 // The header is pinned to the top of the window beside the action bar, so it
@@ -1860,7 +1896,10 @@ function buildWorkerRow(worker, index) {
         btn.title = allOpen ? 'Collapse all breakdown rows' : 'Expand all breakdown rows';
         btn.addEventListener('click', function (e) {
             e.stopPropagation();
-            rows.forEach(function (r) { state.expandedRows[worker.id + '|' + r.key] = !allOpen; });
+            rows.forEach(function (r) {
+                if (allOpen) delete state.expandedRows[worker.id + '|' + r.key];
+                else if (r.items.length) openRow(worker, r);
+            });
             render();
         });
         expandCell.appendChild(btn);
@@ -1921,10 +1960,18 @@ function buildWorkerRow(worker, index) {
             lbl.title = r.isOther
                 ? 'Other — unavailabilities and items with no ' + DIMENSIONS[state.breakdown].label.toLowerCase()
                 : r.label;
-            lbl.style.cursor = r.items.length ? 'pointer' : 'default';
             if (r.items.length) {
-                lbl.addEventListener('click', function () {
-                    state.expandedRows[worker.id + '|' + r.key] = !open;
+                lbl.classList.add('is-clickable');
+                if (isSelected('row|' + worker.id + '|' + r.key)) lbl.classList.add('is-selected');
+                // Selects every item in the row and opens it if it was closed,
+                // so the selection is always visible (DEVO-29672).
+                lbl.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    applySelection({
+                        key: 'row|' + worker.id + '|' + r.key, worker: worker,
+                        row: r, week: r.items[0].startWeek, items: r.items.slice()
+                    }, isAdditive(e));
+                    openRow(worker, r);
                     render();
                 });
             }
@@ -1943,7 +1990,7 @@ function buildWorkerRow(worker, index) {
             sub.appendChild(hoursRow);
 
             if (open && r.items.length) {
-                sub.appendChild(buildBars(worker, r, BAR_PAD));
+                sub.appendChild(buildBars(worker, r, BAR_PAD, state.justOpened[worker.id + '|' + r.key]));
             }
             weeksCol.appendChild(sub);
         });
@@ -1980,7 +2027,7 @@ function buildCell(worker, row, wi, weekDate) {
             delete state.expandedRows[rowKey];
         } else {
             state.selectedCell = key;
-            if (row.items.length) state.expandedRows[rowKey] = true;
+            if (row.items.length) openRow(worker, row);
         }
         state.selection = [];
         render();
@@ -2007,9 +2054,9 @@ function gridLines() {
     return g;
 }
 
-function buildBars(worker, row, topPad) {
+function buildBars(worker, row, topPad, revealing) {
     var pad = topPad == null ? BAR_PAD : topPad;
-    var box = el('div', 'Track-bars');
+    var box = el('div', 'Track-bars' + (revealing ? ' is-revealing' : ''));
     box.style.position = 'relative';
     box.style.height = barsHeight(row.items.length, pad) + 'px';
     box.appendChild(gridLines());
@@ -2047,10 +2094,12 @@ function buildBars(worker, row, topPad) {
         bar.title = it.job + (it.code ? ' (' + it.code + ')' : '') + ' — ' + perWeek + ' h/week';
         bar.addEventListener('click', function (e) {
             e.stopPropagation();
-            // A bar click is a single-booking selection, which opens the
-            // detail sidebar rather than the multi-select one.
-            state.selection = [{ key: 'bar|' + it.id, worker: worker, row: row, week: it.startWeek, items: [it], single: true }];
-            state.selectedCell = null;
+            // On its own a bar is a single-booking selection, which opens the
+            // detail sidebar; ctrl-click adds it to a multi-select instead.
+            applySelection({
+                key: 'bar|' + it.id, worker: worker, row: row,
+                week: it.startWeek, items: [it], single: true
+            }, isAdditive(e));
             render();
         });
         box.appendChild(bar);
@@ -2075,6 +2124,27 @@ function isItemSelected(item) {
     return state.selection.some(function (s) {
         return s.items.some(function (i) { return i.id === item.id; });
     });
+}
+
+function isAdditive(e) { return e.ctrlKey || e.metaKey; }
+
+/**
+ * Applies a selection entry (DEVO-29672). Ctrl/Cmd-click toggles this entry in
+ * or out and leaves the rest of the selection alone — including when several
+ * entries are already selected. A plain click replaces the selection, except
+ * on the sole selected entry, which clears it.
+ */
+function applySelection(entry, additive) {
+    var i = -1;
+    state.selection.forEach(function (s, n) { if (s.key === entry.key) i = n; });
+
+    if (additive) {
+        if (i === -1) state.selection.push(entry);
+        else state.selection.splice(i, 1);
+    } else {
+        state.selection = (i !== -1 && state.selection.length === 1) ? [] : [entry];
+    }
+    state.selectedCell = null;
 }
 
 // ── Settings menu ──────────────────────────────────────────────────────────
