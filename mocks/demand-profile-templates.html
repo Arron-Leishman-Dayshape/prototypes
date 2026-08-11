@@ -132,6 +132,8 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
+/* Reserve the scrollbar gutter so short and tall screens keep the same content width */
+html { scrollbar-gutter: stable; }
 body {
   font-family: var(--font-family);
   font-size: var(--font-size-medium);
@@ -339,6 +341,10 @@ a { color: var(--text-link-color); text-decoration: none; }
   background: var(--surface-primary-emphasis); color: var(--text-inverse);
 }
 .BtnGroup > button.is-active:hover { background: var(--surface-primary-emphasis); }
+.DurationControl { display: flex; align-items: stretch; gap: var(--padding-xs); max-width: 450px; }
+.DurationControl > .Input { width: 120px; flex: 0 0 120px; }
+.DurationControl .BtnGroup > button { min-width: 64px; }
+.DurationEquivalent { min-height: 18px; margin-top: 2px; }
 .StructureTimeline {
   margin-bottom: var(--padding-md); padding: var(--padding-md);
   border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
@@ -576,6 +582,8 @@ a { color: var(--text-link-color); text-decoration: none; }
   border-right: 1px solid var(--surface-inverse-divider); min-width: 0;
   cursor: pointer;
 }
+/* Uncoloured segments sit on a light background, so the inverse divider would vanish */
+.ShapeSeg--plain { border-right-color: var(--border-default); }
 .ShapeSeg:last-child { border-right: 0; }
 .ShapeSeg:focus-visible { outline: 2px solid var(--border-primary); outline-offset: -2px; z-index: 1; }
 .ShapeSegPopover {
@@ -741,6 +749,8 @@ a { color: var(--text-link-color); text-decoration: none; }
   border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
   background: var(--surface-default); overflow: visible;
 }
+.PhaseCard.is-dragging { opacity: .5; }
+.PhaseCard.is-dropTarget { box-shadow: inset 0 2px 0 0 var(--border-primary); }
 .PhaseCard-head {
   display: flex; align-items: center; gap: 10px; padding: 12px 14px;
   background: var(--surface-subtle-light); border-bottom: 1px solid var(--border-subtle);
@@ -749,6 +759,14 @@ a { color: var(--text-link-color); text-decoration: none; }
 }
 .PhaseCard-body { padding: 0; overflow: visible; }
 .PhaseCard-title { font-weight: var(--font-weight-semibold); flex: 1; min-width: 0; }
+.PhaseCard[data-period-id] .PhaseCard-head > .input-group { width: 107px; }
+.WorkPeriod-durationLabel { color: var(--text-subtle); font-size: var(--font-size-small); }
+.PhaseCard-sectionLabel {
+  padding: 6px 8px; border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-subtle-dark); color: var(--text-subtle);
+  font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+  text-transform: uppercase; letter-spacing: .03em;
+}
 .SlotReuseNote {
   display: flex; align-items: center; gap: 8px;
   min-width: 0; font-size: var(--font-size-extra-small); color: var(--text-subtle);
@@ -792,11 +810,120 @@ a { color: var(--text-link-color); text-decoration: none; }
 .SlotTable th:nth-child(3), .SlotTable td:nth-child(3) { width: 80px; }
 .SlotTable th:nth-child(4), .SlotTable td:nth-child(4) { width: 110px; }
 .SlotTable th:nth-child(5), .SlotTable td:nth-child(5) { width: 40px; }
+.PhaseCard[data-period-id] .SlotTable th:nth-child(4),
+.PhaseCard[data-period-id] .SlotTable td:nth-child(4) { width: 130px; }
+.PhaseCard[data-period-id] .SlotTable th:nth-child(5),
+.PhaseCard[data-period-id] .SlotTable td:nth-child(5) { width: 76px; white-space: nowrap; }
 .SlotTable .Input, .SlotTable .Select { height: 35px; min-height: 35px; padding: 0 8px; font-size: var(--font-size-small); }
 .SlotTable .TreeInput .input-group { width: 100%; max-width: none; }
 .SlotTable .TreeInput .input-group .Input {
   width: auto; max-width: none; flex: 1 1 auto; min-width: 0;
 }
+
+/* Resource request mini-Gantt */
+.MiniGantt {
+  border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
+  background: var(--surface-default); overflow: hidden;
+}
+.MiniGantt-toolbar {
+  display: flex; align-items: center; gap: var(--padding-sm);
+  padding: 10px var(--padding-sm); border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-subtle-light);
+}
+.MiniGantt-title { flex: 1 1 auto; min-width: 0; font-weight: var(--font-weight-semibold); }
+.MiniGantt-help { padding: 8px var(--padding-sm); color: var(--text-subtle); font-size: var(--font-size-small); border-bottom: 1px solid var(--border-subtle); }
+.MiniGantt-scroll { overflow-x: auto; overflow-y: visible; }
+.MiniGantt-canvas { min-width: 100%; width: max-content; --label-w: 230px; --week-w: 40px; }
+.MiniGantt-months, .MiniGantt-weeks, .MiniGantt-row { display: flex; min-width: 100%; }
+.MiniGantt-corner, .MiniGantt-label {
+  position: sticky; left: 0; z-index: 4; flex: 0 0 var(--label-w); width: var(--label-w);
+  border-right: 1px solid var(--border-default); background: var(--surface-default);
+}
+.MiniGantt-corner {
+  display: flex; align-items: center; padding: 0 var(--padding-sm);
+  color: var(--text-subtle); font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.MiniGantt-month {
+  height: 28px; display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--border-default); border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-subtle-light); color: var(--text-accent);
+  font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+}
+.MiniGantt-week {
+  flex: 0 0 var(--week-w); width: var(--week-w); height: 25px;
+  display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-default);
+  color: var(--text-subtle); font-size: 10px; background: var(--surface-default);
+}
+.MiniGantt-row { min-height: 46px; border-bottom: 1px solid var(--border-subtle); }
+.MiniGantt-row:last-child { border-bottom: 0; }
+.MiniGantt-label {
+  display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center;
+  gap: 8px; padding: 5px 8px;
+}
+.MiniGantt-labelCopy { min-width: 0; }
+.MiniGantt-labelTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--font-weight-semibold); font-size: var(--font-size-small); }
+.MiniGantt-labelMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-subtle); font-size: var(--font-size-extra-small); }
+.MiniGantt-actions { display: inline-flex; }
+.MiniGantt-actions .Btn-iconOnly { width: 28px; height: 28px; }
+.MiniGantt-track {
+  position: relative; flex: 0 0 calc(var(--weeks) * var(--week-w)); width: calc(var(--weeks) * var(--week-w));
+  background-color: var(--surface-default);
+  background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(var(--week-w) - 1px), var(--border-subtle) calc(var(--week-w) - 1px), var(--border-subtle) var(--week-w));
+  cursor: crosshair;
+}
+.MiniGantt-track:hover { background-color: var(--surface-list-item-hover); }
+.MiniGantt-bar {
+  position: absolute; top: 7px; height: 32px; min-width: 8px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--border-radius-default); color: var(--text-inverse);
+  font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+  cursor: grab; overflow: hidden; user-select: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.14);
+}
+.MiniGantt-bar:active { cursor: grabbing; }
+.MiniGantt-resize {
+  position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize;
+  background: rgba(255,255,255,.18);
+}
+.MiniGantt-resize--left { left: 0; }
+.MiniGantt-resize--right { right: 0; }
+.MiniGantt-empty { padding: 28px var(--padding-md); text-align: center; color: var(--text-subtle); }
+.MiniGantt-readonly .MiniGantt-track { cursor: default; }
+.MiniGantt-readonly .MiniGantt-bar { cursor: default; }
+
+/* Add/edit resource modal */
+.ModalOverlay {
+  position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center;
+  padding: var(--padding-lg); background: rgba(0,0,0,.45);
+}
+.ModalOverlay.is-open { display: flex; }
+.Modal {
+  width: min(640px, 100%); max-height: calc(100vh - 2 * var(--padding-lg));
+  display: flex; flex-direction: column; overflow: visible;
+  border-radius: var(--border-radius-default); background: var(--surface-default); box-shadow: var(--shadow-footer);
+}
+.Modal-header, .Modal-footer { display: flex; align-items: center; gap: var(--padding-sm); padding: var(--padding-md); }
+.Modal-header { border-bottom: 1px solid var(--border-default); }
+.Modal-title { flex: 1 1 auto; margin: 0; font-size: var(--font-size-h2); font-weight: var(--font-weight-regular); }
+.Modal-body { padding: var(--padding-md); overflow-y: auto; }
+.Modal-footer { justify-content: space-between; border-top: 1px solid var(--border-default); }
+.Modal-actions { display: flex; gap: var(--padding-sm); margin-left: auto; }
+.ModalFieldRow {
+  display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center;
+  gap: var(--padding-sm); min-height: 50px;
+}
+.ModalFieldRow .Field-label { font-weight: var(--font-weight-regular); }
+.RequiredMark { color: var(--text-danger); }
+.TypeSelectWrap { position: relative; display: flex; align-items: center; }
+.TypeSelectWrap .Select { padding-left: 30px; }
+.TypeSelectSwatch { position: absolute; left: 12px; z-index: 1; width: 8px; height: 8px; border-radius: 50%; background: transparent; pointer-events: none; }
+.ModalStack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ModalNumField { display: flex; align-items: center; gap: 8px; }
+.ModalNumField > .Input { width: 120px; flex: 0 0 120px; }
+.ModalNumField-unit { color: var(--text-subtle); font-size: var(--font-size-small); }
+.Modal .DurationControl .BtnGroup > button { min-width: 56px; padding: 0 10px; }
+.Modal .DurationEquivalent { min-height: 0; }
 
 .hidden { display: none !important; }
 .screen { display: none; }
@@ -846,6 +973,9 @@ a { color: var(--text-link-color); text-decoration: none; }
   .Wizard-footerInner { flex-wrap: wrap; }
   #screen-wizard { padding-bottom: 108px; }
   .Wizard-footerSummary { width: 100%; order: -1; }
+  .DurationControl { flex-direction: column; }
+  .DurationControl > .Input { width: 100%; flex-basis: auto; }
+  .ModalFieldRow { grid-template-columns: 1fr; gap: 4px; padding: 6px 0; }
   .SlotTable { min-width: 620px; }
   .PhaseCard-body { overflow-x: auto; }
 }
@@ -934,7 +1064,7 @@ a { color: var(--text-link-color); text-decoration: none; }
           <!-- Step 1: Details -->
           <div id="wizard-step-1" class="Panel">
             <h2 class="Wizard-stepTitle">Details</h2>
-            <p class="Wizard-stepIntro">Set the template name and optional return type.</p>
+            <p class="Wizard-stepIntro">Set the template details. The timeline length is shaped by the resource requirements you add next.</p>
 
             <div class="Field-row Wizard-metaFields">
               <div class="Field">
@@ -962,23 +1092,12 @@ a { color: var(--text-link-color); text-decoration: none; }
           <!-- Timeline (+ resource requests) -->
           <div id="wizard-step-timeline" class="Panel hidden">
             <h2 class="Wizard-stepTitle">Timeline</h2>
-            <p class="Wizard-stepIntro" id="timelineIntro">Build the shape and the resource demand it implies.</p>
+            <p class="Wizard-stepIntro" id="timelineIntro">Add resource requirements, then shape when each one is needed. The timeline length follows the work you place.</p>
 
             <div class="Stack">
               <div class="StructureTimeline">
-                <div class="Toolbar" style="margin-bottom:8px;">
-                  <strong class="StructureTimeline-title" style="margin:0;">Timeline &amp; buffers</strong>
-                  <div class="Toolbar-spacer"></div>
-                  <div class="AddMenu" id="addWizardTimelineMenu">
-                    <button class="Btn Btn--sm" type="button" onclick="toggleWizardTimelineMenu(event)">
-                      <i class="fa-solid fa-plus"></i> Add
-                    </button>
-                    <div class="AddMenu-panel" role="menu" id="wizardTimelineAddMenuPanel"></div>
-                  </div>
-                </div>
-                <p class="Field-hint" id="timelineHint" style="margin-bottom:8px;">Drag to reorder. Weight % shares demand hours; buffers add quiet time. Each segment seeds its resource requests below.</p>
-                <div class="ShapeTimeline" id="wizardTimelineShape"></div>
-                <div class="SegList" id="wizardTimelineRows" style="margin-top:12px;"></div>
+                <strong class="StructureTimeline-title">Demand shape</strong>
+                <div class="ShapeTimeline" id="timelineShapeVisual"></div>
               </div>
               <div id="slotEditor" class="Stack"></div>
             </div>
@@ -1008,6 +1127,71 @@ a { color: var(--text-link-color); text-decoration: none; }
 </div>
 
 <div id="shapeSegPopover" class="ShapeSegPopover" role="tooltip" aria-hidden="true"><div class="ShapeSegPopover-arrow"></div><div class="ShapeSegPopover-content"></div></div>
+<div class="ModalOverlay" id="resourceModalOverlay" role="presentation" onclick="if(event.target===this)closeResourceModal()">
+  <div class="Modal" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
+    <div class="Modal-header">
+      <h2 class="Modal-title" id="resourceModalTitle">Add Resource Requirement</h2>
+      <button class="Btn-iconOnly" type="button" aria-label="Close" onclick="closeResourceModal()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="Modal-body">
+      <div class="ModalFieldRow">
+        <label class="Field-label" for="resourceTypeSelect"><span id="resourceTypeLabel">Phase</span> <span class="RequiredMark">*</span></label>
+        <div class="TypeSelectWrap">
+          <span class="TypeSelectSwatch" id="resourceTypeSwatch" aria-hidden="true"></span>
+          <select class="Select" id="resourceTypeSelect" onchange="syncResourceModalConfirm()"></select>
+        </div>
+      </div>
+      <div class="ModalFieldRow">
+        <label class="Field-label" for="resourceGradeSelect">Grade <span class="RequiredMark">*</span></label>
+        <select class="Select" id="resourceGradeSelect" onchange="syncResourceModalConfirm()"></select>
+      </div>
+      <div class="ModalFieldRow">
+        <label class="Field-label" for="resourceWeightInput">Weighting <span class="RequiredMark">*</span></label>
+        <div class="ModalStack">
+          <div class="ModalNumField">
+            <input class="Input" id="resourceWeightInput" type="number" min="0" max="100" step="1" value="100" oninput="syncResourceModalConfirm()">
+            <span class="ModalNumField-unit">%</span>
+          </div>
+          <span class="Field-hint" id="resourceWeightHint">The requirements in this phase must total 100%.</span>
+        </div>
+      </div>
+      <div class="ModalFieldRow" id="resourceWeeksRow">
+        <label class="Field-label" for="resourceWeeksInput">Duration <span class="RequiredMark">*</span></label>
+        <div class="ModalStack">
+          <div class="DurationControl">
+            <input class="Input" id="resourceWeeksInput" type="number" min="1" step="1" value="4" oninput="syncResourceModalConfirm()">
+            <div class="BtnGroup" id="resourceDurationUnitGroup" role="group" aria-label="Duration unit">
+              <button type="button" data-unit="days" onclick="setResourceDurationUnit('days')">Days</button>
+              <button type="button" data-unit="weeks" class="is-active" onclick="setResourceDurationUnit('weeks')">Weeks</button>
+              <button type="button" data-unit="months" onclick="setResourceDurationUnit('months')">Months</button>
+            </div>
+          </div>
+          <span class="Field-hint DurationEquivalent" id="resourceDurationEquivalent"></span>
+          <span class="Field-hint" id="resourceWeeksHint">Adds a starting block you can reshape on the timeline.</span>
+        </div>
+      </div>
+      <div class="ModalFieldRow" id="resourceStartRow">
+        <label class="Field-label" for="resourceStartInput">Start week <span class="RequiredMark">*</span></label>
+        <div class="ModalStack">
+          <div class="ModalNumField">
+            <input class="Input" id="resourceStartInput" type="number" min="1" step="1" value="1" oninput="syncResourceModalConfirm()">
+            <span class="ModalNumField-unit">of the template</span>
+          </div>
+          <span class="Field-hint" id="resourceStartHint">Week 1 is the start of the template.</span>
+        </div>
+      </div>
+    </div>
+    <div class="Modal-footer">
+      <span><span class="RequiredMark">*</span> Mandatory fields</span>
+      <div class="Modal-actions">
+        <button class="Btn" type="button" onclick="closeResourceModal()">Cancel</button>
+        <button class="Btn Btn--primary" id="resourceModalConfirm" type="button" onclick="confirmResourceModal()" disabled>Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="Toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1043,6 +1227,13 @@ const PHASE_LIBRARY = {
   'Tax Signer Approval': 'var(--phase-tax-signer-approval)',
   'Tax Technical Review': 'var(--phase-tax-technical-review)'
 };
+const BOOKING_TYPE_LIBRARY = {
+  'Client work': 'var(--phase-prep)',
+  'Review': 'var(--phase-first-review)',
+  'Meeting': 'var(--phase-gather)',
+  'Administration': 'var(--phase-second-review)',
+  'Training': 'var(--phase-ext-prepare)'
+};
 const UNNAMED_PHASE_COLOR = '';
 const BUFFER_COLOR = 'var(--surface-accent)';
 const DEFAULT_PHASE_WEEKS = 1;
@@ -1072,8 +1263,12 @@ function phaseColor(name) {
   return PHASE_LIBRARY[name] || '';
 }
 
+function bookingTypeColor(name) {
+  return BOOKING_TYPE_LIBRARY[name] || 'var(--surface-emphasis)';
+}
+
 let uid = 1;
-const id = (p = 'id') => `${p}-${uid++}`;
+const id = (p = 'id') => `${p}-${Date.now().toString(36)}-${uid++}`;
 
 const state = {
   screen: 'catalogue',
@@ -1088,22 +1283,20 @@ const state = {
       phaseWorld: true,
       phases: [
         {
-          id: 'ph-prep', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          id: 'ph-prep', kind: 'phase', name: 'Tax Prep', color: 'var(--phase-tax-prep)',
           weight: 55, durationWeeks: 2, locked: false,
           slots: [
             { id: 's1', grade: 'Senior', role: 'Senior Tax Analyst', count: 2, sharePercent: 80 },
             { id: 's2', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: 20 }
           ]
         },
-        { id: 'bf-1', kind: 'buffer', durationWeeks: 1 },
         {
-          id: 'ph-fr', kind: 'phase', name: 'First Review', color: 'var(--phase-first-review)',
+          id: 'ph-fr', kind: 'phase', name: 'Tax Detailed Review', color: 'var(--phase-tax-detailed-review)',
           weight: 25, durationWeeks: 1, locked: false,
           slots: [{ id: 's3', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: 100 }]
         },
-        { id: 'bf-2', kind: 'buffer', durationWeeks: 1 },
         {
-          id: 'ph-sr', kind: 'phase', name: 'Second Review', color: 'var(--phase-second-review)',
+          id: 'ph-sr', kind: 'phase', name: 'Tax Technical Review', color: 'var(--phase-tax-technical-review)',
           weight: 20, durationWeeks: 1, locked: false,
           slots: [{ id: 's4', grade: 'Director', role: 'Tax Partner', count: 1, sharePercent: 100 }]
         }
@@ -1118,13 +1311,12 @@ const state = {
       phaseWorld: true,
       phases: [
         {
-          id: 'ph-a', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          id: 'ph-a', kind: 'phase', name: 'Tax Prep', color: 'var(--phase-tax-prep)',
           weight: 50, durationWeeks: 1, locked: false,
           slots: [{ id: 's5', grade: 'Senior', role: 'Senior Tax Analyst', count: 1, sharePercent: null }]
         },
-        { id: 'bf-a', kind: 'buffer', durationWeeks: 1 },
         {
-          id: 'ph-b', kind: 'phase', name: 'First Review', color: 'var(--phase-first-review)',
+          id: 'ph-b', kind: 'phase', name: 'Tax Detailed Review', color: 'var(--phase-tax-detailed-review)',
           weight: 50, durationWeeks: 1, locked: false,
           slots: [{ id: 's6', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: null }]
         }
@@ -1139,7 +1331,7 @@ const state = {
       phaseWorld: true,
       phases: [
         {
-          id: 'ph-d', kind: 'phase', name: 'Preparation', color: 'var(--phase-prep)',
+          id: 'ph-d', kind: 'phase', name: 'Tax Prep', color: 'var(--phase-tax-prep)',
           weight: 100, durationWeeks: 2, locked: false,
           slots: [{ id: 's7', grade: 'Manager', role: 'Tax Manager', count: 1, sharePercent: null }]
         }
@@ -1154,11 +1346,20 @@ const state = {
       phaseWorld: false,
       phases: [],
       items: [
-        { id: 'rq-1', kind: 'request', grade: 'Manager', role: '', count: 1, weight: 25, durationWeeks: 1, locked: false },
-        { id: 'rq-2', kind: 'request', grade: 'Senior', role: '', count: 3, weight: 42, durationWeeks: 3, locked: false },
-        { id: 'rq-3', kind: 'request', grade: 'Junior', role: '', count: 2, weight: 18, durationWeeks: 3, locked: false },
-        { id: 'bf-c', kind: 'buffer', durationWeeks: 1 },
-        { id: 'rq-4', kind: 'request', grade: 'Partner', role: '', count: 1, weight: 15, durationWeeks: 1, locked: false }
+        {
+          id: 'wp-1', kind: 'period', durationWeeks: 2,
+          requests: [
+            { id: 'rq-1', grade: 'Senior Manager', role: '', count: 1, weight: 25, locked: false },
+            { id: 'rq-2', grade: 'Senior', role: '', count: 3, weight: 25, locked: false }
+          ]
+        },
+        {
+          id: 'wp-2', kind: 'period', durationWeeks: 3,
+          requests: [
+            { id: 'rq-3', grade: 'Manager', role: '', count: 2, weight: 25, locked: false },
+            { id: 'rq-4', grade: 'Associate', role: '', count: 1, weight: 25, locked: false }
+          ]
+        }
       ]
     }
   ],
@@ -1204,12 +1405,15 @@ function renderCatalogue() {
 }
 
 function catalogueShapeLabel(t) {
-  if (t.phaseWorld === false) {
-    const n = (t.items || []).filter(i => i.kind === 'request').length;
-    return `${n} request${n === 1 ? '' : 's'}`;
+  let n = Array.isArray(t.resourceRequests) ? t.resourceRequests.length : 0;
+  if (!n && t.phaseWorld === false) {
+    n = (t.items || []).reduce((sum, item) =>
+      sum + (Array.isArray(item.requests) ? item.requests.length : item.kind === 'request' ? 1 : 0), 0);
   }
-  const n = (t.phases || []).filter(p => !p.kind || p.kind === 'phase').length;
-  return `${n} phase${n === 1 ? '' : 's'}`;
+  if (!n && t.phaseWorld !== false) {
+    n = (t.phases || []).reduce((sum, phase) => sum + (phase.slots?.length || 0), 0);
+  }
+  return `${n} resource request${n === 1 ? '' : 's'}`;
 }
 
 function statusPill(s) {
@@ -1226,6 +1430,7 @@ function editProfile(pid) {
   if (state.draft.phaseWorld == null) state.draft.phaseWorld = true;
   if (!Array.isArray(state.draft.phases)) state.draft.phases = [];
   if (!Array.isArray(state.draft.items)) state.draft.items = [];
+  normaliseResourceRequests(state.draft);
   openWizard(false);
 }
 
@@ -1236,6 +1441,180 @@ function isPhaseItem(p) {
 
 function effortPhases(d = state.draft) {
   return (d.phases || []).filter(isPhaseItem);
+}
+
+function isWorkPeriod(item) {
+  return item?.kind === 'period';
+}
+
+function workPeriods(d = state.draft) {
+  return (d.items || []).filter(isWorkPeriod);
+}
+
+function requestTypeKey(request, d = state.draft) {
+  return isPhaseWorld(d) ? request?.phase : request?.bookingType;
+}
+
+function requestsForType(type, d = state.draft) {
+  return requestItems(d).filter(request => requestTypeKey(request, d) === type);
+}
+
+function equaliseRequestGroup(type, d = state.draft) {
+  const group = requestsForType(type, d);
+  if (!group.length) return;
+  const each = Math.floor(100 / group.length);
+  const remainder = 100 - each * group.length;
+  group.forEach((request, index) => {
+    request.weightPercent = each + (index < remainder ? 1 : 0);
+  });
+}
+
+function distributeRequestWeights(group, total) {
+  if (!group.length) return;
+  const source = group.map(request => Math.max(0, Number(request.weightPercent) || 0));
+  const sourceTotal = source.reduce((sum, value) => sum + value, 0);
+  if (sourceTotal <= 0) {
+    const each = Math.floor(total / group.length);
+    const remainder = total - each * group.length;
+    group.forEach((request, index) => {
+      request.weightPercent = each + (index < remainder ? 1 : 0);
+    });
+    return;
+  }
+  const raw = source.map(value => total * (value / sourceTotal));
+  const values = raw.map(Math.floor);
+  let remainder = total - values.reduce((sum, value) => sum + value, 0);
+  const order = raw.map((value, index) => ({ index, fraction: value - values[index] }))
+    .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+  for (let index = 0; index < remainder; index += 1) {
+    values[order[index % order.length].index] += 1;
+  }
+  group.forEach((request, index) => { request.weightPercent = values[index]; });
+}
+
+function normaliseRequestGroup(type, d = state.draft) {
+  const group = requestsForType(type, d);
+  if (!group.length) return;
+  if (group.length === 1) {
+    group[0].weightPercent = 100;
+    return;
+  }
+  const values = group.map(request => Number(request.weightPercent));
+  const valid = values.every(value => Number.isFinite(value) && value >= 0 && value <= 100);
+  const sum = values.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
+  if (valid && sum === 100) return;
+  if (!valid || sum <= 0) {
+    equaliseRequestGroup(type, d);
+    return;
+  }
+  distributeRequestWeights(group, 100);
+}
+
+function normaliseResourceWeights(d = state.draft) {
+  const types = [...new Set(requestItems(d).map(request => requestTypeKey(request, d)).filter(Boolean))];
+  types.forEach(type => normaliseRequestGroup(type, d));
+}
+
+function rebalanceRequestWeight(requestId, d = state.draft) {
+  const target = findRequest(requestId, d);
+  if (!target) return;
+  const type = requestTypeKey(target, d);
+  const group = requestsForType(type, d);
+  if (group.length === 1) {
+    target.weightPercent = 100;
+    return;
+  }
+  const fixed = Math.min(100, Math.max(0, Math.round(Number(target.weightPercent) || 0)));
+  target.weightPercent = fixed;
+  const peers = group.filter(request => request.id !== requestId);
+  const remainder = 100 - fixed;
+  distributeRequestWeights(peers, remainder);
+}
+
+function normaliseResourceRequests(d) {
+  if (!d) return;
+  const legacyWeeks = isPhaseWorld(d)
+    ? (d.phases || []).reduce((sum, item) => sum + (Number(item.durationWeeks) || 0), 0)
+    : (d.items || []).reduce((sum, item) => sum + (Number(item.durationWeeks) || 0), 0);
+  d.durationDays = Math.max(1, Math.round(Number(d.durationDays) || legacyWeeks * 7 || 90));
+  d.durationUnit = ['days', 'weeks', 'months'].includes(d.durationUnit) ? d.durationUnit : 'days';
+
+  if (Array.isArray(d.resourceRequests)) {
+    d.resourceRequests = d.resourceRequests.map(request => ({
+      id: request.id || id('rr'),
+      grade: request.grade || '',
+      role: request.role || '',
+      count: Math.max(1, Number(request.count) || 1),
+      phase: request.phase || '',
+      bookingType: request.bookingType || '',
+      weightPercent: Number.isFinite(Number(request.weightPercent ?? request.effortPercent))
+        ? Math.min(100, Math.max(0, Math.round(Number(request.weightPercent ?? request.effortPercent))))
+        : null,
+      segments: Array.isArray(request.segments)
+        ? request.segments.map(segment => ({
+            id: segment.id || id('seg'),
+            startWeek: Math.max(0, Math.round(Number(segment.startWeek) || 0)),
+            durationWeeks: Math.max(1, Math.round(Number(segment.durationWeeks) || 1))
+          }))
+        : []
+    }));
+    normaliseResourceWeights(d);
+    return;
+  }
+
+  const requests = [];
+  let cursorWeek = 0;
+  if (isPhaseWorld(d)) {
+    (d.phases || []).forEach(item => {
+      const weeks = Math.max(1, Number(item.durationWeeks) || 1);
+      if (isPhaseItem(item)) {
+        (item.slots || []).forEach(slot => requests.push({
+          id: id('rr'),
+          grade: slot.grade || '',
+          role: slot.role || '',
+          count: Math.max(1, Number(slot.count) || 1),
+          phase: item.name || '',
+          bookingType: '',
+          segments: [{ id: id('seg'), startWeek: cursorWeek, durationWeeks: weeks }]
+        }));
+      }
+      cursorWeek += weeks;
+    });
+  } else {
+    const bookingTypes = Object.keys(BOOKING_TYPE_LIBRARY);
+    let requestIndex = 0;
+    (d.items || []).forEach(item => {
+      const weeks = Math.max(1, Number(item.durationWeeks) || 1);
+      if (isWorkPeriod(item)) {
+        (item.requests || []).forEach(request => {
+          requests.push({
+            id: request.id || id('rr'),
+            grade: request.grade || '',
+            role: request.role || '',
+            count: Math.max(1, Number(request.count) || 1),
+            phase: '',
+            bookingType: request.bookingType || bookingTypes[requestIndex % bookingTypes.length],
+            segments: [{ id: id('seg'), startWeek: cursorWeek, durationWeeks: weeks }]
+          });
+          requestIndex += 1;
+        });
+      } else if (item.kind === 'request') {
+        requests.push({
+          id: item.id || id('rr'),
+          grade: item.grade || '',
+          role: item.role || '',
+          count: Math.max(1, Number(item.count) || 1),
+          phase: '',
+          bookingType: item.bookingType || bookingTypes[requestIndex % bookingTypes.length],
+          segments: [{ id: id('seg'), startWeek: cursorWeek, durationWeeks: weeks }]
+        });
+        requestIndex += 1;
+      }
+      cursorWeek += weeks;
+    });
+  }
+  d.resourceRequests = requests;
+  normaliseResourceWeights(d);
 }
 
 function getSegments(d = state.draft) {
@@ -1356,33 +1735,47 @@ function timelineList(d = state.draft) {
   return d.phases || [];
 }
 
+// The template's real length is whatever the resource requirements actually reach on the Gantt.
+function contentWeeks(d = state.draft) {
+  let weeks = 0;
+  requestItems(d).forEach(request => (request.segments || []).forEach(segment => {
+    weeks = Math.max(weeks, (Number(segment.startWeek) || 0) + (Number(segment.durationWeeks) || 0));
+  }));
+  if (isPhaseWorld(d)) {
+    const shapeWeeks = (d.phases || []).reduce((sum, item) => sum + (Number(item.durationWeeks) || 0), 0);
+    weeks = Math.max(weeks, shapeWeeks);
+  }
+  return Math.max(1, weeks);
+}
+
+// The canvas keeps a little empty room to the right so new work can always be drawn or extended.
+const GANTT_CANVAS_SLACK = 2;
+const GANTT_MIN_CANVAS = 8;
 function timelineWeeks(d = state.draft) {
-  return timelineList(d).reduce((a, p) => a + (Number(p.durationWeeks) || 0), 0);
+  return Math.max(GANTT_MIN_CANVAS, contentWeeks(d) + GANTT_CANVAS_SLACK);
+}
+
+// Keep the stored duration in step with the placed work so review/summary reflect the Gantt.
+function syncDerivedDuration(d = state.draft) {
+  if (d === state.draft) d.durationDays = contentWeeks(d) * 7;
+  return contentWeeks(d);
 }
 
 function requestItems(d = state.draft) {
-  return (d.items || []).filter(i => i.kind === 'request');
+  return d?.resourceRequests || [];
+}
+
+function findRequest(requestId, d = state.draft) {
+  return requestItems(d).find(request => request.id === requestId) || null;
 }
 
 function detailsSummaryText() {
   const d = state.draft;
   if (!d) return '';
-  if (!isPhaseWorld(d)) {
-    const reqs = requestItems(d);
-    const buffers = (d.items || []).filter(p => p.kind === 'buffer').length;
-    const weeks = timelineWeeks(d);
-    const bits = [`${reqs.length} request${reqs.length === 1 ? '' : 's'}`];
-    if (buffers) bits.push(`${buffers} buffer${buffers === 1 ? '' : 's'}`);
-    if (weeks) bits.push(`${weeks}w`);
-    return bits.join(' · ');
-  }
-  const phases = effortPhases(d);
-  if (!phases.length && !(d.phases || []).length) return '';
-  const n = phases.length;
-  const weeks = timelineWeeks(d);
-  const buffers = (d.phases || []).filter(p => p.kind === 'buffer').length;
-  const bits = [`${n} phase${n === 1 ? '' : 's'}`];
-  if (buffers) bits.push(`${buffers} buffer${buffers === 1 ? '' : 's'}`);
+  const reqs = requestItems(d);
+  if (!reqs.length) return '';
+  const bits = [`${reqs.length} resource requirement${reqs.length === 1 ? '' : 's'}`];
+  const weeks = contentWeeks(d);
   if (weeks) bits.push(`${weeks}w`);
   return bits.join(' · ');
 }
@@ -1390,6 +1783,7 @@ function detailsSummaryText() {
 function updateFooterSummary() {
   const summary = document.getElementById('wizardFooterSummary');
   if (!summary || !state.draft) return;
+  syncDerivedDuration();
   const panel = currentWizardPanel();
   if (panel === 'details' || panel === 'timeline') {
     summary.textContent = detailsSummaryText();
@@ -1398,9 +1792,7 @@ function updateFooterSummary() {
 
 function shapeSumOk() {
   if (!isPhaseWorld()) {
-    const reqs = requestItems();
-    const sum = reqs.reduce((a, p) => a + (Number(p.weight) || 0), 0);
-    return sum === 100 && reqs.length > 0;
+    return requestItems().length > 0;
   }
   const phases = effortPhases();
   const sum = phases.reduce((a, p) => a + (Number(p.weight) || 0), 0);
@@ -1416,9 +1808,12 @@ function blankDraft() {
     status: 'draft',
     returnType: '',
     phaseWorld: true,
+    durationDays: 90,
+    durationUnit: 'days',
     _editing: false,
     phases: [],
-    items: []
+    items: [],
+    resourceRequests: []
   };
 }
 
@@ -1427,6 +1822,7 @@ function openWizard(fresh = true) {
   if (state.draft.phaseWorld == null) state.draft.phaseWorld = true;
   if (!Array.isArray(state.draft.phases)) state.draft.phases = [];
   if (!Array.isArray(state.draft.items)) state.draft.items = [];
+  normaliseResourceRequests(state.draft);
   state.wizardStep = 1;
   showScreen('wizard');
   syncWizardForm();
@@ -1446,17 +1842,10 @@ function setPhaseWorld(on) {
   if (state.draft.phaseWorld === next) return;
   readWizardForm();
   state.draft.phaseWorld = next;
-  if (next) {
-    state.draft.items = [];
-    if (!state.draft.phases.length) state.draft.phases = [];
-  } else {
-    state.draft.phases = [];
-    if (!state.draft.items.length) {
-      state.draft.items = [
-        { id: id('rq'), kind: 'request', grade: 'Senior', role: '', count: 1, weight: 100, durationWeeks: 1, locked: false }
-      ];
-    }
-  }
+  // Requirements are typed by phase or booking type, so switching modes clears them.
+  state.draft.phases = [];
+  state.draft.items = [];
+  state.draft.resourceRequests = [];
   state.wizardStep = 1;
   syncModeToggle();
   toast(next ? 'Switched to with phases' : 'Switched to without phases');
@@ -1467,12 +1856,55 @@ function syncWizardForm() {
   const d = state.draft;
   document.getElementById('wp-name').value = d.name;
   document.getElementById('wp-return').value = d.returnType || '';
+  syncDurationControl();
 }
 
 function readWizardForm() {
   const d = state.draft;
   d.name = document.getElementById('wp-name').value.trim();
   d.returnType = document.getElementById('wp-return').value;
+}
+
+function durationDisplayValue(days = state.draft.durationDays, unit = state.draft.durationUnit) {
+  if (unit === 'weeks') return Math.round((days / 7) * 10) / 10;
+  if (unit === 'months') return Math.round((days / 30) * 10) / 10;
+  return Math.round(days);
+}
+
+function durationDaysFromDisplay(value, unit = state.draft.durationUnit) {
+  const amount = Math.max(0, Number(value) || 0);
+  if (unit === 'weeks') return Math.round(amount * 7);
+  if (unit === 'months') return Math.round(amount * 30);
+  return Math.round(amount);
+}
+
+function syncDurationControl() {
+  const d = state.draft;
+  const input = document.getElementById('wp-duration');
+  if (input) {
+    input.value = durationDisplayValue(d.durationDays, d.durationUnit);
+    input.step = d.durationUnit === 'days' ? '1' : '0.5';
+    input.setAttribute('aria-invalid', d.durationDays > 0 ? 'false' : 'true');
+  }
+  document.querySelectorAll('#durationUnitGroup [data-unit]').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.unit === d.durationUnit);
+  });
+  const equivalent = document.getElementById('durationEquivalent');
+  if (equivalent) equivalent.textContent = d.durationUnit === 'days' ? '' : `= ${d.durationDays} day${d.durationDays === 1 ? '' : 's'}`;
+  document.getElementById('durationError')?.classList.toggle('hidden', d.durationDays > 0);
+}
+
+function setDurationUnit(unit) {
+  if (!['days', 'weeks', 'months'].includes(unit)) return;
+  state.draft.durationUnit = unit;
+  syncDurationControl();
+}
+
+function onDurationInput(value) {
+  state.draft.durationDays = durationDaysFromDisplay(value);
+  syncDurationControl();
+  updateFooterSummary();
+  renderStepper();
 }
 
 function onReturnTypeChange(value) {
@@ -1504,10 +1936,6 @@ function newPhase(weight) {
   };
 }
 
-function newBuffer(weeks = 1) {
-  return { id: id('bf'), kind: 'buffer', durationWeeks: weeks };
-}
-
 function addPhase() {
   const d = state.draft;
   if (!isPhaseWorld(d)) return;
@@ -1537,16 +1965,6 @@ function addPhase() {
   focusLastPhaseSelect();
 }
 
-function addBuffer() {
-  if (isPhaseWorld()) {
-    state.draft.phases.push(newBuffer(1));
-  } else {
-    state.draft.items.push(newBuffer(1));
-  }
-  refreshTimelineEditors();
-  updateFooterSummary();
-}
-
 function focusLastPhaseSelect() {
   const selects = document.querySelectorAll('.SegRow-phaseSelect');
   selects[selects.length - 1]?.focus();
@@ -1555,8 +1973,12 @@ function focusLastPhaseSelect() {
 function setPhaseName(phaseId, name) {
   const phase = state.draft.phases.find(p => p.id === phaseId);
   if (!phase || !isPhaseItem(phase)) return;
+  const previousName = phase.name;
   phase.name = name;
   phase.color = name ? phaseColor(name) : UNNAMED_PHASE_COLOR;
+  requestItems().forEach(request => {
+    if (request.phase === previousName) request.phase = name;
+  });
   refreshTimelineEditors();
 }
 
@@ -1573,6 +1995,9 @@ function removePhase(phaseId) {
   });
 
   if (isPhaseItem(removed)) {
+    requestItems(d).forEach(request => {
+      if (request.phase === removed.name) request.phase = '';
+    });
     const segs = getSegments();
     const unlocked = segs.filter(s => !s.locked);
     if (unlocked.length && removed.weight) {
@@ -1600,11 +2025,11 @@ function removePhase(phaseId) {
 const dragState = { phaseId: null };
 
 function phaseDragArm(event) {
-  event.target.closest('.SegRow')?.setAttribute('draggable', 'true');
+  event.target.closest('.SegRow, .PhaseCard')?.setAttribute('draggable', 'true');
 }
 
 function phaseDragDisarm(event) {
-  event.target.closest('.SegRow')?.setAttribute('draggable', 'false');
+  event.target.closest('.SegRow, .PhaseCard')?.setAttribute('draggable', 'false');
 }
 
 function onPhaseDragStart(event, phaseId) {
@@ -1642,7 +2067,7 @@ function onPhaseDragEnd(event) {
   dragState.phaseId = null;
   event.currentTarget.classList.remove('is-dragging');
   event.currentTarget.setAttribute('draggable', 'false');
-  document.querySelectorAll('.SegRow.is-dropTarget').forEach(el => el.classList.remove('is-dropTarget'));
+  document.querySelectorAll('.SegRow.is-dropTarget, .PhaseCard.is-dropTarget').forEach(el => el.classList.remove('is-dropTarget'));
 }
 
 function normaliseTo100() {
@@ -1765,7 +2190,10 @@ function onNameInput(field) {
 // A step unlocks once every step before it has its required fields filled.
 // Steps with nothing required never block the ones after them.
 function stepIssue(panelId) {
-  if (panelId === 'details') return state.draft && state.draft.name ? null : 'Enter a template name';
+  if (panelId === 'details') {
+    if (!(state.draft && state.draft.name)) return 'Enter a template name';
+    return null;
+  }
   if (panelId === 'timeline') return timelineIssue();
   return null;
 }
@@ -1784,8 +2212,7 @@ function canReachStep(stepNumber) {
 }
 
 function renderDetails() {
-  renderShapeTimeline();
-  renderSegList();
+  syncDurationControl();
 }
 
 function shapeTimelineMarkup(d) {
@@ -1796,13 +2223,13 @@ function shapeTimelineMarkup(d) {
     if (weeks <= 0) return;
     if (p.kind === 'buffer') {
       items.push({ kind: 'buffer', name: 'Buffer', weeks, color: BUFFER_COLOR });
-    } else if (p.kind === 'request') {
-      const name = [p.grade, p.role].filter(Boolean).join(' / ') || 'Resource request';
+    } else if (p.kind === 'period') {
+      const periodNumber = workPeriods(d).findIndex(period => period.id === p.id) + 1;
       items.push({
-        kind: 'request',
-        name,
+        kind: 'period',
+        name: `Work Period ${periodNumber}`,
         weeks,
-        weight: p.weight,
+        requestCount: (p.requests || []).length,
         color: ''
       });
     } else {
@@ -1816,14 +2243,14 @@ function shapeTimelineMarkup(d) {
     }
   });
 
-  const total = items.reduce((a, s) => a + s.weeks, 0) || 1;
-  const emptyLabel = isPhaseWorld(d) ? 'Add phases to build the shape' : 'Add resource requests to build the shape';
+  const total = timelineWeeks(d);
+  const emptyLabel = isPhaseWorld(d) ? 'Add phases to build the shape' : 'Add work periods to build the shape';
 
   const bar = items.map((s, index) => {
     const width = (s.weeks / total) * 100;
     const label = `${s.name} · ${s.weeks}w`;
-    const cls = s.kind === 'buffer' ? ' ShapeSeg--buffer' : '';
     const hasColor = s.kind !== 'buffer' && Boolean(s.color);
+    const cls = `${s.kind === 'buffer' ? ' ShapeSeg--buffer' : ''}${hasColor ? '' : ' ShapeSeg--plain'}`;
     const bg = hasColor ? `background:${s.color};` : '';
     const textColor = hasColor ? 'var(--text-inverse)' : 'var(--text-default)';
     const payload = encodeURIComponent(JSON.stringify({
@@ -1831,6 +2258,7 @@ function shapeTimelineMarkup(d) {
       name: s.name,
       weeks: s.weeks,
       weight: s.weight,
+      requestCount: s.requestCount,
       color: s.color || ''
     }));
     return `<div class="ShapeSeg${cls}" style="width:${width}%;${bg}color:${textColor};"
@@ -1860,13 +2288,32 @@ function ensureShapeSegPopover() {
 }
 
 function shapeSegPopoverHtml(data) {
+  if (data.kind === 'demand') {
+    const rows = (data.types || []).map(type =>
+      `<div class="ShapeSegPopover-row">
+        <span><span class="SegRow-dot" style="background:${type.color};margin-right:6px;" aria-hidden="true"></span>${esc(type.name)}</span>
+        <strong>${type.count} req${type.count === 1 ? '' : 's'}</strong>
+      </div>`).join('');
+    return `<div class="ShapeSegPopover-title"><span>${esc(data.name)}</span></div>
+      <div class="ShapeSegPopover-rows">
+        <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
+        ${rows || '<div class="ShapeSegPopover-row"><span>No work scheduled</span><strong>—</strong></div>'}
+      </div>`;
+  }
   if (data.kind === 'buffer') {
     return `<div class="ShapeSegPopover-title"><i class="fa-regular fa-clock" aria-hidden="true"></i><span>Buffer</span></div>
       <div class="ShapeSegPopover-rows">
         <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
       </div>`;
   }
-  const shareLabel = data.kind === 'request' ? 'Project share' : 'Demand share';
+  if (data.kind === 'period') {
+    return `<div class="ShapeSegPopover-title"><span class="SegRow-dot" style="background:var(--surface-emphasis)" aria-hidden="true"></span><span>${esc(data.name)}</span></div>
+      <div class="ShapeSegPopover-rows">
+        <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
+        <div class="ShapeSegPopover-row"><span>Resource requests</span><strong>${data.requestCount || 0}</strong></div>
+      </div>`;
+  }
+  const shareLabel = 'Demand share';
   return `<div class="ShapeSegPopover-title"><span class="SegRow-dot" style="background:${data.color || UNNAMED_PHASE_COLOR}" aria-hidden="true"></span><span>${esc(data.name)}</span></div>
     <div class="ShapeSegPopover-rows">
       <div class="ShapeSegPopover-row"><span>Duration</span><strong>${data.weeks}w</strong></div>
@@ -1914,6 +2361,106 @@ function hideShapeSegPopover() {
 function renderShapeTimeline(targetId = 'shapeTimeline') {
   const el = document.getElementById(targetId);
   if (el) el.innerHTML = shapeTimelineMarkup(state.draft);
+}
+
+// Read-only overview derived from the placed requirements: which types are live in each week.
+function demandShapeMarkup(d = state.draft) {
+  const requests = requestItems(d);
+  const total = contentWeeks(d);
+  if (!requests.some(request => (request.segments || []).length)) {
+    return `
+      <div class="ShapeLabels"><span>Start</span><span>Nothing placed yet</span><span>Deadline</span></div>
+      <div class="ShapeBarWrap">
+        <div class="ShapeBar">
+          <div class="ShapeSeg ShapeSeg--plain" style="width:100%;color:var(--text-subtle);">Add resource requirements to build the shape</div>
+        </div>
+      </div>`;
+  }
+
+  const weeks = Array.from({ length: total }, () => new Map());
+  requests.forEach(request => {
+    const name = requestTypeName(request, d);
+    const color = requestColor(request, d);
+    (request.segments || []).forEach(segment => {
+      const start = Math.max(0, Math.round(Number(segment.startWeek) || 0));
+      const end = Math.min(total, start + Math.max(0, Math.round(Number(segment.durationWeeks) || 0)));
+      for (let week = start; week < end; week += 1) {
+        const entry = weeks[week].get(name);
+        if (entry) entry.count += 1;
+        else weeks[week].set(name, { name, color, count: 1 });
+      }
+    });
+  });
+
+  // Collapse neighbouring weeks that carry an identical mix so the bar reads as blocks, not 40 slivers.
+  const runs = [];
+  weeks.forEach((map, index) => {
+    const types = [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+    const key = types.map(type => `${type.name}:${type.count}`).join('|');
+    const last = runs[runs.length - 1];
+    if (last && last.key === key) {
+      last.weeks += 1;
+      last.endWeek = index;
+    } else {
+      runs.push({ key, types, weeks: 1, startWeek: index, endWeek: index });
+    }
+  });
+
+  const bar = runs.map(run => {
+    const width = (run.weeks / total) * 100;
+    const count = run.types.length;
+    let background = '';
+    if (count === 1) {
+      background = `background:${run.types[0].color};`;
+    } else if (count > 1) {
+      const stops = run.types.map((type, index) =>
+        `${type.color} ${((index / count) * 100).toFixed(2)}% ${(((index + 1) / count) * 100).toFixed(2)}%`).join(', ');
+      background = `background:linear-gradient(90deg, ${stops});`;
+    }
+    const label = count === 0 ? 'No work' : (count === 1 ? run.types[0].name : `${count} types`);
+    const full = `${label} · ${run.weeks}w`;
+    const payload = encodeURIComponent(JSON.stringify({
+      kind: 'demand',
+      name: run.startWeek === run.endWeek ? `Week ${run.startWeek + 1}` : `Weeks ${run.startWeek + 1}–${run.endWeek + 1}`,
+      weeks: run.weeks,
+      types: run.types
+    }));
+    return `<div class="ShapeSeg${count ? '' : ' ShapeSeg--plain'}" style="width:${width}%;${background}color:${count ? 'var(--text-inverse)' : 'var(--text-default)'};"
+      tabindex="0" role="button" aria-label="${esc(full)}"
+      data-shape-popover="${payload}"
+      onmouseenter="showShapeSegPopover(event)"
+      onmouseleave="hideShapeSegPopover()"
+      onfocus="showShapeSegPopover(event)"
+      onblur="hideShapeSegPopover()">${width >= 8 ? esc(width >= 16 ? full : `${run.weeks}w`) : ''}</div>`;
+  }).join('');
+
+  const legendTypes = [];
+  requests.forEach(request => {
+    if (!(request.segments || []).length) return;
+    const name = requestTypeName(request, d);
+    if (!legendTypes.some(entry => entry.name === name)) {
+      legendTypes.push({ name, color: requestColor(request, d) });
+    }
+  });
+  const legend = legendTypes.map(entry =>
+    `<span class="ShapeLegend-item"><span class="ShapeLegend-swatch" style="background:${entry.color}"></span>${esc(entry.name)}</span>`
+  ).join('');
+
+  return `
+    <div class="ShapeLabels">
+      <span>Start</span>
+      <span>${total} week${total === 1 ? '' : 's'}</span>
+      <span>Deadline</span>
+    </div>
+    <div class="ShapeBarWrap">
+      <div class="ShapeBar">${bar}</div>
+    </div>
+    <div class="ShapeLegend">${legend}</div>`;
+}
+
+function renderDemandShape(targetId, d = state.draft) {
+  const el = document.getElementById(targetId);
+  if (el) el.innerHTML = demandShapeMarkup(d);
 }
 
 function refreshTimelineEditors() {
@@ -2438,81 +2985,48 @@ function linkSourceLabel(slot) {
   return `${sourcePhase.name} · ${who}`;
 }
 
-function toggleWizardTimelineMenu(event) {
-  event.stopPropagation();
-  document.getElementById('addWizardTimelineMenu')?.classList.toggle('is-open');
-}
-
-function closeWizardTimelineMenu() {
-  document.getElementById('addWizardTimelineMenu')?.classList.remove('is-open');
-}
-
-function timelineAddMenuMarkup() {
-  if (isPhaseWorld()) {
-    return `
-      <button class="AddMenu-item" type="button" role="menuitem" onclick="addPhase(); closeWizardTimelineMenu();">
-        <i class="fa-solid fa-layer-group"></i> Phase
-      </button>
-      <button class="AddMenu-item" type="button" role="menuitem" onclick="addBuffer(); closeWizardTimelineMenu();">
-        <i class="fa-regular fa-clock"></i> Buffer
-      </button>`;
-  }
-  return `
-    <button class="AddMenu-item" type="button" role="menuitem" onclick="addRequest(); closeWizardTimelineMenu();">
-      <i class="fa-solid fa-user"></i> Resource request
-    </button>
-    <button class="AddMenu-item" type="button" role="menuitem" onclick="addBuffer(); closeWizardTimelineMenu();">
-      <i class="fa-regular fa-clock"></i> Buffer
-    </button>`;
-}
-
 function renderTimeline() {
   const intro = document.getElementById('timelineIntro');
-  const hint = document.getElementById('timelineHint');
-  const addPanel = document.getElementById('wizardTimelineAddMenuPanel');
-  if (addPanel) addPanel.innerHTML = timelineAddMenuMarkup();
-
-  if (isPhaseWorld()) {
-    if (intro) intro.textContent = 'Add phases and buffers, then set the resource requests each handoff needs.';
-    if (hint) hint.textContent = 'Drag to reorder. Weight % shares demand hours; buffers add quiet time. Adding a phase seeds its resource requests below.';
-    renderShapeTimeline('wizardTimelineShape');
-    renderSegList('wizardTimelineRows');
-    renderSlotEditor();
-  } else {
-    if (intro) intro.textContent = 'Add resource requests and buffers. Project weights and grades live on the same step.';
-    if (hint) hint.textContent = 'Drag to reorder. Weight % shares demand across the project; buffers add quiet time. Adding a request seeds grade, role, and count below.';
-    renderShapeTimeline('wizardTimelineShape');
-    renderFlatSegList();
-    renderRequestCards();
+  if (intro) {
+    intro.textContent = isPhaseWorld()
+      ? 'Add resource requirements against their phase, then shape when each one is needed. The timeline length follows the work you place.'
+      : 'Add resource requirements against their booking type, then shape when each one is needed. The timeline length follows the work you place.';
   }
+  renderResourceGantt('slotEditor');
   renderStepper();
 }
 
 function newRequest(weight = 0) {
   return {
     id: id('rq'),
-    kind: 'request',
     grade: 'Senior',
     role: '',
     count: 1,
     weight,
-    durationWeeks: DEFAULT_PHASE_WEEKS,
     locked: false
+  };
+}
+
+function newWorkPeriod(weight = 0) {
+  return {
+    id: id('wp'),
+    kind: 'period',
+    durationWeeks: DEFAULT_PHASE_WEEKS,
+    requests: [newRequest(weight)]
   };
 }
 
 function getRequestSegments(d = state.draft) {
   return requestItems(d).map(p => ({
     key: p.id, kind: 'request', name: p.grade || 'Request',
-    weight: Number(p.weight) || 0, locked: !!p.locked,
-    durationWeeks: Number(p.durationWeeks) || DEFAULT_PHASE_WEEKS
+    weight: Number(p.weight) || 0, locked: !!p.locked
   }));
 }
 
 function applyRequestSegments(segs) {
   segs.forEach(s => {
-    const p = state.draft.items.find(x => x.id === s.key);
-    if (p && p.kind === 'request') {
+    const p = findRequest(s.key);
+    if (p) {
       p.weight = Math.round(s.weight);
       p.locked = s.locked;
     }
@@ -2522,7 +3036,7 @@ function applyRequestSegments(segs) {
 function setRequestWeight(key, weight) {
   const segs = redistribute(getRequestSegments(), key, weight);
   applyRequestSegments(segs);
-  renderTimeline();
+  renderWorkPeriodCards();
   updateFooterSummary();
 }
 
@@ -2531,22 +3045,20 @@ function previewRequestWeight(key, weight) {
   const segs = redistribute(getRequestSegments(), key, weight);
   applyRequestSegments(segs);
   segs.forEach(s => {
-    document.querySelectorAll(`.SegRow[data-seg-key="${s.key}"]`).forEach(row => {
-      const range = row.querySelector('.Range');
+    document.querySelectorAll(`tr[data-request-id="${s.key}"]`).forEach(row => {
       const pct = row.querySelector('.SegRow-pctInput');
-      if (range) range.value = s.weight;
       if (pct && document.activeElement !== pct) pct.value = s.weight;
       else if (pct && s.key === key) pct.value = s.weight;
     });
   });
-  renderShapeTimeline('wizardTimelineShape');
+  renderStepper();
   updateFooterSummary();
 }
 
 function commitRequestWeight(key, weight) {
-  const input = document.querySelector(`.SegRow[data-seg-key="${key}"] .SegRow-pctInput`);
+  const input = document.querySelector(`tr[data-request-id="${key}"] .SegRow-pctInput`);
   if (weight === '' || weight == null) {
-    const current = requestItems().find(p => p.id === key);
+    const current = findRequest(key);
     if (input && current) input.value = current.weight;
     return;
   }
@@ -2567,30 +3079,48 @@ function toggleRequestLock(key) {
   }
   seg.locked = wouldLock;
   applyRequestSegments(segs);
-  renderTimeline();
+  renderWorkPeriodCards();
   updateFooterSummary();
 }
 
-function addRequest() {
+function addWorkPeriod() {
   const d = state.draft;
   const reqs = requestItems(d);
   if (!reqs.length) {
-    d.items.push(newRequest(100));
+    d.items.push(newWorkPeriod(100));
     renderTimeline();
     updateFooterSummary();
     return;
   }
   const unlocked = getRequestSegments().filter(s => !s.locked);
   if (!unlocked.length) {
-    toast('Unlock a request before adding another');
+    toast('Unlock a resource request before adding a work period');
     return;
   }
   const unlockedSum = unlocked.reduce((a, s) => a + s.weight, 0);
   const starter = Math.min(20, Math.max(5, Math.floor(unlockedSum / (unlocked.length + 1))));
-  const req = newRequest(0);
-  d.items.push(req);
+  const period = newWorkPeriod(0);
+  const req = period.requests[0];
+  d.items.push(period);
   applyRequestSegments(redistribute(getRequestSegments(), req.id, starter));
   renderTimeline();
+  updateFooterSummary();
+}
+
+function addRequest(periodId) {
+  const period = workPeriods().find(item => item.id === periodId);
+  if (!period) return;
+  const unlocked = getRequestSegments().filter(s => !s.locked);
+  if (!unlocked.length) {
+    toast('Unlock a resource request before adding another');
+    return;
+  }
+  const unlockedSum = unlocked.reduce((a, s) => a + s.weight, 0);
+  const starter = Math.min(20, Math.max(5, Math.floor(unlockedSum / (unlocked.length + 1))));
+  const request = newRequest(0);
+  period.requests.push(request);
+  applyRequestSegments(redistribute(getRequestSegments(), request.id, starter));
+  renderWorkPeriodCards();
   updateFooterSummary();
 }
 
@@ -2603,11 +3133,12 @@ function removeTimelineItem(itemId) {
   const index = d.items.findIndex(p => p.id === itemId);
   if (index === -1) return;
   const removed = d.items.splice(index, 1)[0];
-  if (removed.kind === 'request') {
+  if (isWorkPeriod(removed)) {
+    const removedWeight = (removed.requests || []).reduce((sum, request) => sum + (Number(request.weight) || 0), 0);
     const segs = getRequestSegments();
     const unlocked = segs.filter(s => !s.locked);
-    if (unlocked.length && removed.weight) {
-      const give = removed.weight || 0;
+    if (unlocked.length && removedWeight) {
+      const give = removedWeight;
       const base = unlocked.reduce((a, s) => a + s.weight, 0) || unlocked.length;
       let allocated = 0;
       unlocked.forEach((s, i) => {
@@ -2633,6 +3164,23 @@ function removeTimelineItem(itemId) {
     }
   }
   renderTimeline();
+  updateFooterSummary();
+}
+
+function removeRequest(periodId, requestId) {
+  const period = workPeriods().find(item => item.id === periodId);
+  if (!period || period.requests.length <= 1) return;
+  const index = period.requests.findIndex(request => request.id === requestId);
+  if (index === -1) return;
+  const removed = period.requests.splice(index, 1)[0];
+  const segs = getRequestSegments();
+  const unlocked = segs.filter(s => !s.locked);
+  if (unlocked.length && removed.weight) {
+    const target = unlocked[unlocked.length - 1];
+    target.weight += Number(removed.weight) || 0;
+    applyRequestSegments(segs);
+  }
+  renderWorkPeriodCards();
   updateFooterSummary();
 }
 
@@ -2664,21 +3212,12 @@ function onItemDrop(event, targetId) {
 }
 
 function updateRequestField(itemId, key, val) {
-  const item = state.draft.items.find(i => i.id === itemId);
-  if (!item || item.kind !== 'request') return;
+  const item = findRequest(itemId);
+  if (!item) return;
   if (key === 'grade' || key === 'role') item[key] = val;
   else if (key === 'count') item.count = Math.max(1, Math.round(Number(val) || 1));
   if (key === 'grade' || key === 'role') {
-    const rowLabel = document.querySelector(`.SegRow[data-seg-key="${itemId}"] .SegRow-requestLabel`);
-    if (rowLabel) {
-      rowLabel.textContent = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
-    }
-    const cardTitle = document.querySelector(`.PhaseCard[data-request-id="${itemId}"] .PhaseCard-title`);
-    if (cardTitle) {
-      const who = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
-      cardTitle.textContent = `${who} · ${item.weight}% · ${item.durationWeeks || 1}w`;
-    }
-    renderShapeTimeline('wizardTimelineShape');
+    renderStepper();
   }
 }
 
@@ -2732,7 +3271,7 @@ function openFlatTreePicker(type, itemId) {
   const view = root.querySelector('.TreeInput-treeView');
   const input = root.querySelector('.TreeInput-text');
   const field = TREE_PICKERS[type].field;
-  const item = state.draft.items.find(i => i.id === itemId);
+  const item = findRequest(itemId);
   const selected = item?.[field] || '';
   view.innerHTML = flatTreeOptionsMarkup(type, selected, input.value === selected ? '' : input.value);
   view.classList.add('is-visible');
@@ -2751,7 +3290,7 @@ function filterFlatTreePicker(type, itemId, query) {
   openFlatTreePicker(type, itemId);
   const root = document.querySelector(`.TreeInput[data-tree-picker="flat-${type}-${itemId}"]`);
   if (!root) return;
-  const item = state.draft.items.find(i => i.id === itemId);
+  const item = findRequest(itemId);
   const selected = item?.[TREE_PICKERS[type].field] || '';
   root.querySelector('.TreeInput-treeView').innerHTML = flatTreeOptionsMarkup(type, selected, query);
 }
@@ -2768,14 +3307,14 @@ function blurFlatTreePicker(type, itemId) {
     const root = document.querySelector(`.TreeInput[data-tree-picker="flat-${type}-${itemId}"]`);
     if (!root || !root.classList.contains('is-open')) return;
     const input = root.querySelector('.TreeInput-text');
-    const item = state.draft.items.find(i => i.id === itemId);
+    const item = findRequest(itemId);
     const current = item?.[TREE_PICKERS[type].field] || '';
     if (input) input.value = current;
     closeAllTreePickers();
   }, 120);
 }
 
-function requestTimelineRowMarkup(item, requestNumber) {
+function workPeriodTimelineRowMarkup(item, periodNumber) {
   const weeks = Number(item.durationWeeks) || 1;
   if (item.kind === 'buffer') {
     return `
@@ -2800,9 +3339,8 @@ function requestTimelineRowMarkup(item, requestNumber) {
     </div>`;
   }
 
-  const label = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
   return `
-    <div class="SegRow ${item.locked ? 'is-locked' : ''}" data-seg-key="${item.id}" draggable="false"
+    <div class="SegRow" data-seg-key="${item.id}" draggable="false"
       ondragstart="onItemDragStart(event, '${item.id}')"
       ondragover="onItemDragOver(event, '${item.id}')"
       ondragleave="onPhaseDragLeave(event)"
@@ -2813,88 +3351,143 @@ function requestTimelineRowMarkup(item, requestNumber) {
         <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
       </button>
       <div class="SegRow-phaseIdentity">
-        <span class="SegRow-number" aria-label="Request ${requestNumber}">${requestNumber}</span>
+        <span class="SegRow-number" aria-label="Work Period ${periodNumber}">${periodNumber}</span>
         <span class="SegRow-dot" style="background:var(--surface-emphasis)" aria-hidden="true"></span>
-        <span class="SegRow-requestLabel">${esc(label)}</span>
+        <span class="SegRow-requestLabel">Work Period ${periodNumber}</span>
       </div>
-      ${durationCell(item.id, weeks, item.grade || 'Request')}
-      <input class="Range" type="range" min="0" max="100" value="${item.weight}"
-        aria-label="Project share"
-        ${item.locked ? 'disabled' : ''}
-        oninput="previewRequestWeight('${item.id}', this.value)" />
-      <div class="input-group">
-        <input class="Input SegRow-pctInput" type="number" min="0" max="100" value="${item.weight}"
-          aria-label="Project share percent"
-          ${item.locked ? 'disabled' : ''}
-          oninput="previewRequestWeight('${item.id}', this.value)"
-          onchange="commitRequestWeight('${item.id}', this.value)" />
-        <span class="input-group-text">%</span>
-      </div>
-      <button class="Btn-iconOnly ${item.locked ? 'is-locked' : ''}" type="button"
-        title="${item.locked ? 'Unlock' : 'Lock'}"
-        onclick="toggleRequestLock('${item.id}')">
-        <i class="fa-solid fa-${item.locked ? 'lock' : 'lock-open'}"></i>
-      </button>
-      <button class="Btn-iconOnly" type="button" title="Remove request"
+      ${durationCell(item.id, weeks, `Work Period ${periodNumber}`)}
+      <span></span><span></span><span></span>
+      <button class="Btn-iconOnly" type="button" title="Remove work period"
         onclick="removeTimelineItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>
     </div>`;
 }
 
 function renderFlatSegList() {
   const d = state.draft;
-  let requestNumber = 0;
+  let periodNumber = 0;
   const rows = (d.items || []).map(item => {
-    if (item.kind === 'request') requestNumber += 1;
-    return requestTimelineRowMarkup(item, requestNumber);
+    if (isWorkPeriod(item)) periodNumber += 1;
+    return workPeriodTimelineRowMarkup(item, periodNumber);
   });
   const empty = (d.items || []).length ? '' : `
     <div class="SegEmpty">
-      <div class="Strong" style="margin-bottom:4px;">No demand yet</div>
-      <div>Add a resource request for demand, or a buffer for quiet time between requests.</div>
+      <div class="Strong" style="margin-bottom:4px;">No work periods yet</div>
+      <div>Add a work period for demand, or a buffer for quiet time between periods.</div>
     </div>`;
   const el = document.getElementById('wizardTimelineRows');
   if (el) el.innerHTML = empty + rows.join('');
 }
 
-function renderRequestCards() {
-  const reqs = requestItems();
-  if (!reqs.length) {
+function renderWorkPeriodCards() {
+  const periods = workPeriods();
+  if (!(state.draft.items || []).length) {
     document.getElementById('slotEditor').innerHTML = `
       <div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
-        <div>Add a resource request above to set grade, role, and count.</div>
+        <div>Add a work period above, then define the resource requests it needs.</div>
       </div>`;
     renderStepper();
     return;
   }
-  document.getElementById('slotEditor').innerHTML = reqs.map(item => {
-    const who = [item.grade, item.role].filter(Boolean).join(' / ') || 'Resource request';
+  let periodIndex = 0;
+  const cards = (state.draft.items || []).map(period => {
+    if (period.kind === 'buffer') {
+      return `
+      <div class="PhaseCard PhaseCard--buffer" data-period-id="${period.id}" draggable="false"
+        ondragstart="onItemDragStart(event, '${period.id}')"
+        ondragover="onItemDragOver(event, '${period.id}')"
+        ondragleave="onPhaseDragLeave(event)"
+        ondrop="onItemDrop(event, '${period.id}')"
+        ondragend="onPhaseDragEnd(event)">
+        <div class="PhaseCard-head">
+          <button class="SegRow-handle" type="button" title="Drag to reorder" aria-label="Drag buffer to reorder"
+            onmousedown="phaseDragArm(event)" onmouseup="phaseDragDisarm(event)">
+            <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+          </button>
+          <i class="fa-regular fa-clock SegRow-bufferIcon" aria-hidden="true"></i>
+          <span class="PhaseCard-title">Buffer</span>
+          ${durationCell(period.id, period.durationWeeks || 1, 'Buffer')}
+          <button class="Btn-iconOnly" type="button" title="Remove buffer"
+            onclick="removeTimelineItem('${period.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`;
+    }
+    periodIndex += 1;
+    const requests = period.requests || [];
     return `
-    <div class="PhaseCard" data-request-id="${item.id}">
+    <div class="PhaseCard" data-period-id="${period.id}" draggable="false"
+      ondragstart="onItemDragStart(event, '${period.id}')"
+      ondragover="onItemDragOver(event, '${period.id}')"
+      ondragleave="onPhaseDragLeave(event)"
+      ondrop="onItemDrop(event, '${period.id}')"
+      ondragend="onPhaseDragEnd(event)">
       <div class="PhaseCard-head">
+        <button class="SegRow-handle" type="button" title="Drag to reorder" aria-label="Drag work period to reorder"
+          onmousedown="phaseDragArm(event)" onmouseup="phaseDragDisarm(event)">
+          <i class="fa-solid fa-grip-vertical" aria-hidden="true"></i>
+        </button>
         <span class="SegRow-dot" style="background:var(--surface-emphasis)"></span>
-        <span class="PhaseCard-title">${esc(who)} · ${item.weight}% · ${item.durationWeeks || 1}w</span>
+        <span class="PhaseCard-title">Work Period ${periodIndex}</span>
+        <span class="WorkPeriod-durationLabel">Duration</span>
+        ${durationCell(period.id, period.durationWeeks || 1, `Work Period ${periodIndex}`)}
+        <button class="Btn Btn--sm" type="button" onclick="addRequest('${period.id}')">
+          <i class="fa-solid fa-plus"></i> Resource request
+        </button>
+        <button class="Btn-iconOnly" type="button" title="Remove work period"
+          onclick="removeTimelineItem('${period.id}')"><i class="fa-solid fa-trash"></i></button>
       </div>
       <div class="PhaseCard-body">
+        <div class="PhaseCard-sectionLabel">Resource requests</div>
         <table class="SlotTable">
           <thead>
             <tr>
               <th>Grade</th>
               <th>Role <span class="Muted">(optional)</span></th>
               <th>Count</th>
+              <th>Project share %</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            <tr>
+            ${requests.map(item => `
+            <tr data-request-id="${item.id}">
               <td>${flatTreePickerMarkup('grade', item.id, item.grade)}</td>
               <td>${flatTreePickerMarkup('role', item.id, item.role)}</td>
               <td><input class="Input SlotCountInput" type="number" min="1" value="${item.count}"
                 oninput="updateRequestField('${item.id}','count',this.value)" /></td>
+              <td>
+                <div class="input-group">
+                  <input class="Input SegRow-pctInput" type="number" min="0" max="100" value="${item.weight}"
+                    aria-label="Project share percent"
+                    ${item.locked ? 'disabled' : ''}
+                    oninput="previewRequestWeight('${item.id}', this.value)"
+                    onchange="commitRequestWeight('${item.id}', this.value)" />
+                  <span class="input-group-text">%</span>
+                </div>
+              </td>
+              <td>
+                <button class="Btn-iconOnly ${item.locked ? 'is-locked' : ''}" type="button"
+                  title="${item.locked ? 'Unlock request share' : 'Lock request share'}"
+                  onclick="toggleRequestLock('${item.id}')">
+                  <i class="fa-solid fa-${item.locked ? 'lock' : 'lock-open'}"></i>
+                </button>
+                <button class="Btn-iconOnly" type="button" title="Remove resource request"
+                  onclick="removeRequest('${period.id}','${item.id}')" ${requests.length <= 1 ? 'disabled' : ''}>
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
             </tr>
+            `).join('')}
           </tbody>
         </table>
       </div>
     </div>`;
-  }).join('');
+  });
+  if (!periods.length) {
+    cards.push(`<div class="Banner Banner--warn"><i class="fa-solid fa-triangle-exclamation"></i>
+      <div>Add at least one work period to contain resource requests.</div>
+    </div>`);
+  }
+  document.getElementById('slotEditor').innerHTML = cards.join('');
   renderStepper();
 }
 
@@ -3037,8 +3630,418 @@ function validateSharesUI() {
   return validateShares(effortPhases());
 }
 
+/* ---------- Resource request modal + mini-Gantt ---------- */
+const resourceModalState = { editingId: null, durationUnit: 'weeks' };
+// The Gantt is week-granular, so other units are conveniences that round to whole weeks.
+const DAYS_PER_WEEK = 7;
+const WEEKS_PER_MONTH = 4;
+
+function resourceDurationWeeks() {
+  const value = Math.max(0, Number(document.getElementById('resourceWeeksInput')?.value) || 0);
+  if (resourceModalState.durationUnit === 'days') return Math.max(1, Math.round(value / DAYS_PER_WEEK));
+  if (resourceModalState.durationUnit === 'months') return Math.max(1, Math.round(value * WEEKS_PER_MONTH));
+  return Math.max(1, Math.round(value));
+}
+
+function resourceDurationDisplay(weeks, unit) {
+  if (unit === 'days') return weeks * DAYS_PER_WEEK;
+  if (unit === 'months') return Math.round((weeks / WEEKS_PER_MONTH) * 10) / 10;
+  return weeks;
+}
+
+function syncResourceDurationUnits() {
+  document.querySelectorAll('#resourceDurationUnitGroup [data-unit]').forEach(button => {
+    button.classList.toggle('is-active', button.dataset.unit === resourceModalState.durationUnit);
+  });
+  const input = document.getElementById('resourceWeeksInput');
+  if (input) {
+    input.step = resourceModalState.durationUnit === 'months' ? '0.5' : '1';
+    input.min = resourceModalState.durationUnit === 'months' ? '0.5' : '1';
+  }
+}
+
+function setResourceDurationUnit(unit) {
+  if (!['days', 'weeks', 'months'].includes(unit)) return;
+  const weeks = resourceDurationWeeks();
+  resourceModalState.durationUnit = unit;
+  const input = document.getElementById('resourceWeeksInput');
+  if (input) input.value = resourceDurationDisplay(weeks, unit);
+  syncResourceDurationUnits();
+  syncResourceModalConfirm();
+}
+let ganttDragState = null;
+
+function requestTypeName(request, d = state.draft) {
+  return isPhaseWorld(d) ? (request.phase || 'No phase') : (request.bookingType || 'No booking type');
+}
+
+function phaseColorByName(name) {
+  return phaseColor(name) || 'var(--surface-emphasis)';
+}
+
+function requestColor(request, d = state.draft) {
+  return isPhaseWorld(d)
+    ? phaseColorByName(request.phase)
+    : bookingTypeColor(request.bookingType);
+}
+
+// Both modes now pick from a fixed library; nothing is defined at template level.
+function resourceTypeOptions() {
+  const library = isPhaseWorld() ? PHASE_LIBRARY : BOOKING_TYPE_LIBRARY;
+  return Object.entries(library).map(([name, color]) => ({ name, color }));
+}
+
+function openResourceModal(editingId = null) {
+  const typeOptions = resourceTypeOptions();
+  resourceModalState.editingId = editingId;
+  const editing = editingId ? findRequest(editingId) : null;
+  document.getElementById('resourceModalTitle').textContent =
+    editing ? 'Edit Resource Requirement' : 'Add Resource Requirement';
+  const typeLabel = isPhaseWorld() ? 'Phase' : 'Booking type';
+  document.getElementById('resourceTypeLabel').textContent = typeLabel;
+  document.getElementById('resourceTypeSelect').innerHTML =
+    `<option value="">Choose ${typeLabel.toLowerCase()}</option>` +
+    typeOptions.map(option => `<option value="${esc(option.name)}">${esc(option.name)}</option>`).join('');
+  document.getElementById('resourceTypeSelect').value =
+    editing ? (isPhaseWorld() ? editing.phase : editing.bookingType) : '';
+  document.getElementById('resourceGradeSelect').innerHTML =
+    '<option value="">Choose grade</option>' +
+    GRADES.map(grade => `<option value="${esc(grade)}">${esc(grade)}</option>`).join('');
+  document.getElementById('resourceGradeSelect').value = editing?.grade || '';
+
+  const weightInput = document.getElementById('resourceWeightInput');
+  const weightHint = document.getElementById('resourceWeightHint');
+  weightInput.value = editing ? Math.round(Number(editing.weightPercent) || 0) : 100;
+  weightInput.disabled = !editing;
+  weightHint.textContent = editing
+    ? `Changing this redistributes the remainder across the other requirements in this ${typeLabel.toLowerCase()}.`
+    : `Automatically balanced with the other requirements in this ${typeLabel.toLowerCase()} when added.`;
+
+  const weeksInput = document.getElementById('resourceWeeksInput');
+  const weeksHint = document.getElementById('resourceWeeksHint');
+  const startInput = document.getElementById('resourceStartInput');
+  const startHint = document.getElementById('resourceStartHint');
+  const segments = editing?.segments || [];
+  const placedWeeks = segments.reduce((sum, seg) => sum + (Number(seg.durationWeeks) || 0), 0);
+  const multiSegment = segments.length > 1;
+
+  resourceModalState.durationUnit = 'weeks';
+  syncResourceDurationUnits();
+  weeksInput.value = editing ? (placedWeeks || 4) : 4;
+  weeksInput.disabled = multiSegment;
+  weeksHint.textContent = multiSegment
+    ? 'Split across the timeline — reshape the blocks there.'
+    : 'Adds a block you can reshape on the timeline.';
+
+  startInput.value = (Number(segments[0]?.startWeek) || 0) + 1;
+  startInput.disabled = multiSegment;
+  startHint.textContent = multiSegment
+    ? 'First block starts here — move the blocks on the timeline to change it.'
+    : 'Week 1 is the start of the template.';
+
+  document.getElementById('resourceModalConfirm').textContent = editing ? 'Save' : 'Confirm';
+  document.getElementById('resourceModalOverlay').classList.add('is-open');
+  syncResourceModalConfirm();
+  setTimeout(() => document.getElementById('resourceTypeSelect')?.focus(), 0);
+}
+
+function closeResourceModal() {
+  document.getElementById('resourceModalOverlay')?.classList.remove('is-open');
+  resourceModalState.editingId = null;
+}
+
+function syncResourceModalConfirm() {
+  const type = document.getElementById('resourceTypeSelect')?.value.trim();
+  const grade = document.getElementById('resourceGradeSelect')?.value.trim();
+  const weightEl = document.getElementById('resourceWeightInput');
+  const swatch = document.getElementById('resourceTypeSwatch');
+  if (swatch) swatch.style.background = type
+    ? (isPhaseWorld() ? phaseColorByName(type) : bookingTypeColor(type))
+    : 'transparent';
+  const weeksEl = document.getElementById('resourceWeeksInput');
+  const startEl = document.getElementById('resourceStartInput');
+  const weeksOk = weeksEl.disabled || Number(weeksEl.value) > 0;
+  const startOk = startEl.disabled || Number(startEl.value) >= 1;
+  if (!resourceModalState.editingId && weightEl) {
+    const peers = type ? requestsForType(type).length : 0;
+    weightEl.value = peers ? Math.floor(100 / (peers + 1)) : 100;
+  }
+  const weightOk = Number(weightEl?.value) >= 0 && Number(weightEl?.value) <= 100;
+
+  const equivalent = document.getElementById('resourceDurationEquivalent');
+  if (equivalent) {
+    if (resourceModalState.durationUnit === 'weeks' || !weeksOk) {
+      equivalent.textContent = '';
+    } else {
+      const weeks = resourceDurationWeeks();
+      equivalent.textContent = `= ${weeks} week${weeks === 1 ? '' : 's'} on the timeline`;
+    }
+  }
+
+  document.getElementById('resourceModalConfirm').disabled = !(type && grade && weeksOk && startOk && weightOk);
+}
+
+function confirmResourceModal() {
+  const type = document.getElementById('resourceTypeSelect').value.trim();
+  const grade = document.getElementById('resourceGradeSelect').value.trim();
+  const weeksEl = document.getElementById('resourceWeeksInput');
+  const weeks = resourceDurationWeeks();
+  const startWeek = Math.max(0, Math.round(Number(document.getElementById('resourceStartInput').value) || 1) - 1);
+  const weightPercent = Math.min(100, Math.max(0, Math.round(Number(document.getElementById('resourceWeightInput').value) || 0)));
+  if (!type || !grade) return;
+  const existing = resourceModalState.editingId ? findRequest(resourceModalState.editingId) : null;
+  if (existing) {
+    const previousType = requestTypeKey(existing);
+    existing.grade = grade;
+    existing.weightPercent = weightPercent;
+    if (isPhaseWorld()) {
+      existing.phase = type;
+      existing.bookingType = '';
+    } else {
+      existing.bookingType = type;
+      existing.phase = '';
+    }
+    // The duration and start fields only own the timeline for single-block work; drawn splits stay as they are.
+    if (!weeksEl.disabled) {
+      existing.segments = [{ id: existing.segments?.[0]?.id || id('seg'), startWeek, durationWeeks: weeks }];
+    }
+    if (previousType !== type) normaliseRequestGroup(previousType);
+    rebalanceRequestWeight(existing.id);
+  } else {
+    const request = {
+      id: id('rr'),
+      grade,
+      role: '',
+      count: 1,
+      phase: isPhaseWorld() ? type : '',
+      bookingType: isPhaseWorld() ? '' : type,
+      weightPercent,
+      segments: [{ id: id('seg'), startWeek, durationWeeks: weeks }]
+    };
+    state.draft.resourceRequests.push(request);
+    equaliseRequestGroup(type);
+  }
+  closeResourceModal();
+  renderResourceGantt('slotEditor');
+  updateFooterSummary();
+  renderStepper();
+}
+
+function removeResourceRequest(requestId) {
+  const type = requestTypeKey(findRequest(requestId));
+  state.draft.resourceRequests = requestItems().filter(request => request.id !== requestId);
+  normaliseRequestGroup(type);
+  renderResourceGantt('slotEditor');
+  updateFooterSummary();
+  renderStepper();
+}
+
+function miniGanttMarkup(d = state.draft, readOnly = false) {
+  const requests = requestItems(d);
+  const totalWeeks = timelineWeeks(d);
+  const monthChunks = [];
+  for (let start = 0; start < totalWeeks; start += 4) {
+    monthChunks.push(Math.min(4, totalWeeks - start));
+  }
+  const toolbar = readOnly ? '' : `
+    <div class="MiniGantt-toolbar">
+      <span class="MiniGantt-title">Resource requirements</span>
+      <button class="Btn Btn--sm" type="button" onclick="openResourceModal()">
+        <i class="fa-solid fa-plus"></i> Add Resource Requirement
+      </button>
+    </div>
+    <div class="MiniGantt-help">Double-click an empty week to add work. Drag bars to move them, drag either edge to resize, and right-click to remove a segment.</div>`;
+  const months = monthChunks.map((weeks, index) =>
+    `<div class="MiniGantt-month" style="flex:0 0 calc(${weeks} * var(--week-w));width:calc(${weeks} * var(--week-w));">Month ${index + 1}</div>`
+  ).join('');
+  const weekHeaders = Array.from({ length: totalWeeks }, (_, index) =>
+    `<div class="MiniGantt-week">W${index + 1}</div>`
+  ).join('');
+  const rows = requests.map(request => {
+    const color = requestColor(request, d);
+    const requestWeeks = (request.segments || []).reduce((sum, segment) => sum + (Number(segment.durationWeeks) || 0), 0);
+    const metaBits = [requestTypeName(request, d), `${Math.round(Number(request.weightPercent) || 0)}%`];
+    if (requestWeeks) metaBits.push(`${requestWeeks}w`);
+    const bars = (request.segments || []).map(segment => `
+      <div class="MiniGantt-bar" style="left:calc(${segment.startWeek} * var(--week-w));width:calc(${segment.durationWeeks} * var(--week-w));background:${color};"
+        title="${segment.durationWeeks} week${segment.durationWeeks === 1 ? '' : 's'}${readOnly ? '' : ' · Right-click to remove'}"
+        ${readOnly ? '' : `onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','move')" oncontextmenu="deleteGanttSegment(event,'${request.id}','${segment.id}')"`}>
+        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--left" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-left')"></span>`}
+        <span>${segment.durationWeeks}w</span>
+        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--right" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-right')"></span>`}
+      </div>`).join('');
+    return `
+      <div class="MiniGantt-row">
+        <div class="MiniGantt-label">
+          <span class="SegRow-dot" style="background:${color}" aria-hidden="true"></span>
+          <div class="MiniGantt-labelCopy">
+            <div class="MiniGantt-labelTitle">${esc(request.grade || 'Resource requirement')}</div>
+            <div class="MiniGantt-labelMeta">${esc(metaBits.join(' · '))}</div>
+          </div>
+          ${readOnly ? '' : `<div class="MiniGantt-actions">
+            <button class="Btn-iconOnly" type="button" title="Edit resource requirement" onclick="openResourceModal('${request.id}')"><i class="fa-solid fa-pencil"></i></button>
+            <button class="Btn-iconOnly" type="button" title="Remove resource requirement" onclick="removeResourceRequest('${request.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>`}
+        </div>
+        <div class="MiniGantt-track" data-request-id="${request.id}" data-total-weeks="${totalWeeks}"
+          ${readOnly ? '' : `ondblclick="addGanttSegment(event,'${request.id}')"`}>${bars}</div>
+      </div>`;
+  }).join('');
+  const empty = requests.length ? '' : `
+    <div class="MiniGantt-empty">
+      <div class="Strong" style="margin-bottom:4px;">No resource requirements yet</div>
+      <div>Add a resource requirement, then double-click its timeline row to shape the work.</div>
+    </div>`;
+  return `
+    <div class="MiniGantt${readOnly ? ' MiniGantt-readonly' : ''}">
+      ${toolbar}
+      <div class="MiniGantt-scroll">
+        <div class="MiniGantt-canvas" data-weeks="${totalWeeks}" style="--weeks:${totalWeeks};">
+          <div class="MiniGantt-months">
+            <div class="MiniGantt-corner">Resource</div>${months}
+          </div>
+          <div class="MiniGantt-weeks">
+            <div class="MiniGantt-corner">Timeline</div>${weekHeaders}
+          </div>
+          ${rows}
+        </div>
+      </div>
+      ${empty}
+    </div>`;
+}
+
+// Weeks stretch to fill the container, bounded so columns stay readable but never absurdly wide.
+const MINI_GANTT_MIN_WEEK_W = 28;
+const MINI_GANTT_MAX_WEEK_W = 160;
+const miniGanttObserver = typeof ResizeObserver === 'function'
+  ? new ResizeObserver(entries => entries.forEach(entry => sizeMiniGantt(entry.target)))
+  : null;
+
+function sizeMiniGantt(mount) {
+  const canvas = mount?.querySelector?.('.MiniGantt-canvas');
+  const scroll = mount?.querySelector?.('.MiniGantt-scroll');
+  if (!canvas || !scroll) return;
+  const available = scroll.clientWidth;
+  if (!available) return;
+  const weeks = Math.max(1, Number(canvas.dataset.weeks) || 1);
+  const labelWidth = available < 420 ? 110 : available < 640 ? 160 : 230;
+  // Floor to hundredths so accumulated sub-pixels never overflow into a scrollbar.
+  const fitted = Math.floor(((available - labelWidth) / weeks) * 100) / 100;
+  const weekWidth = Math.min(MINI_GANTT_MAX_WEEK_W, Math.max(MINI_GANTT_MIN_WEEK_W, fitted));
+  canvas.style.setProperty('--label-w', `${labelWidth}px`);
+  canvas.style.setProperty('--week-w', `${weekWidth}px`);
+}
+
+function renderResourceGantt(targetId = 'slotEditor', readOnly = false, d = state.draft) {
+  const target = document.getElementById(targetId);
+  if (!target) return;
+  syncDerivedDuration(d);
+  target.innerHTML = miniGanttMarkup(d, readOnly);
+  sizeMiniGantt(target);
+  miniGanttObserver?.observe(target);
+  renderDemandShape(targetId === 'reviewGantt' ? 'reviewShapeVisual' : 'timelineShapeVisual', d);
+}
+
+window.addEventListener('resize', () => {
+  ['slotEditor', 'reviewGantt'].forEach(targetId => sizeMiniGantt(document.getElementById(targetId)));
+});
+
+function segmentOverlaps(segments, candidate, ignoreId) {
+  return segments.some(segment => segment.id !== ignoreId &&
+    candidate.startWeek < segment.startWeek + segment.durationWeeks &&
+    candidate.startWeek + candidate.durationWeeks > segment.startWeek);
+}
+
+function addGanttSegment(event, requestId) {
+  const request = findRequest(requestId);
+  if (!request) return;
+  const track = event.currentTarget;
+  const totalWeeks = timelineWeeks();
+  const rect = track.getBoundingClientRect();
+  const clickedWeek = Math.max(0, Math.min(totalWeeks - 1,
+    Math.floor((event.clientX - rect.left) / (rect.width / totalWeeks))));
+  if ((request.segments || []).some(segment =>
+    clickedWeek >= segment.startWeek && clickedWeek < segment.startWeek + segment.durationWeeks)) return;
+  let durationWeeks = 0;
+  for (let week = clickedWeek; week < totalWeeks && durationWeeks < 4; week += 1) {
+    if (request.segments.some(segment =>
+      week >= segment.startWeek && week < segment.startWeek + segment.durationWeeks)) break;
+    durationWeeks += 1;
+  }
+  if (!durationWeeks) return;
+  request.segments.push({ id: id('seg'), startWeek: clickedWeek, durationWeeks });
+  renderResourceGantt('slotEditor');
+  renderStepper();
+}
+
+function deleteGanttSegment(event, requestId, segmentId) {
+  event.preventDefault();
+  event.stopPropagation();
+  const request = findRequest(requestId);
+  if (!request) return;
+  request.segments = request.segments.filter(segment => segment.id !== segmentId);
+  renderResourceGantt('slotEditor');
+  renderStepper();
+}
+
+function startGanttDrag(event, requestId, segmentId, type) {
+  event.preventDefault();
+  event.stopPropagation();
+  const request = findRequest(requestId);
+  const segment = request?.segments.find(item => item.id === segmentId);
+  const track = event.target.closest('.MiniGantt-row')?.querySelector('.MiniGantt-track');
+  if (!request || !segment || !track) return;
+  ganttDragState = {
+    requestId,
+    segmentId,
+    type,
+    startX: event.clientX,
+    startWeek: segment.startWeek,
+    durationWeeks: segment.durationWeeks,
+    weekWidth: track.getBoundingClientRect().width / timelineWeeks(),
+    lastStart: segment.startWeek,
+    lastDuration: segment.durationWeeks
+  };
+}
+
+function moveGanttDrag(event) {
+  if (!ganttDragState) return;
+  const drag = ganttDragState;
+  const request = findRequest(drag.requestId);
+  const segment = request?.segments.find(item => item.id === drag.segmentId);
+  if (!request || !segment) return;
+  const totalWeeks = timelineWeeks();
+  const delta = Math.round((event.clientX - drag.startX) / drag.weekWidth);
+  let next = { id: segment.id, startWeek: drag.startWeek, durationWeeks: drag.durationWeeks };
+  if (drag.type === 'move') {
+    next.startWeek = Math.max(0, Math.min(totalWeeks - drag.durationWeeks, drag.startWeek + delta));
+  } else if (drag.type === 'resize-left') {
+    const endWeek = drag.startWeek + drag.durationWeeks;
+    next.startWeek = Math.max(0, Math.min(endWeek - 1, drag.startWeek + delta));
+    next.durationWeeks = endWeek - next.startWeek;
+  } else {
+    next.durationWeeks = Math.max(1, Math.min(totalWeeks - drag.startWeek, drag.durationWeeks + delta));
+  }
+  if (segmentOverlaps(request.segments, next, segment.id)) return;
+  if (next.startWeek === drag.lastStart && next.durationWeeks === drag.lastDuration) return;
+  segment.startWeek = next.startWeek;
+  segment.durationWeeks = next.durationWeeks;
+  drag.lastStart = next.startWeek;
+  drag.lastDuration = next.durationWeeks;
+  renderResourceGantt('slotEditor');
+}
+
+function finishGanttDrag() {
+  if (!ganttDragState) return;
+  ganttDragState = null;
+  renderStepper();
+}
+
+document.addEventListener('mousemove', moveGanttDrag);
+document.addEventListener('mouseup', finishGanttDrag);
+
 /* ---------- Review ---------- */
-function renderReview() {
+function renderReviewLegacy() {
   readWizardForm();
   const d = state.draft;
   const timelineStep = panelStepIndex('timeline');
@@ -3055,11 +4058,12 @@ function renderReview() {
       : 'Return to Timeline to fix the template before publishing';
   } else {
     const reqs = requestItems(d);
+    const periods = workPeriods(d);
     const buffers = (d.items || []).filter(p => p.kind === 'buffer');
     sum = reqs.reduce((a, s) => a + (Number(s.weight) || 0), 0);
-    ready = sum === 100 && reqs.length && reqs.every(r => r.grade && String(r.grade).trim()) && !!d.name;
+    ready = sum === 100 && periods.length && reqs.length && reqs.every(r => r.grade && String(r.grade).trim()) && !!d.name;
     readyLabel = ready
-      ? `Ready to publish · ${sum}% project demand · ${reqs.length} request${reqs.length === 1 ? '' : 's'}${buffers.length ? ` · ${buffers.length} buffer${buffers.length === 1 ? '' : 's'}` : ''} · ${timelineWeeks(d)}w`
+      ? `Ready to publish · ${periods.length} work period${periods.length === 1 ? '' : 's'} · ${reqs.length} request${reqs.length === 1 ? '' : 's'} · ${sum}% project demand${buffers.length ? ` · ${buffers.length} buffer${buffers.length === 1 ? '' : 's'}` : ''} · ${timelineWeeks(d)}w`
       : 'Return to Timeline to fix the template before publishing';
   }
 
@@ -3101,11 +4105,19 @@ function renderReview() {
             <div class="ReviewSlots"><div class="ReviewSlot">Timing only</div></div>
           </div>`;
         }
-        const who = [p.grade, p.role].filter(Boolean).join(' / ') || 'Resource request';
+        const periodNumber = workPeriods(d).findIndex(period => period.id === p.id) + 1;
         return `<div class="ReviewPhase">
           <div class="ReviewPhase-name">
             <span class="SegRow-dot" style="background:var(--surface-emphasis)"></span>
-            <span>${esc(who)} · ${p.weight}% · ${p.durationWeeks || 1}w · ×${p.count}</span>
+            <span>Work Period ${periodNumber} · ${p.durationWeeks || 1}w</span>
+          </div>
+          <div class="ReviewSlots">
+            ${(p.requests || []).map(request => `
+              <div class="ReviewSlot">
+                ${esc(request.grade || 'Any grade')}${request.role ? ` / ${esc(request.role)}` : ''} × ${request.count}
+                · ${request.weight}% project share
+              </div>
+            `).join('')}
           </div>
         </div>`;
       }).join('');
@@ -3127,7 +4139,7 @@ function renderReview() {
 
     <section class="ReviewSection" aria-labelledby="reviewStructureTitle">
       <div class="ReviewSection-head">
-        <div class="ReviewSection-title" id="reviewStructureTitle">${isPhaseWorld(d) ? 'Handoffs and demand' : 'Requests and buffers'}</div>
+        <div class="ReviewSection-title" id="reviewStructureTitle">${isPhaseWorld(d) ? 'Handoffs and demand' : 'Work periods and demand'}</div>
         <button class="Btn Btn--sm" type="button" onclick="onStepperClick(${timelineStep})">Edit timeline</button>
       </div>
       ${structureBody}
@@ -3140,13 +4152,61 @@ function renderReview() {
   `;
 }
 
+function formatDuration(days) {
+  if (days >= 30 && days % 30 === 0) return `${days / 30} month${days / 30 === 1 ? '' : 's'}`;
+  if (days >= 7 && days % 7 === 0) return `${days / 7} week${days / 7 === 1 ? '' : 's'}`;
+  return `${days} day${days === 1 ? '' : 's'}`;
+}
+
+function renderReview() {
+  readWizardForm();
+  const d = state.draft;
+  syncDerivedDuration(d);
+  const timelineStep = panelStepIndex('timeline');
+  const issue = timelineIssue();
+  const ready = !stepIssue('details') && !issue;
+  const requests = requestItems(d);
+  const segmentCount = requests.reduce((sum, request) => sum + request.segments.length, 0);
+
+  document.getElementById('reviewSummary').innerHTML = `
+    <div class="ReviewMeta">
+      <div class="ReviewMeta-copy">
+        <h3 class="ReviewMeta-title">${esc(d.name || '(unnamed)')}</h3>
+        <div class="ReviewMeta-detail">
+          ${isPhaseWorld(d) ? 'With phases' : 'Without phases'}
+          ${d.returnType ? ` · ${esc(d.returnType)}` : ''}
+          · ${formatDuration(d.durationDays)}
+          · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}
+        </div>
+      </div>
+    </div>
+
+    <section class="ReviewSection" aria-labelledby="reviewDemandTitle">
+      <div class="ReviewSection-head">
+        <div class="ReviewSection-title" id="reviewDemandTitle">Resource demand</div>
+        <button class="Btn Btn--sm" type="button" onclick="onStepperClick(${timelineStep})">Edit timeline</button>
+      </div>
+      <div class="ShapeTimeline" id="reviewShapeVisual" style="margin-bottom:var(--padding-md);"></div>
+      <div id="reviewGantt"></div>
+    </section>
+
+    <div class="Banner ${ready ? 'Banner--success' : 'Banner--danger'}" style="margin-bottom:0;">
+      <i class="fa-solid ${ready ? 'fa-check' : 'fa-triangle-exclamation'}" aria-hidden="true"></i>
+      <div>${ready
+        ? `Ready to publish · ${requests.length} resource requirement${requests.length === 1 ? '' : 's'} · ${segmentCount} work segment${segmentCount === 1 ? '' : 's'} · ${formatDuration(d.durationDays)}`
+        : esc(issue || stepIssue('details') || 'Fix the template before publishing')}</div>
+    </div>`;
+  renderResourceGantt('reviewGantt', true, d);
+}
+
 function wizardNav(dir) {
   readWizardForm();
   const steps = wizardSteps();
   const panel = currentWizardPanel();
   if (dir === 1) {
     if (panel === 'details') {
-      if (stepIssue('details')) {
+      const detailsIssue = stepIssue('details');
+      if (detailsIssue) {
         const field = document.getElementById('wp-name');
         field.setAttribute('aria-invalid', 'true');
         document.getElementById('nameError').classList.remove('hidden');
@@ -3169,21 +4229,44 @@ function wizardNav(dir) {
 }
 
 function timelineIssue() {
-  if (isPhaseWorld()) {
-    if (!effortPhases().length) return 'Add at least one phase';
-    if (effortPhases().some(p => !p.name)) return 'Choose a phase trait for every phase';
-    if (!shapeSumOk()) return 'Phase shares must total 100%';
-    if (!validateSharesUI()) return 'Slot shares must sum to 100% or be left blank';
-    const missingGrade = effortPhases().some(p =>
-      (p.slots || []).some(s => !(s.grade && String(s.grade).trim()))
-    );
-    if (missingGrade) return 'Choose a grade for every resource request';
-    return null;
+  const requests = requestItems();
+  if (!requests.length) return 'Add at least one resource requirement';
+  if (requests.some(request => !(request.grade && String(request.grade).trim()))) {
+    return 'Choose a grade for every resource requirement';
   }
-  if (!requestItems().length) return 'Add at least one resource request';
-  if (!shapeSumOk()) return 'Request shares must total 100%';
-  if (requestItems().some(r => !(r.grade && String(r.grade).trim()))) {
-    return 'Choose a grade for every resource request';
+  if (isPhaseWorld() && requests.some(request => !PHASE_LIBRARY[request.phase])) {
+    return 'Choose a valid phase for every resource requirement';
+  }
+  if (!isPhaseWorld() && requests.some(request => !BOOKING_TYPE_LIBRARY[request.bookingType])) {
+    return 'Choose a booking type for every resource requirement';
+  }
+  const types = [...new Set(requests.map(request => requestTypeKey(request)).filter(Boolean))];
+  for (const type of types) {
+    const group = requestsForType(type);
+    const validWeights = group.every(request =>
+      Number.isFinite(Number(request.weightPercent)) &&
+      Number(request.weightPercent) >= 0 &&
+      Number(request.weightPercent) <= 100);
+    const totalWeight = group.reduce((sum, request) => sum + Number(request.weightPercent || 0), 0);
+    if (!validWeights || totalWeight !== 100) {
+      return `${type} resource requirement weightings must total 100%`;
+    }
+  }
+  if (requests.some(request => !(request.segments || []).length)) {
+    return 'Place at least one work segment for every resource requirement';
+  }
+  const totalWeeks = timelineWeeks();
+  for (const request of requests) {
+    if (request.segments.some(segment =>
+      segment.startWeek < 0 || segment.durationWeeks < 1 ||
+      segment.startWeek + segment.durationWeeks > totalWeeks)) {
+      return 'Keep all work segments within the total duration';
+    }
+    const sorted = [...request.segments].sort((a, b) => a.startWeek - b.startWeek);
+    if (sorted.some((segment, index) => index > 0 &&
+      sorted[index - 1].startWeek + sorted[index - 1].durationWeeks > segment.startWeek)) {
+      return 'Work segments cannot overlap on the same resource row';
+    }
   }
   return null;
 }
@@ -3197,20 +4280,7 @@ function validateTimelineStep() {
 function publishDraft() {
   readWizardForm();
   const d = state.draft;
-  if (!d.name || !shapeSumOk()) {
-    toast('Fix validation before publishing');
-    return;
-  }
-  if (isPhaseWorld(d)) {
-    if (!validateShares(effortPhases()) || effortPhases().some(p => !p.name)) {
-      toast('Fix validation before publishing');
-      return;
-    }
-    if (effortPhases().some(p => (p.slots || []).some(s => !(s.grade && String(s.grade).trim())))) {
-      toast('Fix validation before publishing');
-      return;
-    }
-  } else if (requestItems(d).some(r => !(r.grade && String(r.grade).trim()))) {
+  if (stepIssue('details') || timelineIssue()) {
     toast('Fix validation before publishing');
     return;
   }
@@ -3221,8 +4291,11 @@ function publishDraft() {
       existing.name = d.name;
       existing.returnType = d.returnType;
       existing.phaseWorld = d.phaseWorld !== false;
+      existing.durationDays = d.durationDays;
+      existing.durationUnit = d.durationUnit;
       existing.phases = JSON.parse(JSON.stringify(d.phases || []));
       existing.items = JSON.parse(JSON.stringify(d.items || []));
+      existing.resourceRequests = JSON.parse(JSON.stringify(d.resourceRequests || []));
       existing.status = 'published';
       toast(`Saved as new version v${existing.version}`);
     }
@@ -3244,7 +4317,11 @@ function esc(s) {
 
 document.addEventListener('click', (event) => {
   if (!event.target.closest('#addTimelineMenu')) closeAddMenu();
-  if (!event.target.closest('#addWizardTimelineMenu')) closeWizardTimelineMenu();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && document.getElementById('resourceModalOverlay')?.classList.contains('is-open')) {
+    closeResourceModal();
+  }
 });
 
 renderCatalogue();
