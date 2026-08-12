@@ -354,6 +354,74 @@ a { color: var(--text-link-color); text-decoration: none; }
   margin: 0 0 var(--padding-sm); font-size: var(--font-size-medium);
   font-weight: var(--font-weight-semibold);
 }
+.StructureTimeline-head {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--padding-sm);
+  margin-bottom: var(--padding-sm);
+}
+.StructureTimeline-head .StructureTimeline-title { margin: 0; }
+.SequenceToggle {
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  color: var(--text-default); font-size: var(--font-size-small); cursor: pointer;
+}
+.SequenceToggle input { width: 16px; height: 16px; margin: 0; accent-color: var(--primary); }
+.StructureTimeline-headEnd {
+  display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap;
+  gap: var(--padding-xs) var(--padding-sm); min-width: 0; margin-left: auto;
+}
+.SequenceWarning { display: flex; align-items: center; gap: 6px; margin: 0; min-width: 0; text-align: left; }
+
+/* Hover help: a small looping diagram of what a delay does under the current setting. */
+.SequenceHelp { position: relative; display: inline-flex; }
+.SequenceHelp-trigger {
+  appearance: none; border: 0; padding: 0; margin: 0; background: transparent; cursor: help;
+  display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px;
+  color: var(--icon-subtle); font-size: 13px; border-radius: 50%;
+}
+.SequenceHelp-trigger:hover { color: var(--text-accent); }
+.SequenceHelp-trigger:focus-visible { outline: 2px solid var(--border-primary); outline-offset: 2px; }
+.SequenceHelp-pop {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; width: 250px;
+  display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  background: var(--surface-default); border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-default); box-shadow: 0 4px 16px rgba(39, 35, 61, 0.12);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .15s ease;
+  text-align: left; white-space: normal;
+}
+.SequenceHelp:hover .SequenceHelp-pop,
+.SequenceHelp:focus-within .SequenceHelp-pop { opacity: 1; visibility: visible; }
+.SequenceHelp-title {
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); color: var(--text-default);
+}
+.SequenceHelp-demo { display: flex; flex-direction: column; gap: 5px; }
+.SequenceHelp-row { display: flex; align-items: center; gap: 8px; }
+.SequenceHelp-rowLabel {
+  flex: 0 0 44px; font-size: var(--font-size-extra-small); color: var(--text-subtle);
+}
+.SequenceHelp-track {
+  position: relative; flex: 1 1 auto; height: 14px; border-radius: 3px;
+  background: var(--surface-subtle-dark);
+}
+.SequenceHelp-bar { position: absolute; top: 2px; height: 10px; width: 40%; border-radius: 3px; }
+.SequenceHelp-bar--first { left: 0; background: var(--phase-tax-prep); }
+.SequenceHelp-bar--second { left: 42%; background: var(--phase-tax-detailed-review); }
+@keyframes sequenceSlip {
+  0%, 14% { transform: translateX(0); }
+  36%, 70% { transform: translateX(42%); }
+  92%, 100% { transform: translateX(0); }
+}
+.SequenceHelp:hover .SequenceHelp-bar--first,
+.SequenceHelp:focus-within .SequenceHelp-bar--first {
+  animation: sequenceSlip 3s ease-in-out infinite;
+}
+/* Only the "no overlap" rule pushes the following work along. */
+.SequenceHelp:not(.is-overlap):hover .SequenceHelp-bar--second,
+.SequenceHelp:not(.is-overlap):focus-within .SequenceHelp-bar--second {
+  animation: sequenceSlip 3s ease-in-out infinite;
+}
+.SequenceHelp-note { font-size: var(--font-size-extra-small); color: var(--text-subtle); line-height: 1.4; }
+@media (prefers-reduced-motion: reduce) {
+  .SequenceHelp .SequenceHelp-bar { animation: none !important; }
+}
 
 .Range {
   width: 100%; accent-color: var(--primary); cursor: pointer; height: 35px;
@@ -1096,7 +1164,39 @@ a { color: var(--text-link-color); text-decoration: none; }
 
             <div class="Stack">
               <div class="StructureTimeline">
-                <strong class="StructureTimeline-title">Demand shape</strong>
+                <div class="StructureTimeline-head">
+                  <strong class="StructureTimeline-title">Demand shape</strong>
+                  <div class="StructureTimeline-headEnd">
+                    <p class="InlineError SequenceWarning hidden" id="sequenceWarning" role="alert">
+                      <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                      <span id="sequenceWarningText"></span>
+                    </p>
+                    <label class="SequenceToggle">
+                      <input type="checkbox" id="allowOverlap" checked onchange="setAllowOverlap(this.checked)">
+                      <span>Allow work to overlap</span>
+                    </label>
+                    <span class="SequenceHelp" id="sequenceHelp">
+                      <button class="SequenceHelp-trigger" type="button" aria-describedby="sequenceHelpPop"
+                        aria-label="What happens when work is delayed">
+                        <i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+                      </button>
+                      <span class="SequenceHelp-pop" id="sequenceHelpPop" role="tooltip">
+                        <span class="SequenceHelp-title">If earlier work is delayed</span>
+                        <span class="SequenceHelp-demo" aria-hidden="true">
+                          <span class="SequenceHelp-row">
+                            <span class="SequenceHelp-rowLabel">Prep</span>
+                            <span class="SequenceHelp-track"><span class="SequenceHelp-bar SequenceHelp-bar--first"></span></span>
+                          </span>
+                          <span class="SequenceHelp-row">
+                            <span class="SequenceHelp-rowLabel">Review</span>
+                            <span class="SequenceHelp-track"><span class="SequenceHelp-bar SequenceHelp-bar--second"></span></span>
+                          </span>
+                        </span>
+                        <span class="SequenceHelp-note" id="sequenceHelpNote"></span>
+                      </span>
+                    </span>
+                  </div>
+                </div>
                 <div class="ShapeTimeline" id="timelineShapeVisual"></div>
               </div>
               <div id="slotEditor" class="Stack"></div>
@@ -1559,6 +1659,7 @@ function normaliseResourceRequests(d) {
         : []
     }));
     normaliseResourceWeights(d);
+    normaliseSequencing(d);
     return;
   }
 
@@ -1615,6 +1716,7 @@ function normaliseResourceRequests(d) {
   }
   d.resourceRequests = requests;
   normaliseResourceWeights(d);
+  normaliseSequencing(d);
 }
 
 function getSegments(d = state.draft) {
@@ -1769,6 +1871,81 @@ function findRequest(requestId, d = state.draft) {
   return requestItems(d).find(request => request.id === requestId) || null;
 }
 
+function normaliseSequencing(d = state.draft) {
+  if (!d) return;
+  if (!d.sequencing || typeof d.sequencing !== 'object') d.sequencing = {};
+  if (typeof d.sequencing.allowOverlap !== 'boolean') d.sequencing.allowOverlap = true;
+  if (!Array.isArray(d.sequencing.typeOrder)) d.sequencing.typeOrder = [];
+  requestItems(d).forEach(request => {
+    const type = requestTypeKey(request, d);
+    if (type && !d.sequencing.typeOrder.includes(type)) d.sequencing.typeOrder.push(type);
+  });
+}
+
+function ensureTypeSequence(type, d = state.draft) {
+  if (!type || !d) return;
+  normaliseSequencing(d);
+  if (!d.sequencing.typeOrder.includes(type)) d.sequencing.typeOrder.push(type);
+}
+
+function requestTypeBounds(type, d = state.draft) {
+  const segments = requestsForType(type, d).flatMap(request => request.segments || []);
+  if (!segments.length) return null;
+  return {
+    start: Math.min(...segments.map(segment => Number(segment.startWeek) || 0)),
+    end: Math.max(...segments.map(segment =>
+      (Number(segment.startWeek) || 0) + (Number(segment.durationWeeks) || 0)))
+  };
+}
+
+function sequencingIssue(d = state.draft) {
+  if (!d) return null;
+  normaliseSequencing(d);
+  const activeTypes = new Set(requestItems(d).map(request => requestTypeKey(request, d)).filter(Boolean));
+  const order = d.sequencing.typeOrder.filter(type => activeTypes.has(type));
+  for (let index = 1; index < order.length; index += 1) {
+    const previousType = order[index - 1];
+    const currentType = order[index];
+    const previous = requestTypeBounds(previousType, d);
+    const current = requestTypeBounds(currentType, d);
+    if (!previous || !current) continue;
+    if (d.sequencing.allowOverlap) {
+      if (current.start < previous.start) {
+        return `${currentType} starts before ${previousType}. Later work can overlap, but it cannot start first.`;
+      }
+    } else if (current.start < previous.end) {
+      return `${currentType} starts before ${previousType} finishes. Move it later or allow overlap.`;
+    }
+  }
+  return null;
+}
+
+function renderSequencingFeedback() {
+  const allowOverlap = state.draft?.sequencing?.allowOverlap !== false;
+  const toggle = document.getElementById('allowOverlap');
+  if (toggle) toggle.checked = allowOverlap;
+
+  document.getElementById('sequenceHelp')?.classList.toggle('is-overlap', allowOverlap);
+  const note = document.getElementById('sequenceHelpNote');
+  if (note) note.textContent = allowOverlap
+    ? 'Review stays put and simply overlaps Prep. It can never start before Prep starts.'
+    : 'Review is pushed along so it still starts after Prep finishes. Gaps are used up first.';
+
+  const warning = document.getElementById('sequenceWarning');
+  if (!warning) return;
+  const issue = sequencingIssue();
+  const text = document.getElementById('sequenceWarningText');
+  if (text) text.textContent = issue || '';
+  warning.classList.toggle('hidden', !issue);
+}
+
+function setAllowOverlap(on) {
+  normaliseSequencing();
+  state.draft.sequencing.allowOverlap = !!on;
+  renderSequencingFeedback();
+  renderStepper();
+}
+
 function detailsSummaryText() {
   const d = state.draft;
   if (!d) return '';
@@ -1810,6 +1987,7 @@ function blankDraft() {
     phaseWorld: true,
     durationDays: 90,
     durationUnit: 'days',
+    sequencing: { allowOverlap: true, typeOrder: [] },
     _editing: false,
     phases: [],
     items: [],
@@ -1846,6 +2024,8 @@ function setPhaseWorld(on) {
   state.draft.phases = [];
   state.draft.items = [];
   state.draft.resourceRequests = [];
+  normaliseSequencing();
+  state.draft.sequencing.typeOrder = [];
   state.wizardStep = 1;
   syncModeToggle();
   toast(next ? 'Switched to with phases' : 'Switched to without phases');
@@ -3789,6 +3969,7 @@ function confirmResourceModal() {
   const startWeek = Math.max(0, Math.round(Number(document.getElementById('resourceStartInput').value) || 1) - 1);
   const weightPercent = Math.min(100, Math.max(0, Math.round(Number(document.getElementById('resourceWeightInput').value) || 0)));
   if (!type || !grade) return;
+  ensureTypeSequence(type);
   const existing = resourceModalState.editingId ? findRequest(resourceModalState.editingId) : null;
   if (existing) {
     const previousType = requestTypeKey(existing);
@@ -3940,6 +4121,7 @@ function renderResourceGantt(targetId = 'slotEditor', readOnly = false, d = stat
   sizeMiniGantt(target);
   miniGanttObserver?.observe(target);
   renderDemandShape(targetId === 'reviewGantt' ? 'reviewShapeVisual' : 'timelineShapeVisual', d);
+  if (targetId === 'slotEditor') renderSequencingFeedback();
 }
 
 window.addEventListener('resize', () => {
@@ -4176,6 +4358,7 @@ function renderReview() {
           ${isPhaseWorld(d) ? 'With phases' : 'Without phases'}
           ${d.returnType ? ` · ${esc(d.returnType)}` : ''}
           · ${formatDuration(d.durationDays)}
+          · ${d.sequencing?.allowOverlap !== false ? 'Work may overlap' : 'Work runs sequentially'}
           · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}
         </div>
       </div>
@@ -4268,6 +4451,8 @@ function timelineIssue() {
       return 'Work segments cannot overlap on the same resource row';
     }
   }
+  const orderIssue = sequencingIssue();
+  if (orderIssue) return orderIssue;
   return null;
 }
 
@@ -4296,6 +4481,7 @@ function publishDraft() {
       existing.phases = JSON.parse(JSON.stringify(d.phases || []));
       existing.items = JSON.parse(JSON.stringify(d.items || []));
       existing.resourceRequests = JSON.parse(JSON.stringify(d.resourceRequests || []));
+      existing.sequencing = JSON.parse(JSON.stringify(d.sequencing));
       existing.status = 'published';
       toast(`Saved as new version v${existing.version}`);
     }
