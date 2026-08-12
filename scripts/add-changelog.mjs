@@ -4,9 +4,12 @@
  * Usage:
  *   node scripts/add-changelog.mjs --id portfolios-v3 --title "…" --summary "…"
  */
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function arg(name, fallback) {
   const i = process.argv.indexOf('--' + name);
