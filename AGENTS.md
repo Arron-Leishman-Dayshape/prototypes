@@ -12,9 +12,12 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 - `manifest.json` — list of mocks (required for hub cards)
 - `mocks/*.html` — individual prototypes (**public** share links)
 - `feedback.html?id=<prototype-id>` — internal per-prototype inbox (gated)
+- `changelog.html?id=<prototype-id>` — internal build to-do / annotated changelog (gated)
 - `config.js` — site name, Supabase keys, `internalAccessKey` (do not remove keys)
 - `shared/access.js` — hub/thread access gate
 - `shared/feedback-store.js`, `shared/feedback.js`, `shared/feedback.css` — feedback widget
+- `shared/changelog-store.js` — changelog / done-toggle store
+- `supabase-changelog.sql` — run once in Supabase for shared changelog sync
 
 ## Adding or updating a mock
 

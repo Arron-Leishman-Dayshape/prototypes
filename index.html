@@ -132,6 +132,10 @@
       background: #f3efe8;
       color: #8a5a2b;
     }
+    .pill.is-dev {
+      background: #ece8f8;
+      color: #4f3fa0;
+    }
     .menu {
       position: relative;
       z-index: 2;
@@ -562,6 +566,11 @@
             if (fb) location.href = fb;
             return;
           }
+          if (actionBtn.classList.contains('changelog-btn')) {
+            var cl = actionBtn.getAttribute('data-changelog-href');
+            if (cl) location.href = cl;
+            return;
+          }
           return;
         }
 
@@ -621,11 +630,16 @@
 
       function metaMarkup(item, extra) {
         var status = (item.status || 'active').toLowerCase();
-        var pillClass = status === 'draft' ? 'pill is-draft' : 'pill';
+        var pillClass = 'pill';
+        if (status === 'draft') pillClass += ' is-draft';
+        if (status === 'in-development' || status === 'in_development') pillClass += ' is-dev';
+        var statusLabel = status === 'in-development' || status === 'in_development'
+          ? 'in development'
+          : status;
         var updated = item.updated ? ('Updated ' + item.updated) : '';
         return (
           '<div class="meta">' +
-            '<span class="' + pillClass + '">' + escapeHtml(status) + '</span>' +
+            '<span class="' + pillClass + '">' + escapeHtml(statusLabel) + '</span>' +
             (extra ? '<span>' + escapeHtml(extra) + '</span>' : '') +
             (updated ? '<span>' + escapeHtml(updated) + '</span>' : '') +
             (item.path ? '<span class="fb-count" data-count-for="' + escapeAttr(item.id) + '">Feedback…</span>' : '') +
@@ -679,7 +693,9 @@
 
       function actionsMarkup(item) {
         var key = access.configuredKey();
-        var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id) + (key ? '&key=' + encodeURIComponent(key) : '');
+        var keyParam = key ? '&key=' + encodeURIComponent(key) : '';
+        var feedbackHref = 'feedback.html?id=' + encodeURIComponent(item.id) + keyParam;
+        var changelogHref = 'changelog.html?id=' + encodeURIComponent(item.id) + keyParam;
         var shareUrl = absoluteUrl(item.path);
         var fileName = String(item.path || '').split('/').pop() || (item.id + '.html');
         return (
@@ -696,6 +712,9 @@
               '</button>' +
               '<button type="button" class="feedback-btn" role="menuitem" data-feedback-href="' + escapeAttr(feedbackHref) + '">' +
                 '<i class="fa-solid fa-chart-line" aria-hidden="true"></i> Insights' +
+              '</button>' +
+              '<button type="button" class="changelog-btn" role="menuitem" data-changelog-href="' + escapeAttr(changelogHref) + '">' +
+                '<i class="fa-solid fa-list-check" aria-hidden="true"></i> Changelog' +
               '</button>' +
             '</div>' +
           '</div>'

@@ -51,6 +51,7 @@
     var path = location.pathname
       .replace(/\/mocks\/[^/]+$/i, '/')
       .replace(/\/feedback\.html$/i, '/')
+      .replace(/\/changelog\.html$/i, '/')
       .replace(/\/index\.html$/i, '/');
     if (!/\/$/.test(path)) path += '/';
     return location.origin + path;

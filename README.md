@@ -106,6 +106,16 @@ On each prototype’s Insights page, use **Export comments** to download a self-
 
 5. Push — share links keep working.
 
+### Changelog (build to-dos)
+
+Hub ⋯ menu → **Changelog** opens an internal to-do list per prototype:
+
+- Annotated screenshots (select UI on the mock)
+- Description of the change for developers
+- **Mark done** / **Mark not done**
+
+Run `supabase-changelog.sql` once in the Supabase SQL Editor so the list syncs across the team.
+
 ## Deploy (free)
 
 ### Cloudflare Pages

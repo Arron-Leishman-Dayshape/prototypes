@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <style>
+    :root {
+      --ink: #1a1d26;
+      --muted: #5c6378;
+      --line: #e4e6ee;
+      --paper: #f7f6f2;
+      --panel: #ffffff;
+      --accent: #2f5d50;
+      --accent-soft: #e8f0ed;
+      --todo: #8a5a2b;
+      --todo-soft: #f3efe8;
+      --done: #2f5d50;
+      --done-soft: #e8f0ed;
+      --mark: #4f3fa0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, #dde8e4 0%, transparent 55%),
+        linear-gradient(180deg, var(--paper) 0%, #efece6 100%);
+    }
+    .wrap {
+      width: min(780px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 100px;
+    }
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .back:hover { color: var(--accent); }
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+    .toolbar a,
+    .toolbar button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--accent); color: #fff; border: 0; }
+    .btn-primary:hover { filter: brightness(1.05); }
+    .btn-ghost {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+    }
+    .btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 16px;
+    }
+    .filters button {
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: 600 0.85rem/1 "DM Sans", system-ui, sans-serif;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .filters button.is-on {
+      background: var(--accent-soft);
+      border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+      color: var(--accent);
+    }
+    .banner {
+      margin: 0 0 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #f0e0c8;
+      background: #fff8ee;
+      color: #6d4c2a;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+    .banner[hidden] { display: none !important; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .stat-label {
+      margin: 0 0 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .stat-value {
+      margin: 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+    .thread { display: grid; gap: 14px; }
+    .item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px 18px;
+    }
+    .item.is-done {
+      opacity: 0.78;
+      background: color-mix(in srgb, var(--panel) 88%, var(--done-soft));
+    }
+    .item-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .item-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      flex: 1 1 12rem;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .pill-todo { background: var(--todo-soft); color: var(--todo); }
+    .pill-done { background: var(--done-soft); color: var(--done); }
+    .item-meta {
+      margin: 0 0 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .item-body {
+      margin: 0;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
+    .item-shot {
+      position: relative;
+      margin: 12px 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3f4f6;
+    }
+    .item-shot img {
+      display: block;
+      width: 100%;
+      max-height: 420px;
+      object-fit: contain;
+      object-position: top center;
+      background: #fff;
+    }
+    .item-ann {
+      position: absolute;
+      border: 3px solid var(--mark);
+      border-radius: 6px;
+      box-shadow: 0 0 0 9999px rgba(26, 29, 38, 0.18);
+      pointer-events: none;
+    }
+    .item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .item-actions button {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      font: 600 0.88rem/1 "DM Sans", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .btn-done {
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-reopen {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+    .btn-danger-ghost {
+      border: 1px solid #fdd9e6;
+      background: #fff;
+      color: #a3003c;
+      margin-left: auto;
+    }
+    .empty {
+      padding: 36px 20px;
+      text-align: center;
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      color: var(--muted);
+      background: color-mix(in srgb, var(--panel) 70%, transparent);
+      line-height: 1.5;
+    }
+    .composer {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      margin: 0 0 18px;
+      display: grid;
+      gap: 12px;
+    }
+    .composer[hidden] { display: none !important; }
+    .composer h2 {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+    .composer label {
+      display: grid;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .composer input,
+    .composer textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font: 400 0.95rem/1.4 "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      background: #fafafb;
+    }
+    .composer textarea { min-height: 96px; resize: vertical; }
+    .composer input:focus,
+    .composer textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    .composer-shot {
+      position: relative;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f3f4f6;
+      min-height: 72px;
+    }
+    .composer-shot img {
+      display: block;
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      object-position: top center;
+      background: #fff;
+    }
+    .composer-shot .item-ann { box-shadow: 0 0 0 9999px rgba(26, 29, 38, 0.12); }
+    .composer-shot-empty {
+      margin: 0;
+      padding: 22px 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .composer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .status {
+      min-height: 1.2em;
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .status.is-ok { color: var(--accent); }
+    .status.is-err { color: #a3003c; }
+
+    .pick-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 20000;
+      background: #1a1d26;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    .pick-stage[hidden] { display: none !important; }
+    .pick-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px 14px;
+      padding: 12px 16px;
+      background: #11141c;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .pick-bar button {
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 0;
+      font: 600 0.88rem/1 "DM Sans", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    .pick-bar .btn-cancel { background: #2a2f3c; color: #fff; margin-left: auto; }
+    .pick-frame-wrap {
+      position: relative;
+      overflow: auto;
+      background: #2a2f3c;
+    }
+    .pick-frame-wrap iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    .pick-overlay {
+      position: fixed;
+      z-index: 20001;
+      box-sizing: border-box;
+      border: 3px solid #a89bff;
+      border-radius: 6px;
+      background: rgba(79, 63, 160, 0.14);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.28);
+      pointer-events: none;
+      display: none;
+    }
+    .pick-overlay.is-on { display: block; }
+    body.is-picking,
+    body.is-picking * { cursor: crosshair !important; }
+
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 21000;
+      background: rgba(26, 29, 38, 0.82);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      cursor: zoom-out;
+    }
+    .lightbox[hidden] { display: none !important; }
+    .lightbox-inner {
+      position: relative;
+      max-width: min(1100px, 100%);
+      max-height: 90vh;
+    }
+    .lightbox img {
+      display: block;
+      max-width: 100%;
+      max-height: 90vh;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .lightbox .item-ann { border-radius: 4px; }
+
+    @media (max-width: 640px) {
+      .stats { grid-template-columns: 1fr; }
+      .btn-danger-ghost { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <a class="back" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> All prototypes</a>
+    <p class="eyebrow">Changelog</p>
+    <h1 id="title">Changelog</h1>
+    <p class="sub" id="subtitle">Build to-dos with annotated screenshots — mark each one done when shipped.</p>
+
+    <div class="toolbar" id="actions" hidden>
+      <button type="button" class="btn-primary" id="addBtn">
+        <i class="fa-solid fa-plus" aria-hidden="true"></i> Add change
+      </button>
+      <a class="btn-ghost" id="openMock" href="#"><i class="fa-solid fa-up-right-from-square" aria-hidden="true"></i> Open prototype</a>
+      <a class="btn-ghost" id="insightsLink" href="#">Insights</a>
+      <a class="btn-ghost" href="index.html">Back to hub</a>
+    </div>
+
+    <div class="banner" id="localBanner" hidden>
+      Showing changelog saved in <strong>this browser</strong> only. Run <code>supabase-changelog.sql</code> in Supabase so the team shares one list.
+    </div>
+
+    <div class="stats" id="stats" hidden>
+      <div class="stat"><p class="stat-label">Open</p><p class="stat-value" id="statTodo">0</p></div>
+      <div class="stat"><p class="stat-label">Done</p><p class="stat-value" id="statDone">0</p></div>
+      <div class="stat"><p class="stat-label">Total</p><p class="stat-value" id="statTotal">0</p></div>
+    </div>
+
+    <div class="filters" id="filters" hidden>
+      <button type="button" class="is-on" data-filter="todo">To do</button>
+      <button type="button" data-filter="done">Done</button>
+      <button type="button" data-filter="all">All</button>
+    </div>
+
+    <section class="composer" id="composer" hidden>
+      <h2>New change</h2>
+      <label>Title
+        <input id="changeTitle" type="text" maxlength="120" placeholder="e.g. Remove folder icon from list top bar" />
+      </label>
+      <label>What needs to change
+        <textarea id="changeSummary" maxlength="2000" placeholder="Describe the change for the developer — what to build, where it lives, any edge cases."></textarea>
+      </label>
+      <div>
+        <p style="margin:0 0 8px;font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em">Annotated screenshot</p>
+        <div class="composer-shot" id="composerShot">
+          <p class="composer-shot-empty" id="composerShotEmpty">No screenshot yet — optional, but helps developers find the spot.</p>
+          <img id="composerShotImg" alt="Change annotation" hidden />
+          <div class="item-ann" id="composerAnn" hidden></div>
+        </div>
+      </div>
+      <div class="composer-actions">
+        <button type="button" class="btn-ghost" id="captureBtn">
+          <i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Select UI on mock
+        </button>
+        <button type="button" class="btn-ghost" id="clearShotBtn" hidden>Remove screenshot</button>
+        <button type="button" class="btn-primary" id="saveBtn">Save to changelog</button>
+        <button type="button" class="btn-ghost" id="cancelComposerBtn">Cancel</button>
+      </div>
+      <p class="status" id="composerStatus"></p>
+    </section>
+
+    <div class="thread" id="thread" aria-live="polite">
+      <div class="empty">Loading changelog…</div>
+    </div>
+  </main>
+
+  <div class="pick-stage" id="pickStage" hidden>
+    <div class="pick-bar">
+      <span><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> Click the UI that changed · Esc to cancel</span>
+      <button type="button" class="btn-cancel" id="pickCancel">Cancel</button>
+    </div>
+    <div class="pick-frame-wrap">
+      <iframe id="pickFrame" title="Prototype for annotation" sandbox="allow-same-origin allow-scripts"></iframe>
+    </div>
+  </div>
+  <div class="pick-overlay" id="pickOverlay" aria-hidden="true"></div>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <div class="lightbox-inner">
+      <img id="lightboxImg" alt="Screenshot full size" />
+      <div class="item-ann" id="lightboxAnn" hidden></div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="shared/access.js"></script>
+  <script src="shared/changelog-store.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    (function () {
+      if (!window.PrototypesAccess.requireInternalAccess()) return;
+
+      var params = new URLSearchParams(location.search);
+      var id = (params.get('id') || '').trim();
+      var store = window.PrototypesChangelogStore;
+      var access = window.PrototypesAccess;
+      var cfg = window.PROTOTYPES_CONFIG || {};
+      var hubHref = 'index.html' + (access.configuredKey() ? ('?key=' + encodeURIComponent(access.configuredKey())) : '');
+      var keyQ = access.configuredKey() ? ('&key=' + encodeURIComponent(access.configuredKey())) : '';
+
+      var titleEl = document.getElementById('title');
+      var subEl = document.getElementById('subtitle');
+      var thread = document.getElementById('thread');
+      var actions = document.getElementById('actions');
+      var banner = document.getElementById('localBanner');
+      var filter = 'todo';
+      var items = [];
+      var mockPath = '';
+      var threadTitle = id;
+      var draftShot = '';
+      var draftAnn = null;
+
+      document.querySelectorAll('a[href="index.html"]').forEach(function (a) { a.href = hubHref; });
+      if (cfg.siteName) document.title = 'Changelog · ' + cfg.siteName;
+
+      if (!id) {
+        titleEl.textContent = 'Pick a prototype';
+        subEl.textContent = 'Open Changelog from the hub ⋯ menu on a mock.';
+        thread.innerHTML = '<div class="empty"><a href="' + hubHref + '">Go to the hub</a> and choose Changelog.</div>';
+        return;
+      }
+
+      function escapeHtml(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+      function escapeAttr(s) { return escapeHtml(s); }
+
+      function formatWhen(iso) {
+        try {
+          return new Date(iso).toLocaleString(undefined, {
+            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+          });
+        } catch (e) {
+          return iso || '';
+        }
+      }
+
+      function annStyle(ann) {
+        if (!ann) return '';
+        return 'left:' + (ann.x * 100) + '%;top:' + (ann.y * 100) + '%;width:' + (ann.w * 100) + '%;height:' + (ann.h * 100) + '%;';
+      }
+
+      function setDraftShot(dataUrl, ann) {
+        draftShot = dataUrl || '';
+        draftAnn = ann || null;
+        var empty = document.getElementById('composerShotEmpty');
+        var img = document.getElementById('composerShotImg');
+        var box = document.getElementById('composerAnn');
+        var clearBtn = document.getElementById('clearShotBtn');
+        if (!draftShot) {
+          empty.hidden = false;
+          img.hidden = true;
+          img.removeAttribute('src');
+          box.hidden = true;
+          clearBtn.hidden = true;
+          return;
+        }
+        empty.hidden = true;
+        img.hidden = false;
+        img.src = draftShot;
+        clearBtn.hidden = false;
+        if (draftAnn) {
+          box.hidden = false;
+          box.style.cssText = annStyle(draftAnn);
+        } else {
+          box.hidden = true;
+        }
+      }
+
+      function updateStats() {
+        var todo = items.filter(function (i) { return i.status !== 'done'; }).length;
+        var done = items.length - todo;
+        document.getElementById('statTodo').textContent = String(todo);
+        document.getElementById('statDone').textContent = String(done);
+        document.getElementById('statTotal').textContent = String(items.length);
+        document.getElementById('stats').hidden = false;
+        document.getElementById('filters').hidden = false;
+      }
+
+      function visibleItems() {
+        if (filter === 'all') return items;
+        if (filter === 'done') return items.filter(function (i) { return i.status === 'done'; });
+        return items.filter(function (i) { return i.status !== 'done'; });
+      }
+
+      function render() {
+        updateStats();
+        var list = visibleItems();
+        if (!list.length) {
+          thread.innerHTML = '<div class="empty">' +
+            (items.length
+              ? 'No items in this filter.'
+              : 'No changelog items yet. Add the first change for developers to track.') +
+            '</div>';
+          return;
+        }
+        thread.innerHTML = list.map(function (item) {
+          var done = item.status === 'done';
+          var shot = item.screenshotData
+            ? '<figure class="item-shot" data-full="1" data-src="' + escapeAttr(item.screenshotData) + '" data-ann="' + escapeAttr(JSON.stringify(item.annotation || null)) + '">' +
+                '<img src="' + escapeAttr(item.screenshotData) + '" alt="" />' +
+                (item.annotation ? '<div class="item-ann" style="' + annStyle(item.annotation) + '"></div>' : '') +
+              '</figure>'
+            : '';
+          return (
+            '<article class="item' + (done ? ' is-done' : '') + '" data-id="' + escapeAttr(item.id) + '">' +
+              '<div class="item-head">' +
+                '<h2 class="item-title">' + escapeHtml(item.title) + '</h2>' +
+                '<span class="pill ' + (done ? 'pill-done' : 'pill-todo') + '">' +
+                  (done ? 'Done' : 'To do') +
+                '</span>' +
+              '</div>' +
+              '<p class="item-meta">' + escapeHtml(formatWhen(item.createdAt)) + '</p>' +
+              shot +
+              '<p class="item-body">' + escapeHtml(item.summary) + '</p>' +
+              '<div class="item-actions">' +
+                (done
+                  ? '<button type="button" class="btn-reopen" data-action="reopen">Mark not done</button>'
+                  : '<button type="button" class="btn-done" data-action="done"><i class="fa-solid fa-check" aria-hidden="true"></i> Mark done</button>') +
+                '<button type="button" class="btn-danger-ghost" data-action="delete">Delete</button>' +
+              '</div>' +
+            '</article>'
+          );
+        }).join('');
+      }
+
+      function load() {
+        return store.list(id).then(function (result) {
+          items = result.items || [];
+          banner.hidden = !!result.shared;
+          render();
+        });
+      }
+
+      function openComposer() {
+        document.getElementById('composer').hidden = false;
+        document.getElementById('changeTitle').focus();
+      }
+      function closeComposer() {
+        document.getElementById('composer').hidden = true;
+        document.getElementById('changeTitle').value = '';
+        document.getElementById('changeSummary').value = '';
+        document.getElementById('composerStatus').textContent = '';
+        document.getElementById('composerStatus').className = 'status';
+        setDraftShot('', null);
+      }
+
+      function setComposerStatus(msg, kind) {
+        var el = document.getElementById('composerStatus');
+        el.textContent = msg || '';
+        el.className = 'status' + (kind ? ' is-' + kind : '');
+      }
+
+      /* ---- Capture / annotate on mock ---- */
+      function looksLikeComponent(el) {
+        if (!el || el.nodeType !== 1) return false;
+        var cls = typeof el.className === 'string' ? el.className : '';
+        return /(^|\s)([A-Z][A-Za-z0-9]+|[A-Z][A-Za-z0-9]*-[A-Za-z0-9_-]+)(\s|$)/.test(cls);
+      }
+
+      function resolvePickTarget(raw, doc) {
+        if (!raw || raw.nodeType !== 1) return null;
+        var start = raw;
+        if (start.closest && start.closest('svg') && start.tagName.toLowerCase() !== 'svg') {
+          start = start.closest('svg');
+        }
+        var INTERACTIVE = /^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY|LABEL|IMG|VIDEO|CANVAS|TABLE|FORM)$/i;
+        var BLOCK = /^(SECTION|ARTICLE|ASIDE|NAV|HEADER|FOOTER|MAIN|LI|TR|TD|TH|FIGURE|DIALOG|UL|OL)$/i;
+        var vp = Math.max(1, (doc.defaultView || window).innerWidth * (doc.defaultView || window).innerHeight);
+        var best = null;
+        var cur = start;
+        while (cur && cur !== doc.body && cur !== doc.documentElement) {
+          var rect = cur.getBoundingClientRect();
+          if (rect.width >= 40 && rect.height >= 24 && rect.width * rect.height < vp * 0.75) {
+            if (INTERACTIVE.test(cur.tagName) || BLOCK.test(cur.tagName) || looksLikeComponent(cur)) {
+              return cur;
+            }
+            if (!best) best = cur;
+          }
+          cur = cur.parentElement;
+        }
+        return best || start;
+      }
+
+      function findCaptureRoot(target, doc) {
+        var win = doc.defaultView || window;
+        var vp = Math.max(1, win.innerWidth * win.innerHeight);
+        var tRect = target.getBoundingClientRect();
+        var cur = target.parentElement;
+        var best = target;
+        while (cur && cur !== doc.body && cur !== doc.documentElement) {
+          var rect = cur.getBoundingClientRect();
+          var area = rect.width * rect.height;
+          if (area > vp * 0.82) break;
+          if (rect.width >= tRect.width * 1.15 && rect.height >= tRect.height * 1.15) {
+            best = cur;
+            if (area > Math.min(vp * 0.22, 280000)) break;
+          }
+          cur = cur.parentElement;
+        }
+        return best;
+      }
+
+      function annotationWithin(target, root) {
+        var t = target.getBoundingClientRect();
+        var r = root.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) return null;
+        return {
+          x: Math.max(0, (t.left - r.left) / r.width),
+          y: Math.max(0, (t.top - r.top) / r.height),
+          w: Math.min(1, t.width / r.width),
+          h: Math.min(1, t.height / r.height),
+        };
+      }
+
+      function startPick() {
+        if (!mockPath) {
+          setComposerStatus('This prototype has no mock path to capture from.', 'err');
+          return;
+        }
+        var stage = document.getElementById('pickStage');
+        var frame = document.getElementById('pickFrame');
+        var overlay = document.getElementById('pickOverlay');
+        var hoverEl = null;
+        var docRef = null;
+
+        function placeOverlay(el) {
+          if (!el) {
+            overlay.classList.remove('is-on');
+            return;
+          }
+          var rect = el.getBoundingClientRect();
+          overlay.style.left = Math.max(0, rect.left - 2) + 'px';
+          overlay.style.top = Math.max(0, rect.top - 2) + 'px';
+          overlay.style.width = Math.max(0, rect.width + 4) + 'px';
+          overlay.style.height = Math.max(0, rect.height + 4) + 'px';
+          overlay.classList.add('is-on');
+        }
+
+        function cleanup() {
+          document.body.classList.remove('is-picking');
+          stage.hidden = true;
+          overlay.classList.remove('is-on');
+          document.removeEventListener('mousemove', onMove, true);
+          document.removeEventListener('click', onClick, true);
+          document.removeEventListener('keydown', onKey, true);
+          try {
+            if (docRef) {
+              docRef.removeEventListener('mousemove', onMove, true);
+              docRef.removeEventListener('click', onClick, true);
+            }
+          } catch (e) {}
+          frame.src = 'about:blank';
+        }
+
+        function onKey(e) {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            cleanup();
+            setComposerStatus('Capture cancelled.');
+          }
+        }
+
+        function eventDoc(e) {
+          return e.target && e.target.ownerDocument ? e.target.ownerDocument : document;
+        }
+
+        function onMove(e) {
+          var doc = eventDoc(e);
+          if (doc === document) return;
+          var under = doc.elementFromPoint(e.clientX, e.clientY);
+          if (!under) return;
+          var el = resolvePickTarget(under, doc);
+          hoverEl = el;
+          placeOverlay(el);
+        }
+
+        function onClick(e) {
+          var doc = eventDoc(e);
+          if (doc === document) {
+            if (e.target && e.target.id === 'pickCancel') return;
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          var under = e.target;
+          var el = resolvePickTarget(under, doc) || hoverEl;
+          if (!el) return;
+          var root = findCaptureRoot(el, doc);
+          var ann = annotationWithin(el, root);
+          setComposerStatus('Capturing…');
+          var h2c = window.html2canvas;
+          if (!h2c) {
+            cleanup();
+            setComposerStatus('Screenshot library missing.', 'err');
+            return;
+          }
+          h2c(root, {
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            scale: Math.min(2, window.devicePixelRatio || 1),
+            backgroundColor: '#ffffff',
+          }).then(function (canvas) {
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+            cleanup();
+            setDraftShot(dataUrl, ann);
+            setComposerStatus('Screenshot attached — add a title and save.', 'ok');
+          }).catch(function () {
+            cleanup();
+            setComposerStatus('Couldn’t capture that element. Try another area.', 'err');
+          });
+        }
+
+        document.body.classList.add('is-picking');
+        stage.hidden = false;
+        frame.src = mockPath + (mockPath.indexOf('?') >= 0 ? '&' : '?') + 'heatmap=1';
+        frame.onload = function () {
+          try {
+            docRef = frame.contentDocument || frame.contentWindow.document;
+            docRef.addEventListener('mousemove', onMove, true);
+            docRef.addEventListener('click', onClick, true);
+          } catch (err) {
+            cleanup();
+            setComposerStatus('Couldn’t open the mock for capture.', 'err');
+          }
+        };
+        document.addEventListener('mousemove', onMove, true);
+        document.addEventListener('click', onClick, true);
+        document.addEventListener('keydown', onKey, true);
+      }
+
+      document.getElementById('pickCancel').addEventListener('click', function () {
+        document.getElementById('pickStage').hidden = true;
+        document.getElementById('pickOverlay').classList.remove('is-on');
+        document.body.classList.remove('is-picking');
+        document.getElementById('pickFrame').src = 'about:blank';
+        setComposerStatus('Capture cancelled.');
+      });
+
+      document.getElementById('addBtn').addEventListener('click', openComposer);
+      document.getElementById('cancelComposerBtn').addEventListener('click', closeComposer);
+      document.getElementById('captureBtn').addEventListener('click', startPick);
+      document.getElementById('clearShotBtn').addEventListener('click', function () {
+        setDraftShot('', null);
+      });
+
+      document.getElementById('saveBtn').addEventListener('click', function () {
+        var title = (document.getElementById('changeTitle').value || '').trim();
+        var summary = (document.getElementById('changeSummary').value || '').trim();
+        if (!title) {
+          setComposerStatus('Add a short title.', 'err');
+          return;
+        }
+        if (!summary) {
+          setComposerStatus('Describe the change for the developer.', 'err');
+          return;
+        }
+        setComposerStatus('Saving…');
+        store.add({
+          prototypeId: id,
+          prototypeTitle: threadTitle,
+          title: title,
+          summary: summary,
+          status: 'todo',
+          screenshotData: draftShot,
+          annotation: draftAnn,
+          pageUrl: mockPath ? new URL(mockPath, location.href).href : location.href,
+          pagePath: mockPath || '',
+        }).then(function (result) {
+          closeComposer();
+          return load().then(function () {
+            if (result.screenshotSkipped) {
+              banner.hidden = false;
+              banner.innerHTML = 'Saved. Screenshot kept in this browser only — check the changelog table columns in Supabase.';
+            }
+          });
+        }).catch(function () {
+          setComposerStatus('Couldn’t save. Try again.', 'err');
+        });
+      });
+
+      document.getElementById('filters').addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-filter]');
+        if (!btn) return;
+        filter = btn.getAttribute('data-filter');
+        document.querySelectorAll('#filters button').forEach(function (b) {
+          b.classList.toggle('is-on', b === btn);
+        });
+        render();
+      });
+
+      thread.addEventListener('click', function (e) {
+        var shot = e.target.closest('.item-shot[data-full]');
+        if (shot) {
+          var img = document.getElementById('lightboxImg');
+          var ann = document.getElementById('lightboxAnn');
+          img.src = shot.getAttribute('data-src');
+          var raw = shot.getAttribute('data-ann');
+          var parsed = null;
+          try { parsed = raw && raw !== 'null' ? JSON.parse(raw) : null; } catch (err) {}
+          if (parsed) {
+            ann.hidden = false;
+            ann.style.cssText = annStyle(parsed);
+          } else {
+            ann.hidden = true;
+          }
+          document.getElementById('lightbox').hidden = false;
+          return;
+        }
+
+        var actionBtn = e.target.closest('[data-action]');
+        if (!actionBtn) return;
+        var card = actionBtn.closest('.item');
+        if (!card) return;
+        var itemId = card.getAttribute('data-id');
+        var action = actionBtn.getAttribute('data-action');
+
+        if (action === 'done' || action === 'reopen') {
+          actionBtn.disabled = true;
+          store.setStatus(id, itemId, action === 'done' ? 'done' : 'todo').then(function () {
+            return load();
+          }).catch(function () {
+            actionBtn.disabled = false;
+            window.alert('Couldn’t update status. Try again.');
+          });
+          return;
+        }
+
+        if (action === 'delete') {
+          if (!window.confirm('Delete this changelog item?')) return;
+          actionBtn.disabled = true;
+          store.remove(id, itemId).then(function () {
+            return load();
+          }).catch(function () {
+            actionBtn.disabled = false;
+            window.alert('Couldn’t delete. Try again.');
+          });
+        }
+      });
+
+      document.getElementById('lightbox').addEventListener('click', function () {
+        document.getElementById('lightbox').hidden = true;
+        document.getElementById('lightboxImg').removeAttribute('src');
+      });
+
+      fetch('manifest.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (entries) {
+          var flat = (entries || []).reduce(function (all, entry) {
+            return all.concat(
+              Array.isArray(entry.children) && entry.children.length ? entry.children : [entry]
+            );
+          }, []);
+          var item = flat.find(function (m) { return m.id === id; });
+          threadTitle = item ? item.title : id;
+          mockPath = item && item.path ? item.path : '';
+          titleEl.textContent = threadTitle;
+          subEl.textContent = 'Developer to-do list for this prototype — annotate changes, mark them done when shipped.';
+          document.title = 'Changelog · ' + threadTitle;
+          actions.hidden = false;
+          var openMock = document.getElementById('openMock');
+          var insights = document.getElementById('insightsLink');
+          if (mockPath) openMock.href = mockPath;
+          else openMock.hidden = true;
+          insights.href = 'feedback.html?id=' + encodeURIComponent(id) + keyQ;
+          load();
+        })
+        .catch(function () {
+          titleEl.textContent = id;
+          actions.hidden = false;
+          load();
+        });
+    })();
+  </script>
+</body>
+</html>
