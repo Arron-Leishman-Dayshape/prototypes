@@ -674,11 +674,26 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .PfTeam-group .PfTeam-rowLeft i { font-size: 10px; color: var(--icon-default); width: 9px; flex: 0 0 auto; }
+.PfTeam-group.is-nested .PfTeam-rowLeft,
+.PfTeam-group.is-nested .PfTeam-rowTrack { border-top-width: 1px; }
+.PfTeam-group .PfTeam-rowCheck {
+    flex: 0 0 auto; width: 16px; height: 16px; margin: 0;
+    accent-color: var(--primary); cursor: pointer;
+}
 
 .PfTeam-worker { border-bottom: var(--border-xs) solid var(--border-subtle); }
 .PfTeam-worker .PfTeam-rowLeft { align-items: stretch; }
 .PfTeam-worker.is-alt .PfTeam-rowLeft,
 .PfTeam-worker.is-alt .PfTeam-rowTrack { background: var(--surface-row-alt); }
+/* Main Schedule Gantt UNASSIGNED row tint */
+.PfTeam-worker.is-unassigned .PfTeam-rowLeft,
+.PfTeam-worker.is-unassigned .PfTeam-rowTrack {
+    background: var(--surface-primary-subtle);
+}
+.PfTeam-worker.is-unassigned.is-alt .PfTeam-rowLeft,
+.PfTeam-worker.is-unassigned.is-alt .PfTeam-rowTrack {
+    background: var(--surface-primary-subtle);
+}
 
 .PfTeam-cellName {
     width: var(--pf-team-col-name-w); flex: 0 0 var(--pf-team-col-name-w);
@@ -686,9 +701,24 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     border-right: var(--border-xs) solid var(--border-subtle);
     font-size: var(--font-size-label); color: var(--text-label);
     overflow: hidden; display: flex; align-items: flex-start; gap: 6px;
+    position: relative; box-sizing: border-box;
 }
 .PfTeam-cellName > * { height: var(--pf-team-sub-row-h); display: flex; align-items: center; }
-.PfTeam-cellName span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.PfTeam-cellName span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.PfTeam-rowCheckWrap {
+    position: absolute; left: 12px; top: 0;
+    width: 20px; height: var(--pf-team-sub-row-h);
+    display: flex; align-items: center; justify-content: center;
+}
+.PfTeam-rowCheck {
+    width: 16px; height: 16px; margin: 0;
+    accent-color: var(--primary); cursor: pointer; flex: 0 0 auto;
+}
+.PfTeam-worker.is-unassigned .PfTeam-cellName {
+    width: calc(var(--pf-team-col-name-w) + var(--pf-team-col-grade-w));
+    flex: 0 0 calc(var(--pf-team-col-name-w) + var(--pf-team-col-grade-w));
+}
+.PfTeam-worker.is-unassigned .PfTeam-cellGrade { display: none; }
 
 .PfTeam-cellGrade {
     width: var(--pf-team-col-grade-w); flex: 0 0 var(--pf-team-col-grade-w);
@@ -1607,44 +1637,37 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .RTraitsWarn { display: flex; align-items: center; gap: 8px; color: var(--text-warning); font-size: var(--font-size-medium); margin: 8px 0 0; }
 .RTraitsWarn i { color: #fba645; }
 
-/* ---- Add Resource Requirement modal (Job Editor replica) ---- */
-.ReqModal-backdrop { position: fixed; inset: 0; background: rgba(31,32,45,.5); display: none; align-items: flex-start; justify-content: center; z-index: 120; padding: 56px 16px; }
-.ReqModal-backdrop.is-open { display: flex; }
-.ReqModal { background: #fff; border-radius: var(--border-radius-lg, 8px); width: 100%; max-width: 600px; max-height: calc(100vh - 112px); display: flex; flex-direction: column; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
-.ReqModal-header { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); flex: 0 0 auto; }
-.ReqModal-title { font-size: var(--font-size-h2); font-weight: var(--font-weight-regular); margin: 0; color: var(--text-default); }
-.ReqModal-close {
-    margin-left: auto; flex: 0 0 auto; width: 28px; height: 28px; padding: 0; border: none; background: none;
-    border-radius: var(--border-radius-default); color: var(--icon-subtle); cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-}
-.ReqModal-close:hover { background: var(--surface-subtle-dark); color: var(--text-default); }
-.ReqModal-body { padding: 20px; overflow-y: auto; }
-.ReqModal-footer { display: flex; align-items: center; gap: 10px; padding: 16px 20px; border-top: 1px solid var(--border-subtle); flex: 0 0 auto; }
-.ReqModal-mandatoryNote { color: var(--text-subtle); font-size: var(--font-size-small); }
-.ReqModal-mandatoryNote .req, .ReqField .req { color: var(--text-danger); }
-.ReqModal-tabs { display: flex; width: 100%; margin-bottom: 18px; }
-.ReqModal-tab {
+/* ---- Add Resource Requirement — Job Editor ResourceRequirementModal field chrome ---- */
+.RModal--req { max-width: 800px; }
+.RModal-tabs { display: flex; width: 100%; }
+.RModal-tab {
     flex: 1 1 0; border: 1px solid var(--border-default); background: #fff; color: var(--text-accent);
-    padding: 7px 12px; font-family: var(--font-family); font-weight: var(--font-weight-semibold);
-    font-size: var(--font-size-medium); cursor: pointer;
+    padding: 8px 12px; min-height: 35px; font-family: var(--font-family); font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-medium); cursor: pointer; line-height: 1.2;
 }
-.ReqModal-tab + .ReqModal-tab { border-left: none; }
-.ReqModal-tab:first-child { border-radius: var(--border-radius-default) 0 0 var(--border-radius-default); }
-.ReqModal-tab:last-child { border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0; }
-.ReqModal-tab.is-active { background: var(--surface-primary); border-color: var(--surface-primary); color: #fff; }
-.ReqField { margin-bottom: 16px; }
-.ReqField-label { display: block; font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold); color: var(--text-emphasis); margin-bottom: 5px; }
-.ReqField-control { display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); padding: 8px 10px; background: #fff; }
-.ReqField-control .lead { color: var(--icon-subtle); flex: 0 0 auto; }
-.ReqField-control .chev { color: var(--icon-subtle); flex: 0 0 auto; font-size: 11px; }
-.ReqField-select { border: none; outline: none; flex: 1 1 auto; background: transparent; font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default); appearance: none; -webkit-appearance: none; cursor: pointer; }
-.ReqSummary { display: flex; gap: 36px; margin: 2px 0 14px; }
-.ReqSummary label { display: block; font-size: var(--font-size-extra-small); color: var(--text-subtle); text-transform: uppercase; font-weight: var(--font-weight-bold); letter-spacing: .03em; margin-bottom: 2px; }
-.ReqSummary .val { color: var(--text-default); }
-.ReqCheck { display: flex; align-items: center; gap: 8px; margin: 4px 0; cursor: pointer; }
-.ReqCheck input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
-.ReqSkills-box { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px dashed var(--border-default); border-radius: var(--border-radius-default); padding: 14px 16px; color: var(--text-subtle); font-size: var(--font-size-small); }
+.RModal-tab + .RModal-tab { border-left: none; }
+.RModal-tab:first-child { border-radius: var(--border-radius-default) 0 0 var(--border-radius-default); }
+.RModal-tab:last-child { border-radius: 0 var(--border-radius-default) var(--border-radius-default) 0; }
+.RModal-tab.is-active { background: var(--surface-primary); border-color: var(--surface-primary); color: #fff; }
+.RModal-tab:hover:not(.is-active) { background: var(--surface-subtle-light); color: var(--text-primary); }
+.RField-control {
+    display: flex; align-items: center; gap: 8px; height: 35px; box-sizing: border-box;
+    border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+    padding: 0 12px; background: #fff;
+}
+.RField-control .lead { color: var(--icon-subtle); flex: 0 0 auto; width: 14px; text-align: center; }
+.RField-control .chev { color: var(--icon-subtle); flex: 0 0 auto; font-size: 11px; }
+.RField-select {
+    border: none; outline: none; flex: 1 1 auto; min-width: 0; background: transparent;
+    font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default);
+    appearance: none; -webkit-appearance: none; cursor: pointer;
+}
+.RSummary { display: flex; gap: 36px; margin: 0; width: 100%; }
+.RSummary label { display: block; font-size: var(--font-size-extra-small); color: var(--text-subtle); text-transform: uppercase; font-weight: var(--font-weight-bold); letter-spacing: .03em; margin-bottom: 2px; }
+.RSummary .val { color: var(--text-default); font-size: var(--font-size-medium); }
+.RCheck--block { height: auto; align-self: flex-start; margin-top: 4px; }
+.reqtab { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.reqtab[hidden] { display: none !important; }
 
 /* view switching */
 .view { display: none; }
@@ -1822,7 +1845,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
                 <div class="Modal-resultsBar">
                     <div class="Modal-resultsToolbar">
                         <div class="Modal-toolbarSlot Modal-toolbarSlot--start">
-                            <button class="Btn Btn--outline" onclick="modifyFilters()"><i class="fa-solid fa-arrow-left"></i> Modify Filters</button>
+                            <button class="Btn Btn--outline" onclick="modifyFilters()"><i class="fa-solid fa-arrow-left"></i> Search for more</button>
                         </div>
                         <div class="Modal-toolbarSlot Modal-toolbarSlot--center">
                         <div class="btn-group btn-group-toggle Modal-resultsTabGroup" role="group" aria-label="Results view">
@@ -1917,75 +1940,148 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     </div>
 </div>
 
-<!-- ===================== Add Resource Requirement modal (Job Editor) ===================== -->
-<div class="ReqModal-backdrop" id="reqModal">
-    <div class="ReqModal" role="dialog" aria-modal="true" aria-labelledby="reqModalTitle">
-        <div class="ReqModal-header">
-            <h3 class="ReqModal-title" id="reqModalTitle">Add Resource Requirement</h3>
-            <button class="ReqModal-close" title="Close without saving" aria-label="Close" onclick="closeReqModal()"><i class="fa-solid fa-xmark"></i></button>
+<!-- ===================== Add Resource Requirement modal (Job Editor ResourceRequirementModal) ===================== -->
+<div class="RModal-backdrop" id="reqModal">
+    <div class="RModal RModal--req" role="dialog" aria-modal="true" aria-labelledby="reqModalTitle">
+        <div class="RModal-header">
+            <h3 class="RModal-title" id="reqModalTitle">Add Resource Requirement</h3>
+            <button class="RModal-close" title="Close without saving" aria-label="Close" onclick="closeReqModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="ReqModal-body">
-            <div class="ReqField">
-                <label class="ReqField-label" for="reqEngagement">Engagement <span class="req">*</span></label>
-                <div class="ReqField-control"><i class="fa-solid fa-briefcase lead"></i><select id="reqEngagement" class="ReqField-select" required><option value="">Choose engagement</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-            </div>
+        <div class="RModal-body">
+            <div class="RModal-pane">
+                <div class="RModal-block">
+                    <div class="RField">
+                        <label class="RField-label" for="reqEngagement">Engagement <span class="req">*</span></label>
+                        <div class="RField-control">
+                            <i class="fa-solid fa-briefcase lead" aria-hidden="true"></i>
+                            <select id="reqEngagement" class="RField-select" required><option value="">Choose engagement</option></select>
+                            <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="ReqModal-tabs">
-                <button type="button" class="ReqModal-tab" data-rtype="specific" onclick="switchReqTab('specific')">Specific</button>
-                <button type="button" class="ReqModal-tab is-active" data-rtype="flexible" onclick="switchReqTab('flexible')">Flexible</button>
-                <button type="button" class="ReqModal-tab" data-rtype="unassignable" onclick="switchReqTab('unassignable')">Unassignable</button>
-            </div>
+                <div class="RModal-block">
+                    <div class="RModal-tabs" role="tablist" aria-label="Resource type">
+                        <button type="button" class="RModal-tab" role="tab" data-rtype="specific" aria-selected="false" onclick="switchReqTab('specific')">Specific</button>
+                        <button type="button" class="RModal-tab is-active" role="tab" data-rtype="flexible" aria-selected="true" onclick="switchReqTab('flexible')">Flexible</button>
+                        <button type="button" class="RModal-tab" role="tab" data-rtype="unassignable" aria-selected="false" onclick="switchReqTab('unassignable')">Unassignable</button>
+                    </div>
 
-            <div id="reqtab-specific" class="reqtab" hidden>
-                <div class="ReqField">
-                    <label class="ReqField-label" for="reqWorker">Worker Name <span class="req">*</span></label>
-                    <div class="ReqField-control"><i class="fa-solid fa-user lead"></i><select id="reqWorker" class="ReqField-select" onchange="onReqWorkerChange()"><option value="">Choose worker</option><option>Priya Patel</option><option>Sofia Rossi</option><option>Noah Williams</option><option>Mia Fernandez</option><option>Tom Becker</option><option>Jordan Blake</option><option>Olivia Chen</option><option>Marcus Webb</option><option>Aisha Khan</option><option>Harry Collins</option><option>Liam O'Connor</option><option>Emma Johnson</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="ReqSummary" id="reqWorkerSummary" style="display:none">
-                    <div><label>Grade</label><div class="val" id="reqwGrade">—</div></div>
-                    <div><label>Functional Unit</label><div class="val" id="reqwFu">—</div></div>
-                    <div><label>Geographical Unit</label><div class="val" id="reqwGu">—</div></div>
-                </div>
-                <label class="ReqCheck"><input type="checkbox" id="reqContinuity" /> Continuity</label>
-            </div>
+                    <div id="reqtab-specific" class="reqtab" hidden>
+                        <div class="RField">
+                            <label class="RField-label" for="reqWorker">Worker Name <span class="req">*</span></label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-user lead" aria-hidden="true"></i>
+                                <select id="reqWorker" class="RField-select" onchange="onReqWorkerChange()">
+                                    <option value="">Choose worker</option>
+                                    <option>Priya Patel</option>
+                                    <option>Sofia Rossi</option>
+                                    <option>Noah Williams</option>
+                                    <option>Mia Fernandez</option>
+                                    <option>Tom Becker</option>
+                                    <option>Jordan Blake</option>
+                                    <option>Olivia Chen</option>
+                                    <option>Marcus Webb</option>
+                                    <option>Aisha Khan</option>
+                                    <option>Harry Collins</option>
+                                    <option>Liam O'Connor</option>
+                                    <option>Emma Johnson</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="RSummary" id="reqWorkerSummary" style="display:none">
+                            <div><label>Grade</label><div class="val" id="reqwGrade">—</div></div>
+                            <div><label>Functional Unit</label><div class="val" id="reqwFu">—</div></div>
+                            <div><label>Geographical Unit</label><div class="val" id="reqwGu">—</div></div>
+                        </div>
+                        <label class="RCheck RCheck--block"><input type="checkbox" id="reqContinuity" /> Continuity</label>
+                        <div class="RField">
+                            <label class="RField-label" for="reqSpecificRole">Project Role</label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-briefcase lead" aria-hidden="true"></i>
+                                <select id="reqSpecificRole" class="RField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
 
-            <div id="reqtab-flexible" class="reqtab">
-                <div class="ReqField">
-                    <label class="ReqField-label">Project Role</label>
-                    <div class="ReqField-control"><i class="fa-solid fa-briefcase lead"></i><select class="ReqField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="ReqField">
-                    <label class="ReqField-label" for="reqGrade">Grade <span class="req">*</span></label>
-                    <div class="ReqField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="reqGrade" class="ReqField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="ReqField">
-                    <label class="ReqField-label">Functional Unit</label>
-                    <div class="ReqField-control"><i class="fa-solid fa-building lead"></i><select class="ReqField-select"><option value="">Choose functional unit</option><option>Audit</option><option>Tax</option><option>Advisory</option><option>Risk Assurance</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-                <div class="ReqField">
-                    <label class="ReqField-label">Geographical Unit</label>
-                    <div class="ReqField-control"><i class="fa-solid fa-map lead"></i><select class="ReqField-select"><option value="">Choose geographical unit</option><option>London</option><option>Manchester</option><option>Edinburgh</option><option>Bristol</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
-                </div>
-            </div>
+                    <div id="reqtab-flexible" class="reqtab">
+                        <div class="RField">
+                            <label class="RField-label" for="reqRole">Project Role</label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-briefcase lead" aria-hidden="true"></i>
+                                <select id="reqRole" class="RField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="RField">
+                            <label class="RField-label" for="reqGrade">Grade <span class="req">*</span></label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-graduation-cap lead" aria-hidden="true"></i>
+                                <select id="reqGrade" class="RField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="RField">
+                            <label class="RField-label" for="reqFu">Functional Unit</label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-building lead" aria-hidden="true"></i>
+                                <select id="reqFu" class="RField-select"><option value="">Choose functional unit</option><option>Audit</option><option>Tax</option><option>Advisory</option><option>Risk Assurance</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="RField">
+                            <label class="RField-label" for="reqGu">Geographical Unit</label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-map lead" aria-hidden="true"></i>
+                                <select id="reqGu" class="RField-select"><option value="">Choose geographical unit</option><option>London</option><option>Manchester</option><option>Edinburgh</option><option>Bristol</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
 
-            <div id="reqtab-unassignable" class="reqtab" hidden>
-                <div class="ReqField">
-                    <label class="ReqField-label" for="reqUnGrade">Grade <span class="req">*</span></label>
-                    <div class="ReqField-control"><i class="fa-solid fa-graduation-cap lead"></i><select id="reqUnGrade" class="ReqField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select><i class="fa-solid fa-chevron-down chev"></i></div>
+                    <div id="reqtab-unassignable" class="reqtab" hidden>
+                        <div class="RField">
+                            <label class="RField-label" for="reqUnGrade">Grade <span class="req">*</span></label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-graduation-cap lead" aria-hidden="true"></i>
+                                <select id="reqUnGrade" class="RField-select"><option value="">Choose grade</option><option>Partner</option><option>Director</option><option>Manager</option><option>Senior Associate</option><option>Associate</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                        <div class="RField">
+                            <label class="RField-label" for="reqUnRole">Project Role</label>
+                            <div class="RField-control">
+                                <i class="fa-solid fa-briefcase lead" aria-hidden="true"></i>
+                                <select id="reqUnRole" class="RField-select"><option value="">Choose project role</option><option>Engagement Lead</option><option>Reviewer</option><option>Preparer</option><option>Specialist</option></select>
+                                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div id="reqSkills" class="ReqField">
-                <label class="ReqField-label">Required Skills</label>
-                <div class="ReqSkills-box">
-                    <span>No skills added yet.</span>
-                    <button class="Btn Btn--sm" type="button"><i class="fa-solid fa-plus"></i> Add Skills</button>
+                <div class="RModal-block RModal-block--traits" id="reqSkills">
+                    <h4 class="RModal-sectionTitle">Required Skills</h4>
+                    <div>
+                        <button type="button" class="Btn Btn--secondary"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Skills</button>
+                    </div>
+                    <div class="RTraitsTableWrap">
+                        <table class="RTraitsTable" aria-label="Required skills">
+                            <thead>
+                                <tr>
+                                    <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Name</th>
+                                    <th><i class="fa-solid fa-sort" aria-hidden="true" style="opacity:.45;margin-right:4px"></i>Primary</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div class="RTraitsEmpty">Nothing to display</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="ReqModal-footer">
-            <span class="ReqModal-mandatoryNote"><span class="req">*</span> Mandatory fields</span>
-            <span class="TopBar-spacer"></span>
+        <div class="RModal-footer">
             <button type="button" class="Btn Btn--secondary" onclick="closeReqModal()">Cancel</button>
             <button type="button" class="Btn Btn--primary" onclick="submitReq()">Confirm</button>
         </div>
@@ -2633,7 +2729,7 @@ const ENGAGEMENTS = [
    Custom member filters are tenant-specific and omitted from this mock. */
 const FILTER_GROUPS = [
     { label: "Engagement Properties", filters: [
-        { prop: "jobText", label: "Engagement Name / Code / Client Name", field: "name" },
+        { prop: "jobText", label: "Engagement Name / Code / Client Name", field: "name", freeText: true },
         { prop: "jobFunctionalUnitId", label: "Engagement Functional Unit", field: "functionalUnit" },
         { prop: "jobRateType", label: "Engagement Rate Type", field: "rateType" },
         { prop: "jobGeographicalUnitId", label: "Engagement Geographical Unit", field: "geographicalUnit" },
@@ -3083,16 +3179,30 @@ function engagementMatchesField(e, field, selected) {
     if (!selected || !selected.size) return true;
     return fieldValues(e, field).some(v => selected.has(v));
 }
+function isFreeTextProp(prop) {
+    return !!(FILTER_DEF[prop] && FILTER_DEF[prop].freeText);
+}
+function engagementMatchesFreeText(e, query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) return true;
+    const hay = [e.name, e.code, e.client].filter(Boolean).join(" ").toLowerCase();
+    return hay.includes(q);
+}
+function engagementMatchesProp(e, prop, selected) {
+    if (!selected || !selected.size) return true;
+    if (isFreeTextProp(prop)) return engagementMatchesFreeText(e, [...selected][0]);
+    return engagementMatchesField(e, propField(prop), selected);
+}
 function pendingPassing(exceptProp) {
     return ENGAGEMENTS.filter(e => Object.keys(modalState.valueSel).every(prop => {
         if (prop === exceptProp) return true;
-        return engagementMatchesField(e, propField(prop), modalState.valueSel[prop]);
+        return engagementMatchesProp(e, prop, modalState.valueSel[prop]);
     }));
 }
 function appliedPassing(exceptProp) {
     return ENGAGEMENTS.filter(e => Object.keys(modalState.appliedSel).every(prop => {
         if (prop === exceptProp) return true;
-        return engagementMatchesField(e, propField(prop), modalState.appliedSel[prop]);
+        return engagementMatchesProp(e, prop, modalState.appliedSel[prop]);
     }));
 }
 function filteredEngagements() {
@@ -3218,6 +3328,24 @@ function renderActiveFilterCards() {
     const el = document.getElementById("activeFiltersContainer");
     const filterCards = modalState.openFilters.map(prop => {
         const def = FILTER_DEF[prop];
+        if (isFreeTextProp(prop)) {
+            const text = [...(modalState.valueSel[prop] || [])][0] || "";
+            return `<div class="FilterCard FilterCard--freeText" data-prop="${prop}">
+                <div class="FilterCard-header">
+                    <span class="FilterCard-title">${htmlEsc(def.label)}</span>
+                    <button type="button" class="FilterCard-close" onclick="closeFilterCard('${prop}')" title="Close filter"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="FilterCard-body">
+                    <div class="FilterCard-desc">Type a name, code, or client. Matching engagements show after you select engagements — not as a checklist under this field.</div>
+                    <div class="FilterCard-field">
+                        <label class="FilterCard-fieldLabel" for="freeText-${prop}">Search</label>
+                        <div class="FilterCard-dateInput" style="padding:0">
+                            <input id="freeText-${prop}" type="text" class="FilterCard-freeTextInput" placeholder="e.g. compliance audit" value="${htmlEsc(text)}" oninput="onFreeTextFilter('${prop}', this.value)" style="border:0;outline:none;width:100%;padding:7px 10px;font:inherit;background:transparent;color:inherit" />
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
         const q = (modalState.valueSearch[prop] || "").trim().toLowerCase();
         const sel = valSet(prop);
         const rows = distinctValues(prop, true).filter(([v]) => !q || String(v).toLowerCase().includes(q));
@@ -3245,11 +3373,26 @@ function renderActiveFilterCards() {
     }
     el.innerHTML = dateTimeCardHtml() + filterCards;
     modalState.openFilters.forEach(prop => {
+        if (isFreeTextProp(prop)) return;
         const body = el.querySelector(`[data-filter-body="${prop}"]`);
         if (!body) return;
         const q = (modalState.valueSearch[prop] || "").trim().toLowerCase();
         body._values = distinctValues(prop, true).filter(([v]) => !q || String(v).toLowerCase().includes(q)).map(r => r[0]);
     });
+}
+function onFreeTextFilter(prop, value) {
+    const text = String(value || "").trim();
+    if (text) modalState.valueSel[prop] = new Set([text]);
+    else delete modalState.valueSel[prop];
+    updateFiltersBar();
+    if (modalState.editingRuleId) {
+        modalState.appliedSel = {};
+        Object.keys(modalState.valueSel).forEach(p => {
+            if (modalState.valueSel[p].size) modalState.appliedSel[p] = new Set(modalState.valueSel[p]);
+        });
+        modalState.applied = Object.keys(modalState.appliedSel).length > 0;
+        updateEditRulePrimary();
+    }
 }
 document.getElementById("activeFiltersContainer").addEventListener("change", e => {
     if (!e.target.matches(".FilterCard-body input[type=checkbox]")) return;
@@ -3489,6 +3632,16 @@ function commitSelectedAsStatic() {
     updateModalPrimary();
 }
 function modifyFilters() {
+    // Additive search: keep portfolio membership, reset the filter builder so the next query is clearly "search for more".
+    modalState.openFilters = [];
+    modalState.valueSel = {};
+    modalState.valueSearch = {};
+    modalState.appliedSel = {};
+    modalState.applied = false;
+    modalState.filterSearch = "";
+    modalState.tableSel.clear();
+    modalState.lastSelectedCode = null;
+    modalState.resultsTab = "search";
     showModalStep("filters");
     renderFilterUI();
     updateMembershipUI();
@@ -3557,7 +3710,7 @@ function searchResultsEmptyState() {
             image: BLANK_SLATE_SEARCH_ILLUSTRATION,
             imageAlt: "All matching engagements added",
             main: "All matching engagements added",
-            sub: "Every engagement from this search is already in your portfolio. Switch to the Portfolio tab to review them, or modify filters to find more."
+            sub: "Every engagement from this search is already in your portfolio. Switch to the Portfolio tab to review them, or search for more to find others."
         };
     }
     return {
@@ -4480,8 +4633,73 @@ const pfTeamWorkers = PF_WORKER_SPECS.map(function (wk) {
             kind: spec[9] || "booking"
         };
     });
-    return { id: wk.id, name: wk.name, grade: wk.grade, cap: wk.cap, items: items };
+    return {
+        id: wk.id,
+        name: wk.name,
+        grade: wk.grade,
+        cap: wk.cap,
+        items: items,
+        unassigned: !!wk.unassigned,
+        reqType: wk.reqType || null,
+        fu: wk.fu || null,
+        gu: wk.gu || null,
+        role: wk.projectRole || null
+    };
 });
+
+/* Demo UNASSIGNED requirements — main Schedule Gantt label pattern */
+(function seedUnassignedRequirements() {
+    function mkItem(job, code, start, span, hours) {
+        const cells = {};
+        for (let i = 0; i < span; i++) {
+            const wi = start + i;
+            if (wi < PF_WEEK_COUNT) cells[wi] = hours;
+        }
+        return {
+            id: "pfit-" + (++PF_ITEM_SEQ),
+            job: job, code: code,
+            phase: "Preparation", role: null, bookingType: "Audit",
+            req: null, startWeek: start, span: span, hours: hours,
+            cells: cells, kind: "booking"
+        };
+    }
+    pfTeamWorkers.push({
+        id: "w-tba-am",
+        unassigned: true,
+        reqType: "flexible",
+        name: null,
+        grade: "AM",
+        fu: "Actuarial Services",
+        gu: "Oxford",
+        role: null,
+        cap: 37.5,
+        items: [mkItem("Pension Scheme Audit — Orion Pensions", "ORP-44", 4, 3, 14)]
+    });
+    pfTeamWorkers.push({
+        id: "w-ua-jeannie",
+        unassigned: true,
+        reqType: "specific",
+        name: "Jeannie Absolon",
+        grade: "A1",
+        fu: "Actuarial Services",
+        gu: "Oxford",
+        role: null,
+        cap: 37.5,
+        items: [mkItem("Pension Scheme Audit — Orion Pensions", "ORP-44", 8, 4, 11)]
+    });
+    pfTeamWorkers.push({
+        id: "w-ua-porter",
+        unassigned: true,
+        reqType: "specific",
+        name: "Porter Absolon",
+        grade: "A1",
+        fu: "Forensic",
+        gu: "Berlin",
+        role: null,
+        cap: 37.5,
+        items: [mkItem("Related Party Review — Harbour Estates", "HBE-12", 12, 3, 10)]
+    });
+})();
 
 const pfTeamState = {
     pivot: "resource",
@@ -4493,6 +4711,20 @@ const pfTeamState = {
     menu: null,
     flyout: null
 };
+
+function pfIsUnassigned(worker) { return !!(worker && worker.unassigned); }
+
+/** Main Gantt UNASSIGNED label: Name / Grade / FU / GU  or  Grade / FU / GU */
+function pfUnassignedLabel(worker) {
+    const parts = [];
+    if (worker.reqType === "specific" && worker.name) parts.push(worker.name);
+    if (worker.grade) parts.push(worker.grade);
+    if (worker.fu) parts.push(worker.fu);
+    if (worker.gu) parts.push(worker.gu);
+    const joined = parts.filter(Boolean).join(" / ");
+    if (worker.role) return worker.role + " - " + joined;
+    return joined || "Unassigned resource";
+}
 
 function pfBreakdownOn() { return pfTeamState.breakdown !== "none"; }
 
@@ -4713,11 +4945,23 @@ function pfBuildHeader() {
     return head;
 }
 
-function pfBuildGroupRow(label, collapseKey) {
-    const row = pfEl("div", "PfTeam-row PfTeam-group");
+function pfBuildGroupRow(label, collapseKey, opts) {
+    opts = opts || {};
+    const row = pfEl("div", "PfTeam-row PfTeam-group" + (opts.nested ? " is-nested" : ""));
     const left = pfEl("div", "PfTeam-rowLeft");
     const collapsed = !!pfTeamState.collapsedEngagements[collapseKey];
-    left.innerHTML = '<i class="fa-solid fa-chevron-' + (collapsed ? "right" : "down") + '"></i><span>' + pfEsc(label) + "</span>";
+    if (opts.checkbox) {
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "PfTeam-rowCheck";
+        cb.title = "Select all unassigned";
+        cb.addEventListener("click", function (e) { e.stopPropagation(); });
+        left.appendChild(cb);
+    }
+    left.appendChild(Object.assign(document.createElement("i"), {
+        className: "fa-solid fa-chevron-" + (collapsed ? "right" : "down")
+    }));
+    left.appendChild(pfEl("span", null, label));
     left.title = label;
     left.addEventListener("click", function () {
         pfTeamState.collapsedEngagements[collapseKey] = !collapsed;
@@ -4731,15 +4975,30 @@ function pfBuildGroupRow(label, collapseKey) {
 }
 
 function pfBuildWorkerRow(worker, index) {
+    const isUa = pfIsUnassigned(worker);
     const rows = pfBuildBreakdownRows(worker, pfTeamState.breakdown);
-    const row = pfEl("div", "PfTeam-row PfTeam-worker" + (index % 2 === 0 ? " is-alt" : ""));
+    const row = pfEl("div", "PfTeam-row PfTeam-worker" + (isUa ? " is-unassigned" : "") + (!isUa && index % 2 === 0 ? " is-alt" : ""));
     row.dataset.worker = worker.id;
+    if (isUa) row.dataset.unassigned = "1";
 
     const left = pfEl("div", "PfTeam-rowLeft");
     const name = pfEl("div", "PfTeam-cellName");
-    name.appendChild(pfEl("span", null, worker.name));
+    if (isUa) {
+        const checkWrap = pfEl("label", "PfTeam-rowCheckWrap");
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.className = "PfTeam-rowCheck";
+        cb.addEventListener("click", function (e) { e.stopPropagation(); });
+        checkWrap.appendChild(cb);
+        name.appendChild(checkWrap);
+        const label = pfEl("span", null, pfUnassignedLabel(worker));
+        label.title = pfUnassignedLabel(worker);
+        name.appendChild(label);
+    } else {
+        name.appendChild(pfEl("span", null, worker.name));
+    }
     left.appendChild(name);
-    left.appendChild(pfEl("div", "PfTeam-cellGrade", worker.grade));
+    left.appendChild(pfEl("div", "PfTeam-cellGrade", isUa ? "" : worker.grade));
 
     const expandCell = pfEl("div", "PfTeam-cellExpand");
     if (rows) {
@@ -4956,21 +5215,62 @@ function renderGantt() {
         pfEngagementGroups().forEach(function (group) {
             inner.appendChild(pfBuildGroupRow(group.job, group.job));
             if (pfTeamState.collapsedEngagements[group.job]) return;
-            group.people.forEach(function (entry) {
-                const scoped = {
-                    id: entry.worker.id + "::" + group.job,
-                    name: entry.worker.name,
-                    grade: entry.worker.grade,
-                    cap: entry.worker.cap,
-                    items: entry.items
-                };
-                inner.appendChild(pfBuildWorkerRow(scoped, rowIndex++));
-            });
+
+            const assigned = group.people.filter(function (e) { return !pfIsUnassigned(e.worker); });
+            const unassigned = group.people.filter(function (e) { return pfIsUnassigned(e.worker); });
+
+            const assignedKey = group.job + "|assigned";
+            inner.appendChild(pfBuildGroupRow("Assigned", assignedKey, { nested: true }));
+            if (!pfTeamState.collapsedEngagements[assignedKey]) {
+                assigned.forEach(function (entry) {
+                    const scoped = {
+                        id: entry.worker.id + "::" + group.job,
+                        name: entry.worker.name,
+                        grade: entry.worker.grade,
+                        cap: entry.worker.cap,
+                        items: entry.items,
+                        unassigned: false
+                    };
+                    inner.appendChild(pfBuildWorkerRow(scoped, rowIndex++));
+                });
+            }
+
+            if (unassigned.length) {
+                const uaKey = group.job + "|unassigned";
+                inner.appendChild(pfBuildGroupRow("Unassigned", uaKey, { nested: true, checkbox: true }));
+                if (!pfTeamState.collapsedEngagements[uaKey]) {
+                    unassigned.forEach(function (entry) {
+                        const scoped = {
+                            id: entry.worker.id + "::" + group.job,
+                            name: entry.worker.name,
+                            grade: entry.worker.grade,
+                            cap: entry.worker.cap,
+                            items: entry.items,
+                            unassigned: true,
+                            reqType: entry.worker.reqType,
+                            fu: entry.worker.fu,
+                            gu: entry.worker.gu,
+                            role: entry.worker.role
+                        };
+                        inner.appendChild(pfBuildWorkerRow(scoped, rowIndex++));
+                    });
+                }
+            }
         });
     } else {
+        const assigned = pfTeamWorkers.filter(function (wk) { return !pfIsUnassigned(wk); });
+        const unassigned = pfTeamWorkers.filter(function (wk) { return pfIsUnassigned(wk); });
+
         inner.appendChild(pfBuildGroupRow("Assigned", "__assigned"));
         if (!pfTeamState.collapsedEngagements.__assigned) {
-            pfTeamWorkers.forEach(function (wk) {
+            assigned.forEach(function (wk) {
+                inner.appendChild(pfBuildWorkerRow(wk, rowIndex++));
+            });
+        }
+
+        inner.appendChild(pfBuildGroupRow("Unassigned", "__unassigned", { checkbox: true }));
+        if (!pfTeamState.collapsedEngagements.__unassigned) {
+            unassigned.forEach(function (wk) {
                 inner.appendChild(pfBuildWorkerRow(wk, rowIndex++));
             });
         }
@@ -5110,10 +5410,14 @@ function openReqModal() {
 function closeReqModal() { document.getElementById("reqModal").classList.remove("is-open"); }
 function switchReqTab(t) {
     reqTab = t;
-    document.querySelectorAll(".ReqModal-tab").forEach(function (b) {
-        b.classList.toggle("is-active", b.dataset.rtype === t);
+    const modal = document.getElementById("reqModal");
+    if (!modal) return;
+    modal.querySelectorAll(".RModal-tab[data-rtype]").forEach(function (b) {
+        const on = b.dataset.rtype === t;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-selected", on ? "true" : "false");
     });
-    document.querySelectorAll(".reqtab").forEach(function (p) {
+    modal.querySelectorAll(".reqtab").forEach(function (p) {
         p.hidden = p.id !== "reqtab-" + t;
     });
     const skills = document.getElementById("reqSkills");
@@ -5142,30 +5446,38 @@ function submitReq() {
         }
         return;
     }
-    let name, grade, role, kindName;
+    let personName = null, gradeCode, fu = null, gu = null, role = null, reqType = reqTab;
     if (reqTab === "specific") {
-        name = v("reqWorker") || "New resource";
-        const info = WORKER_INFO[name] || {};
-        grade = info.grade || "Associate";
-        role = grade;
-        kindName = name;
+        personName = v("reqWorker") || "New resource";
+        const info = WORKER_INFO[personName] || {};
+        gradeCode = info.code || GRADE_CODE[info.grade] || "A2";
+        fu = info.fu || "Audit";
+        gu = info.gu || "London";
+        role = v("reqSpecificRole") || null;
     } else if (reqTab === "unassignable") {
-        grade = v("reqUnGrade") || "Associate";
-        name = grade + " (Unassignable)";
-        role = grade;
-        kindName = name;
+        const grade = v("reqUnGrade") || "Associate";
+        gradeCode = GRADE_CODE[grade] || "A2";
+        role = v("reqUnRole") || null;
     } else {
-        grade = v("reqGrade") || "Associate";
-        name = "Flexible — " + grade;
-        role = grade;
-        kindName = name;
+        const grade = v("reqGrade") || "Associate";
+        gradeCode = GRADE_CODE[grade] || "A2";
+        fu = v("reqFu") || "Audit";
+        gu = v("reqGu") || "London";
+        role = v("reqRole") || null;
     }
-    const gradeCode = GRADE_CODE[grade] || "A2";
-    let worker = pfTeamWorkers.find(function (w) { return w.name === kindName; });
-    if (!worker) {
-        worker = { id: "w-new-" + (++PF_ITEM_SEQ), name: kindName, grade: gradeCode, cap: 37.5, items: [] };
-        pfTeamWorkers.push(worker);
-    }
+    const worker = {
+        id: "w-req-" + (++PF_ITEM_SEQ),
+        unassigned: true,
+        reqType: reqType,
+        name: personName,
+        grade: gradeCode,
+        fu: fu,
+        gu: gu,
+        role: role || null,
+        cap: 37.5,
+        items: []
+    };
+    pfTeamWorkers.push(worker);
     const startWeek = 2, span = 3, hours = 10;
     const cells = {};
     for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
@@ -5174,17 +5486,19 @@ function submitReq() {
         job: engagement,
         code: "",
         phase: "Preparation",
-        role: role,
+        role: role || gradeCode,
         bookingType: "Audit",
-        req: gradeCode + " / Assurance / London",
+        req: pfUnassignedLabel(worker),
         startWeek: startWeek,
         span: span,
         hours: hours,
         cells: cells,
         kind: "booking"
     });
+    delete pfTeamState.collapsedEngagements.__unassigned;
     if (pfTeamState.pivot === "engagement") {
         delete pfTeamState.collapsedEngagements[engagement];
+        delete pfTeamState.collapsedEngagements[engagement + "|unassigned"];
     }
     renderGantt();
     closeReqModal();
@@ -5210,7 +5524,7 @@ function openBookingModal(opts) {
         const current = opts.worker ? assignOptionValue(opts.worker) : "";
         assign.innerHTML = '<option value="">Select resource</option>';
         pfTeamWorkers.forEach(function (wk) {
-            if (/^Flexible —|Unassignable\)/.test(wk.name)) return;
+            if (pfIsUnassigned(wk)) return;
             const opt = document.createElement("option");
             opt.value = assignOptionValue(wk);
             opt.textContent = opt.value;

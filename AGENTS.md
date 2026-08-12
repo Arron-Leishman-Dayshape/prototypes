@@ -18,6 +18,8 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 - `shared/feedback-store.js`, `shared/feedback.js`, `shared/feedback.css` — feedback widget
 - `shared/changelog-store.js` — changelog / done-toggle store
 - `supabase-changelog.sql` — run once in Supabase for shared changelog sync
+- `scripts/add-changelog.mjs` — agent/CLI helper to add a changelog item
+- `.cursor/rules/in-dev-changelog.mdc` — auto-log changes when status is `in-development`
 
 ## Adding or updating a mock
 

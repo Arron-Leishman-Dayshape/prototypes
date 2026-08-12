@@ -1,0 +1,35 @@
+---
+description: Auto-log design changes to Changelog when a prototype is in development
+alwaysApply: true
+---
+
+# In-development → Changelog
+
+When you change a prototype whose `manifest.json` `status` is `in-development` (or `ready-for-dev`), **always** add a Changelog to-do after the change — do not wait for the user to ask.
+
+## When this applies
+
+- Editing files under `mocks/` for a prototype with that status
+- UX copy, layout, interaction, or flow changes meant for engineering
+
+Skip trivial fixes (typos in comments, formatting-only) unless the user asks.
+
+## What to do
+
+1. Confirm the prototype id from `data-prototype-id` / `manifest.json`.
+2. After committing the mock change (or with it), create a changelog item:
+
+```bash
+node scripts/add-changelog.mjs --id <prototype-id> --title "Short change title" --summary "What developers should build or update."
+```
+
+3. Title: imperative, specific (e.g. `Rename Modify Filters to Search for more`).
+4. Summary: enough for a developer — where in the UI, what changed, why.
+5. Status defaults to `todo` (developer marks done in Changelog UI).
+6. Screenshots/annotations are optional for agent-created entries; mention in the summary if a visual annotation would help.
+
+## Do not
+
+- Ask “should I add this to the changelog?” when status is in-development — just add it
+- Create changelog entries for prototypes with status `active` or `draft` unless the user asks
+- Skip the script if Supabase isn’t set up; still run it (it falls back / reports errors clearly)
