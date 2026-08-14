@@ -74,7 +74,11 @@
     /* Figma table tokens (node 3161-263748) */
     --surface-emphasis-subtle: #6a708f;
     --surface-data-secondary: #6881c5;
+    --surface-data-monochromatic-light: #86d4db;
+    --surface-data-quaternary: #0295b2;
+    --surface-data-primary: #ff8d6c;
     --surface-eng-01: #0295b2;
+    --surface-container-default: rgba(152, 155, 182, 0.15);
     --surface-primary-subtle: #f0effb;
     --header-cell-border: rgba(186,191,209,0.5);
     --body-cell-border: rgba(186,191,209,0.3);
@@ -117,19 +121,23 @@
     --gantt-label-width: 300px;
 
     /* Portfolio Team Gantt (resource-breakdown parity) */
-    --pf-team-left-w: 405px;
+    --pf-team-left-w: 460px;
     --pf-team-week-w: 112.6px;
     --pf-team-col-select-w: 48px;
     --pf-team-col-name-w: 195px;
     --pf-team-col-grade-w: 69px;
     --pf-team-col-expand-w: 25px;
-    --pf-team-col-dim-w: 115px;
+    --pf-team-col-dim-w: 100px;
+    --pf-team-col-hours-w: 56px;
     --pf-team-sub-row-h: 24px;
     --pf-team-group-h: 27px;
     --pf-team-slim-h: 5px;
     --pf-team-bar-h: 23px;
     --pf-team-bar-border: rgb(0 0 0 / 30%);
     --pf-team-menu-inset: 25px;
+    /* Job Editor Gantt booking traits (Figma 8685:544770) */
+    --surface-booking-trait-1: #4f4970;
+    --surface-booking-trait-3: #67b95b;
     --border-xs: 1px;
     --border-emphasis: #babfd1;
     --surface-row-alt: #f8f8fa;
@@ -173,10 +181,10 @@ a:hover { text-decoration: underline; }
 .NavBar-menuBottom { display: flex; flex-direction: column; align-items: flex-end; padding-bottom: 12px; }
 .NavBar-expandButton { background-color: var(--neutral-deep-grey-14); height: 31px; width: 40px; display: flex; align-items: center; justify-content: center; border-radius: 5px 0 0 5px; border: 0; cursor: pointer; color: var(--deep-black); }
 
-.Main { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+.Main { flex: 1 1 auto; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: var(--surface-subtle-light); }
 
 /* ---- Header ---- */
-.TopBar { background: var(--surface-default); border-bottom: 1px solid var(--border-subtle); padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-sm); position: sticky; top: 0; z-index: 30; flex: 0 0 auto; }
+.TopBar { background: var(--surface-default); border-bottom: 1px solid var(--border-subtle); padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-sm); position: sticky; top: 0; left: 0; z-index: 30; flex: 0 0 auto; min-width: 100%; box-sizing: border-box; }
 .TopBar--noBorder { border-bottom: none; }
 .EntityIcon-badge { height: 2.25rem; width: 2.25rem; border-radius: 10rem; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; flex: 0 0 auto; font-size: 15px; }
 .TopBar-title { font-size: var(--font-size-h1); font-weight: var(--font-weight-semibold); color: var(--text-default); margin: 0; }
@@ -399,7 +407,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .Pill--primary { background: var(--surface-primary-subtle); color: var(--text-primary); border-color: var(--border-primary-subtle); }
 
 /* ---- Tabs ---- */
-.Tab-navBar { display: flex; align-items: flex-end; padding: 0 var(--padding-lg); gap: 4px; border-bottom: 1px solid var(--border-subtle); background: var(--surface-default); position: sticky; top: var(--topbar-h, 58px); z-index: 28; flex: 0 0 auto; }
+.Tab-navBar { display: flex; align-items: flex-end; padding: 0 var(--padding-lg); gap: 4px; border-bottom: 1px solid var(--border-subtle); background: var(--surface-default); position: sticky; top: var(--topbar-h, 58px); left: 0; z-index: 28; flex: 0 0 auto; min-width: 100%; box-sizing: border-box; }
 .Tab-navItem { display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 0; background: none; border: none; cursor: pointer; font-family: var(--font-family); }
 .Tab-navItem-inner { display: flex; align-items: center; gap: 4px; height: 35px; padding: 4px 8px; box-sizing: border-box; border: 2px solid transparent; border-radius: 4px 4px 0 0; font-weight: var(--font-weight-semibold); font-size: 14px; line-height: 21px; color: var(--text-accent); white-space: nowrap; }
 .Tab-navItem-bar { height: 2px; width: 100%; border-radius: var(--border-radius-lg, 8px); background: transparent; }
@@ -413,39 +421,219 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 /* ============================================================
    Performance tab
    ============================================================ */
-.Perf { padding: var(--padding-lg); }
-.Perf-toolbar { display: flex; align-items: center; gap: var(--padding-sm); margin-bottom: var(--padding-md); }
-.Perf-title { font-size: var(--font-size-h2); font-weight: var(--font-weight-semibold); margin: 0; }
-.Select { appearance: none; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); background: #fff; padding: 6px 30px 6px 10px; font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-default); cursor: pointer; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%236a708f' d='M2 4l4 4 4-4z'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; }
-.PerfTableWrap { overflow: auto; max-height: calc(100vh - 230px); padding-bottom: 4px; }
-.PerfTable { border-collapse: separate; border-spacing: 0; font-size: var(--font-size-medium); color: var(--text-default); }
-.PerfTable thead th, .PerfTable thead td { position: sticky; z-index: 4; }
-.PerfTable thead tr:first-child th { top: 0; }
+.Perf { padding: 0 0 var(--padding-lg); background: var(--surface-subtle-light); }
+.Select {
+    appearance: none; border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+    background: #fff; padding: 6px 30px 6px 10px; height: 35px; box-sizing: border-box;
+    font-family: var(--font-family); font-size: var(--font-size-medium); color: var(--text-emphasis);
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%236a708f' d='M2 4l4 4 4-4z'/></svg>");
+    background-repeat: no-repeat; background-position: right 10px center;
+}
+.Select--sm { width: 160px; }
+.Select--md { width: 170px; }
+.Select--comparator { width: 266px; max-width: min(266px, 42vw); padding-left: 32px; }
+.Select--analysis { width: 220px; max-width: min(220px, 36vw); padding-left: 34px; }
+.Perf-field { display: flex; align-items: center; gap: 8px; }
+.Perf-fieldLabel {
+    font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
+    color: var(--text-emphasis); white-space: nowrap;
+}
+.Btn--iconSoft {
+    width: 35px; height: 35px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-container-default); color: var(--primary);
+    border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default); cursor: pointer;
+}
+.Btn--iconSoft:hover { background: var(--surface-accent); }
+
+/* Single sticky Comparator and Key bar (Figma 14339:481471) */
+.Perf-keyBar {
+    position: sticky;
+    top: calc(var(--topbar-h, 58px) + var(--tabbar-h, 41px));
+    left: 0;
+    z-index: 26;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 12px var(--padding-lg);
+    background: var(--surface-default);
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-width: 100%;
+    box-sizing: border-box;
+}
+.Perf-keyStart { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; min-width: 0; }
+.Perf-keyEnd { display: flex; align-items: center; gap: 16px; flex: 0 0 auto; }
+.Perf-keyActions { display: flex; align-items: center; gap: 8px; }
+.Perf-keyItem {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
+    color: var(--text-default); white-space: nowrap;
+}
+.Perf-keySwatch {
+    width: 12px; height: 12px; border-radius: 2px; flex: 0 0 auto;
+}
+.Perf-keySwatch--actuals { background: var(--surface-data-monochromatic-light); }
+.Perf-keySwatch--forecast { background: var(--surface-data-secondary); }
+.Perf-keySwatch--predicted { background: var(--surface-data-quaternary); }
+.Perf-keySwatch--comparator { background: var(--surface-data-primary); }
+.Perf-selectWrap {
+    position: relative; display: inline-flex; align-items: center;
+}
+.Perf-selectWrap > .Perf-keySwatch,
+.Perf-selectWrap > .Perf-selectIcon {
+    position: absolute; left: 12px; z-index: 1; pointer-events: none;
+}
+.Perf-selectIcon {
+    color: var(--text-accent); font-size: 14px; width: 14px; height: 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.Perf-currencyPill {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 24px; min-width: 24px; padding: 0 8px;
+    border: 1px solid var(--border-subtle); border-radius: var(--border-radius-circle);
+    background: #fff; color: var(--text-emphasis);
+    font-size: 11px; font-weight: var(--font-weight-semibold); line-height: 1;
+}
+.Perf-currencyPill i { font-size: 10px; color: var(--text-subtle); }
+.Perf-tables { padding: var(--padding-lg) var(--padding-lg) 0; background: var(--surface-subtle-light); }
+
+/* Page (#view-detail) scrolls both axes so thead can sticky under the key bar AND left cols can freeze.
+   Do not put overflow-x on this wrap — that creates a sticky containing block and leaves a blank gap above the header. */
+.PerfTableWrap {
+    overflow: visible;
+    max-width: none;
+    padding-top: 0;
+    padding-bottom: 4px;
+    margin-top: 0;
+    background: transparent;
+}
+.PerfTable { border-collapse: separate; border-spacing: 0; font-size: var(--font-size-medium); color: var(--text-default); background: transparent; }
+.PerfTable thead th, .PerfTable thead td {
+    position: sticky;
+    z-index: 20;
+    top: var(--perf-thead-top, calc(var(--topbar-h, 58px) + var(--tabbar-h, 41px) + var(--perf-keybar-h, 60px)));
+}
+.PerfTable thead tr.band th,
+.PerfTable thead tr.band td {
+    top: var(--perf-thead-band-top, calc(var(--perf-thead-top, 160px) + 36px));
+    z-index: 19;
+}
 .PerfTable th, .PerfTable td { padding: 6px 12px; border-right: 1px solid var(--body-cell-border); border-bottom: 1px solid var(--body-cell-border); white-space: nowrap; vertical-align: middle; }
-/* top-tier group headers (surface-emphasis) */
-.PerfTable thead .h-grp { background: var(--surface-emphasis); color: var(--text-inverse); font-weight: var(--font-weight-semibold); text-align: center; border-right: 1px solid var(--header-cell-border); border-bottom: none; }
-.PerfTable thead .h-grp.left { text-align: left; vertical-align: bottom; }
+/* top-tier group headers (surface-emphasis) + colour key bars */
+.PerfTable thead .h-grp {
+    background: var(--surface-emphasis); color: var(--text-inverse); font-weight: var(--font-weight-semibold);
+    text-align: center; border-right: 1px solid var(--header-cell-border); border-bottom: none;
+    /* keep sticky (not relative) so vertical + horizontal stick work; absolute ::before still anchors here */
+}
+.PerfTable thead .h-grp.left { text-align: left; vertical-align: middle; }
 .PerfTable thead .h-grp.tl { border-top-left-radius: var(--border-radius-lg); }
 .PerfTable thead .h-grp.tr { border-top-right-radius: var(--border-radius-lg); border-right: none; }
 .PerfTable thead .h-grp.rblk-tr { border-top-right-radius: var(--border-radius-lg); }
-/* sub-headers (surface-emphasis-subtle) */
-.PerfTable thead .h-sub { background: var(--surface-emphasis-subtle); color: var(--text-inverse); font-weight: var(--font-weight-semibold); text-align: right; font-size: var(--font-size-extra-small); border-right: 1px solid var(--header-cell-border); white-space: normal; line-height: 1.2; }
+.PerfTable thead .h-grp.has-key {
+    padding-top: 14px; /* room for 8px colour key + text */
+    position: sticky;
+    overflow: hidden; /* keep key flush with cell top edge */
+}
+.PerfTable thead .h-grp.has-key::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px;
+    border-radius: 0; pointer-events: none;
+}
+/* First header row with keys: rounded only on group ends — colour key follows the same corners */
+.PerfTable thead .h-grp.has-key.tl::before,
+.PerfTable thead .h-grp.tl.has-key::before {
+    border-top-left-radius: var(--border-radius-lg);
+}
+.PerfTable thead .h-grp.has-key.tr::before,
+.PerfTable thead .h-grp.has-key.rblk-tr::before {
+    border-top-right-radius: var(--border-radius-lg);
+}
+.PerfTable thead .h-grp.h-actuals::before { background: var(--surface-data-monochromatic-light); }
+.PerfTable thead .h-grp.h-forecast::before { background: var(--surface-data-secondary); }
+.PerfTable thead .h-grp.h-predicted::before { background: var(--surface-data-quaternary); }
+.PerfTable thead .h-grp.h-compare::before { background: var(--surface-data-primary); }
+.PerfTable thead .h-engHead {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+}
+.PerfTable thead .h-engGear {
+    width: 24px; height: 24px; padding: 0; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-container-default); color: var(--text-inverse);
+    border: 1px solid rgba(226, 227, 233, 0.35); border-radius: var(--border-radius-default); cursor: pointer;
+}
+.PerfTable thead .h-engGear:hover { background: rgba(255, 255, 255, 0.18); }
+.PerfTable thead .h-engGear i { font-size: 10px; }
+/* sub-headers — accent (Hours/GBP/metrics) + info accent (comparator change/diff) */
+.PerfTable thead .h-sub {
+    background: var(--surface-accent); color: var(--text-default); font-weight: var(--font-weight-semibold);
+    text-align: right; font-size: var(--font-size-medium); border-right: 1px solid var(--header-cell-border);
+    white-space: normal; line-height: 1.2;
+}
+.PerfTable thead .h-sub.h-cmp { background: var(--surface-info-accent); border-right-color: var(--total-header-cell-border); }
 .PerfTable thead .h-sub.tr { border-right: none; }
-/* band */
-.PerfTable .band td.band-cell { background: var(--surface-emphasis-subtle); color: var(--text-inverse); font-weight: var(--font-weight-semibold); text-align: left; border-right: 1px solid var(--header-cell-border); }
+/* band under Engagement / Status / Partner */
+.PerfTable .band td.band-cell {
+    background: var(--surface-emphasis-subtle); color: var(--text-inverse); font-weight: var(--font-weight-semibold);
+    text-align: left; border-right: 1px solid var(--header-cell-border);
+}
 .PerfTable .band td.band-blank { background: var(--surface-emphasis-subtle); border: none; }
-/* gap column separating the two blocks */
+/* Frozen Engagement / Status / Partner (Gantt-style left stick on horizontal scroll) */
+.PerfTable .perf-stick {
+    position: sticky;
+    left: 0;
+    z-index: 8;
+}
+.PerfTable .perf-stick--1 { left: var(--perf-stick-1, 220px); }
+.PerfTable .perf-stick--2 { left: var(--perf-stick-2, 320px); }
+.PerfTable thead .perf-stick { z-index: 24; }
+.PerfTable thead tr.band .perf-stick { z-index: 23; }
+.PerfTable tbody tr:not(.total-row) .perf-stick {
+    background: var(--surface-subtle-dark);
+    z-index: 8;
+}
+.PerfTable tr.total-row .perf-stick {
+    background: var(--surface-emphasis); color: var(--text-inverse); z-index: 9;
+}
+.PerfTable .perf-stick--2,
+.PerfTable .band-cell.perf-stick {
+    box-shadow: 6px 0 10px -6px rgba(39, 35, 61, 0.22);
+}
+/* gap column separating metric blocks */
 .PerfTable .gap, .PerfTable .h-gap { background: transparent; border: none; width: 10px; min-width: 10px; padding: 0; }
-/* data cells */
-.PerfTable td.num { text-align: right; font-variant-numeric: tabular-nums; }
-/* job-group rows */
-.PerfTable tr.grp-row td { background: var(--surface-subtle-dark); }
-.PerfTable tr.grp-row td.gap { background: transparent; }
-/* Predicted Total column emphasis — lavender band down the table body */
-.PerfTable tr td.pt-col, .PerfTable td.pt-col { background: #f6f5fb; }
-/* total row */
-.PerfTable tr.total-row td { background: var(--surface-emphasis); color: var(--text-inverse); font-weight: var(--font-weight-semibold); border-right: 1px solid var(--header-cell-border); border-bottom: none; }
+/* data cells — Figma 11026:310582 table colours */
+.PerfTable td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--text-accent); }
+.PerfTable tbody tr:not(.total-row) td:not(.gap) {
+    background: var(--surface-default);
+}
+/* Engagement / Status / Partner */
+.PerfTable tbody tr:not(.total-row) td:nth-child(-n+3) {
+    background: var(--surface-subtle-dark);
+}
+/* Predicted Total + Compare % Change / Diff — info subtle all the way down */
+.PerfTable tbody tr:not(.total-row) td.pt-col,
+.PerfTable tbody tr:not(.total-row) td.cmp-col {
+    background: var(--surface-info-subtle); color: var(--text-info-dark);
+    border-right-color: var(--total-body-cell-border); border-bottom-color: var(--total-body-cell-border);
+}
+.PerfTable .cmp-badge {
+    display: inline-flex; align-items: center; min-height: 22px; padding: 4px;
+    background: #fff; border: 1px solid var(--border-info-subtle); border-radius: var(--border-radius-default);
+    color: var(--text-info-dark); font-size: 12px; font-weight: var(--font-weight-bold); line-height: 14px;
+}
+/* total row — Figma: emphasis label, accent metrics, info-accent on Predicted / Compare tint cols */
+.PerfTable tr.total-row td {
+    background: var(--surface-accent); color: var(--text-accent);
+    font-weight: var(--font-weight-semibold);
+    border-right: 1px solid var(--header-cell-border); border-bottom: none;
+}
+.PerfTable tr.total-row td:nth-child(-n+3) {
+    background: var(--surface-emphasis); color: var(--text-inverse);
+}
 .PerfTable tr.total-row td.gap, .PerfTable tr.total-row td.total-blank { background: transparent; border: none; }
+.PerfTable tr.total-row td.pt-col,
+.PerfTable tr.total-row td.cmp-col {
+    background: var(--surface-info-accent); color: var(--text-info-dark);
+    border-right-color: var(--total-header-cell-border);
+}
 .PerfTable tr.total-row td:first-child { border-bottom-left-radius: var(--border-radius-lg); }
 .PerfTable tr.total-row td.rblk-br { border-bottom-right-radius: var(--border-radius-lg); }
 .PerfTable tbody tr:nth-last-child(2) td:last-child { border-bottom-right-radius: var(--border-radius-lg); }
@@ -467,24 +655,76 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .rate-pill--subtle.is-neg { color: var(--text-danger); }
 .gm-neg { color: var(--text-danger); font-weight: var(--font-weight-semibold); }
 
-/* Totals & metrics — narrower, doesn't span full width */
-.MetricsTable { width: 917px; max-width: 100%; table-layout: fixed; border-collapse: collapse; font-size: var(--font-size-small); margin-top: 18px; background: #fff; border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default); overflow: hidden; }
-.MetricsTable th, .MetricsTable td { border: 1px solid var(--border-subtle); padding: 7px 12px; }
-.MetricsTable thead th { background: var(--surface-emphasis); color: #fff; font-weight: var(--font-weight-semibold); text-align: right; }
-.MetricsTable thead th.left { text-align: left; }
-.MetricsTable thead th:first-child { border-top-left-radius: var(--border-radius-default); }
-.MetricsTable thead th:last-child { border-top-right-radius: var(--border-radius-default); }
-.MetricsTable td.label { color: var(--text-default); }
-.MetricsTable td.label, .MetricsTable th.left { width: 437px; }
+/* Totals & metrics — Figma 11508:69165 colours / chrome */
+.MetricsTable {
+    width: 917px; max-width: 100%; table-layout: fixed;
+    border-collapse: separate; border-spacing: 0;
+    font-size: var(--font-size-medium); margin-top: 18px;
+    background: transparent;
+}
+.MetricsTable th, .MetricsTable td {
+    padding: 4px 12px; min-height: 32px; box-sizing: border-box;
+    border-right: 1px solid var(--body-cell-border);
+    border-bottom: 1px solid var(--body-cell-border);
+    vertical-align: middle;
+}
+.MetricsTable thead th {
+    font-weight: var(--font-weight-semibold);
+    border-right: 1px solid var(--header-cell-border);
+    border-bottom: none;
+}
+.MetricsTable thead th.left {
+    background: var(--surface-emphasis); color: var(--text-inverse);
+    text-align: left; border-top-left-radius: var(--border-radius-lg);
+}
+.MetricsTable-title {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+}
+.MetricsTable-gear {
+    width: 24px; height: 24px; padding: 0; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--surface-container-default); color: var(--text-inverse);
+    border: 1px solid rgba(226, 227, 233, 0.35); border-radius: var(--border-radius-default); cursor: pointer;
+}
+.MetricsTable-gear:hover { background: rgba(255, 255, 255, 0.18); }
+.MetricsTable-gear i { font-size: 10px; }
+.MetricsTable thead th.colval {
+    background: var(--surface-accent); color: var(--text-default);
+    text-align: right;
+}
+.MetricsTable thead th.colval.predicted-head {
+    background: var(--surface-info-accent);
+    border-right-color: var(--total-header-cell-border);
+}
+.MetricsTable thead th:last-child { border-top-right-radius: var(--border-radius-lg); border-right: none; }
+.MetricsTable td.label {
+    background: var(--surface-subtle-dark); color: var(--text-default);
+    width: 437px;
+}
+.MetricsTable td.label .label-row {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.MetricsTable td.label .label-main { display: flex; align-items: flex-start; gap: 6px; min-width: 0; }
+.MetricsTable th.left { width: 437px; }
 .MetricsTable th.colval, .MetricsTable td.num { width: 160px; }
-.MetricsTable td.num { text-align: right; font-variant-numeric: tabular-nums; }
-.MetricsTable td.predicted-col { background: #f6f5fb; }
-.MetricsTable tr:nth-child(even) td:not(.predicted-col) { background: rgba(152,155,182,.04); }
+.MetricsTable td.num {
+    background: var(--surface-default); color: var(--text-accent);
+    text-align: right; font-variant-numeric: tabular-nums;
+}
+.MetricsTable td.predicted-col {
+    background: var(--surface-info-subtle); color: var(--text-info-dark);
+    border-right-color: var(--total-body-cell-border); border-bottom-color: var(--total-body-cell-border);
+}
+.MetricsTable tbody tr:last-child td { border-bottom: none; }
+.MetricsTable tbody tr:last-child td:first-child { border-bottom-left-radius: var(--border-radius-lg); }
+.MetricsTable tbody tr:last-child td:last-child { border-bottom-right-radius: var(--border-radius-lg); border-right: none; }
+.MetricsTable td.num:last-child { border-right: none; }
 .MetricsTable .sub-label { color: var(--text-danger); font-size: var(--font-size-extra-small); display: block; }
 .MetricsTable td.warn { color: var(--text-danger); font-weight: var(--font-weight-semibold); }
-.MetricsTable .warn-icon { color: var(--text-danger); margin-right: 6px; }
+.MetricsTable td.predicted-col.warn { color: var(--text-danger); }
+.MetricsTable .warn-icon { color: var(--text-danger); margin-top: 2px; flex: 0 0 auto; }
 .MetricBadge { display:inline-block; background: var(--surface-danger); color:#fff; border-radius: var(--border-radius-circle); padding: 1px 8px; font-weight: var(--font-weight-semibold); }
-.MetricsTable td .pencil { color: var(--icon-subtle); float: right; cursor: pointer; }
+.MetricsTable td .pencil { color: var(--icon-accent); cursor: pointer; flex: 0 0 auto; }
 
 /* Suppressed economics — n/a pill + tooltip (Core UI pattern) */
 .PerfNa {
@@ -521,7 +761,11 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
    ============================================================ */
 /* Performance "Settings" dropdown menu (Job Groups Editor design) */
 .SettingsMenu { position: relative; }
-.SettingsMenu-panel { position: absolute; right: 0; top: 40px; width: 300px; background: #fff; border: 1px solid var(--border-default); border-radius: var(--border-radius-default); box-shadow: 0 2px 4px 2px rgb(178 178 178 / 30%); z-index: 60; padding: 16px; display: none; }
+.SettingsMenu-panel {
+    position: absolute; right: 0; top: calc(100% + 6px); width: 300px;
+    background: #fff; border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
+    box-shadow: 0 2px 4px 2px rgb(178 178 178 / 30%); z-index: 60; padding: 16px; display: none;
+}
 .SettingsMenu.is-open .SettingsMenu-panel { display: block; }
 .SettingsMenu-section + .SettingsMenu-section { margin-top: 24px; }
 .SettingsMenu-title { font-size: 16px; font-weight: var(--font-weight-semibold); color: var(--text-default); margin-bottom: 12px; }
@@ -541,24 +785,10 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     min-height: 0;
     flex: 1 1 auto;
 }
-.PfTeam-titlebar {
-    display: flex;
-    align-items: center;
-    gap: var(--padding-sm);
-    padding: var(--padding-md) var(--padding-lg);
-    position: relative;
-    flex: 0 0 auto;
-}
-.PfTeam-headTools .Btn.is-active {
-    background: var(--surface-primary-subtle);
-    border-color: var(--border-primary);
-    color: var(--text-primary);
-}
-
-/* Job-editor Gantt actions — Dayshape Btn secondary / tertiary */
+/* Job Editor Gantt Actions (Figma 8685:544770) — secondary + soft icon buttons */
 .PfTeam-head {
     position: sticky; top: 0; z-index: 30;
-    min-height: 71px; overflow: visible; background: var(--surface-header);
+    min-height: 71px; overflow: visible; background: var(--surface-default);
     border-bottom: var(--border-xs) solid var(--border-subtle);
     display: flex; align-items: stretch;
 }
@@ -569,7 +799,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .PfTeam-headCorner {
     position: sticky; left: 0; z-index: 4;
     width: var(--pf-team-left-w); flex: 0 0 var(--pf-team-left-w);
-    background: var(--surface-header);
+    background: var(--surface-default);
     border-right: var(--border-xs) solid var(--border-subtle);
     display: flex; flex-direction: column; justify-content: flex-start;
     box-sizing: border-box;
@@ -580,6 +810,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     min-height: 51px;
     box-sizing: border-box;
     flex: 1 1 auto;
+    background: var(--surface-default);
 }
 .PfTeam-headTools .Btn {
     flex: 0 0 auto;
@@ -587,11 +818,44 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     height: 35px;
     padding: 0 var(--padding-sm);
     font-weight: var(--font-weight-regular);
+    gap: 8px;
 }
-.PfTeam-headTools .Btn.Btn--tertiary {
+.PfTeam-headTools .Btn--secondary {
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+    background: var(--surface-default);
+}
+.PfTeam-headTools .Btn--secondary:hover:not(:disabled) {
+    background: var(--surface-primary-subtle);
+    color: var(--primary-emphasis);
+}
+.PfTeam-headTools .Btn--iconSoft {
     width: 35px;
+    height: 35px;
     padding: 0;
     justify-content: center;
+    color: var(--primary);
+    background: var(--surface-container-default);
+    border: 1px solid var(--border-subtle);
+}
+.PfTeam-headTools .Btn--iconSoft:hover {
+    background: var(--surface-accent);
+    color: var(--primary-emphasis);
+}
+.PfTeam-headTools .Btn--iconSoft.is-active {
+    background: var(--surface-primary-subtle);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+.PfTeam-headTools .Btn i { font-size: 14px; width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; }
+.PfTeam-skillCount {
+    box-sizing: border-box;
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; width: 20px; height: 20px; padding: 0;
+    border-radius: 100px;
+    background: var(--surface-primary); color: var(--text-inverse);
+    font-size: 10px; font-weight: var(--font-weight-semibold); line-height: 1;
+    text-transform: uppercase;
 }
 .PfTeam-headCols {
     display: flex; align-items: flex-end;
@@ -599,15 +863,20 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     border-top: 1px solid var(--border-subtle);
     min-height: 27px;
     box-sizing: border-box;
+    background: var(--surface-default);
 }
 .PfTeam-headCol {
-    font-size: 10px; font-weight: var(--font-weight-semibold);
-    color: var(--text-subtle); letter-spacing: .02em;
+    font-size: 11px; font-weight: var(--font-weight-regular);
+    color: var(--text-subtle); letter-spacing: 0;
     padding: 4px 8px; white-space: nowrap;
 }
 .PfTeam-headCol--name { width: var(--pf-team-col-name-w); flex: 0 0 var(--pf-team-col-name-w); }
 .PfTeam-headCol--grade { width: var(--pf-team-col-grade-w); flex: 0 0 var(--pf-team-col-grade-w); }
-.PfTeam-headCol--hours { flex: 1 1 auto; text-align: right; padding-right: 12px; }
+.PfTeam-headCol--hours {
+    width: var(--pf-team-col-hours-w); flex: 0 0 var(--pf-team-col-hours-w);
+    margin-left: auto; text-align: left; padding-left: 6px;
+    border-left: var(--border-xs) solid var(--border-subtle);
+}
 
 .PfTeam-headRow { display: flex; }
 .PfTeam-headLeft { display: none; }
@@ -625,26 +894,26 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     flex: 0 0 auto; height: 27px;
     border-right: var(--border-xs) solid var(--border-emphasis);
     border-bottom: var(--border-xs) solid var(--border-subtle);
-    font-size: var(--font-size-small); color: var(--text-default);
+    font-size: 11px; color: var(--text-default); font-weight: var(--font-weight-regular);
     display: flex; align-items: center; justify-content: center;
-    background: var(--surface-header);
+    background: var(--surface-default);
 }
 .PfTeam-week {
-    width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); height: 22px;
+    width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); height: 23px;
     border-right: var(--border-xs) solid var(--border-emphasis);
     border-bottom: var(--border-xs) solid var(--border-subtle);
-    font-size: var(--font-size-xsmall); color: var(--text-subtle);
+    font-size: 11px; color: var(--text-default); font-weight: var(--font-weight-regular);
     display: flex; align-items: center; justify-content: center;
-    background: var(--surface-header);
+    background: var(--surface-default);
 }
 .PfTeam-dayset { width: var(--pf-team-week-w); flex: 0 0 var(--pf-team-week-w); display: flex; border-right: var(--border-xs) solid var(--border-emphasis); }
 .PfTeam-day {
-    flex: 1; height: 22px;
+    flex: 1; height: 24px;
     border-right: var(--border-xs) solid var(--border-subtle);
     border-bottom: var(--border-xs) solid var(--border-emphasis);
-    font-size: 10px; color: var(--text-subtle);
+    font-size: 11px; color: var(--text-default); font-weight: var(--font-weight-regular);
     display: flex; align-items: center; justify-content: center;
-    background: var(--surface-header);
+    background: var(--surface-default);
 }
 .PfTeam-day:last-child { border-right: 0; }
 .PfTeam-day.is-today { color: var(--text-danger); font-weight: 700; }
@@ -662,15 +931,15 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .PfTeam-group .PfTeam-rowLeft,
 .PfTeam-group .PfTeam-rowTrack {
     height: var(--pf-team-group-h);
-    background: var(--surface-accent);
-    border-top: 2px solid var(--border-default);
+    background: var(--surface-subtle-dark);
+    border-top: 0;
     border-bottom: 0;
 }
 .PfTeam-group .PfTeam-rowLeft {
-    align-items: center; padding-left: 10px; gap: 7px;
-    font-size: var(--font-size-xsmall); font-weight: 500;
-    letter-spacing: .04em; text-transform: uppercase;
-    color: var(--text-accent); cursor: pointer;
+    align-items: center; padding-left: 26px; gap: 8px;
+    font-size: 11px; font-weight: var(--font-weight-regular);
+    letter-spacing: 0; text-transform: uppercase;
+    color: var(--text-default); cursor: pointer;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .PfTeam-group .PfTeam-rowLeft i { font-size: 10px; color: var(--icon-default); width: 9px; flex: 0 0 auto; }
@@ -685,15 +954,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .PfTeam-worker .PfTeam-rowLeft { align-items: stretch; }
 .PfTeam-worker.is-alt .PfTeam-rowLeft,
 .PfTeam-worker.is-alt .PfTeam-rowTrack { background: var(--surface-row-alt); }
-/* Main Schedule Gantt UNASSIGNED row tint */
-.PfTeam-worker.is-unassigned .PfTeam-rowLeft,
-.PfTeam-worker.is-unassigned .PfTeam-rowTrack {
-    background: var(--surface-primary-subtle);
-}
-.PfTeam-worker.is-unassigned.is-alt .PfTeam-rowLeft,
-.PfTeam-worker.is-unassigned.is-alt .PfTeam-rowTrack {
-    background: var(--surface-primary-subtle);
-}
+/* Unassigned rows match main Schedule Gantt: same white/alt row chrome as assigned — not purple */
 
 .PfTeam-cellName {
     width: var(--pf-team-col-name-w); flex: 0 0 var(--pf-team-col-name-w);
@@ -729,7 +990,6 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .PfTeam-cellExpand {
     width: var(--pf-team-col-expand-w); flex: 0 0 var(--pf-team-col-expand-w);
     height: var(--pf-team-sub-row-h);
-    border-right: var(--border-xs) solid var(--border-subtle);
     display: flex; align-items: center; justify-content: center;
 }
 .PfTeam-expander {
@@ -740,7 +1000,11 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 }
 .PfTeam-expander:hover { background: var(--surface-icon-hover); color: #7a7a7a; }
 
-.PfTeam-dims { width: var(--pf-team-col-dim-w); flex: 0 0 var(--pf-team-col-dim-w); display: flex; flex-direction: column; }
+.PfTeam-dims {
+    width: var(--pf-team-col-dim-w); flex: 0 0 var(--pf-team-col-dim-w);
+    display: flex; flex-direction: column;
+    border-left: var(--border-xs) solid var(--border-subtle);
+}
 .PfTeam-dimLabel {
     height: var(--pf-team-sub-row-h);
     display: flex; align-items: center;
@@ -750,9 +1014,32 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     font-size: var(--font-size-small); font-weight: 500; line-height: 1.2;
     color: var(--text-subtle);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; gap: 8px;
+    box-sizing: border-box;
 }
 .PfTeam-dimLabel:last-child { border-bottom: 0; }
 .PfTeam-dimLabel.is-expanded { background: var(--surface-list-item-selected-light); font-weight: 600; }
+.PfTeam-dimLabel.is-spacer {
+    border-left-color: transparent;
+}
+
+/* Job Editor .gantt-labels-row-data.narrow — total hours on left labels */
+.PfTeam-cellHours {
+    width: var(--pf-team-col-hours-w); flex: 0 0 var(--pf-team-col-hours-w);
+    align-self: stretch;
+    display: flex; align-items: flex-start;
+    padding: 6px 3px;
+    border-left: var(--border-xs) solid var(--border-subtle);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.PfTeam-cellHours-value {
+    width: 100%;
+    min-height: var(--pf-team-sub-row-h);
+    display: flex; align-items: center;
+    font-size: var(--font-size-label);
+    color: var(--text-label);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 
 .PfTeam-slimGutter { height: var(--pf-team-slim-h); }
 .PfTeam-trackWeeks { display: flex; flex-direction: column; }
@@ -790,25 +1077,49 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 .PfTeam-bar {
     position: absolute; height: var(--pf-team-bar-h); min-width: 2px;
     border: var(--border-xs) solid var(--pf-team-bar-border);
-    border-radius: 3px; background-color: #4f4970; color: var(--text-white);
+    border-radius: 2px; background-color: var(--surface-booking-trait-1); color: var(--text-white);
     display: flex; justify-content: space-between;
-    transition: box-shadow .1s, opacity .1s; cursor: pointer;
+    transition: box-shadow .1s, opacity .1s; cursor: grab;
+    user-select: none; -webkit-user-select: none;
 }
 .PfTeam-bar:hover { box-shadow: 1px 1px 6px 2px rgba(64, 64, 64, .3); }
+.PfTeam-bar.is-selected { outline: 2px solid var(--border-primary); outline-offset: 0; z-index: 12; }
+.PfTeam-bar.is-dragging,
+.PfTeam-bar.is-resizing { cursor: grabbing; z-index: 14; transition: none; }
 .PfTeam-barContent {
-    flex: 1 1 auto; min-width: 0; display: flex; height: 21px; line-height: 22px;
-    font-size: var(--font-size-label); font-weight: 300; padding-left: 2px; margin-right: 7px;
-    border-radius: 2px; overflow: hidden; white-space: nowrap;
+    flex: 1 1 auto; min-width: 0; display: flex; height: 21px; line-height: 21px;
+    font-size: 13px; font-weight: var(--font-weight-regular); padding-left: 2px; margin-right: 4px;
+    border-radius: 2px; overflow: hidden; white-space: nowrap; pointer-events: none;
 }
+.PfTeam-bar.is-selected .PfTeam-barContent { font-weight: var(--font-weight-regular); }
 .PfTeam-barName { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+/* Main Gantt .item-resize-handle — shown when booking is selected */
 .PfTeam-barHandle {
-    position: absolute; right: 0; width: 7px; height: 22px;
-    background: rgba(0, 0, 0, .2); border-radius: 0 2px 2px 0; cursor: col-resize;
+    display: none; z-index: 10; position: absolute; top: 0;
+    width: 7px; height: 22px;
+    background: rgba(0, 0, 0, .2); color: var(--text-inverse);
+    text-align: center; line-height: 19px; font-size: 11px; font-weight: 700;
+    cursor: col-resize; user-select: none;
 }
+.PfTeam-barHandle--end {
+    right: 0; border-radius: 0 2px 2px 0;
+}
+.PfTeam-barHandle--start {
+    left: 0; border-radius: 2px 0 0 2px;
+}
+.PfTeam-bar.is-selected .PfTeam-barHandle { display: block; }
+.PfTeam-barHandle::before { content: ":"; }
+body.PfTeam-is-resizing,
+body.PfTeam-is-resizing * { cursor: col-resize !important; user-select: none !important; }
+body.PfTeam-is-dragging,
+body.PfTeam-is-dragging * { cursor: grabbing !important; user-select: none !important; }
 .PfTeam-bar--unavail {
     background-color: var(--surface-unavailability);
     background-image: linear-gradient(transparent 50%, rgba(255, 255, 255, .15) 50%);
     background-size: 10px 10px; color: var(--text-default);
+}
+.PfTeam-bar--unassigned {
+    background-color: var(--surface-booking-trait-3);
 }
 
 .PfTeam-slim { display: flex; height: var(--pf-team-slim-h); position: relative; z-index: 2; }
@@ -1672,6 +1983,13 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 /* view switching */
 .view { display: none; }
 .view.is-active { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; }
+/* Job Editor–style: detail Performance scrolls as one page (table + metrics together) */
+#view-detail.view.is-active {
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--surface-subtle-light);
+}
 .tabpane { display: none; }
 .tabpane.is-active { display: block; }
 #tab-team.tabpane.is-active {
@@ -1679,6 +1997,7 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
+    overflow: hidden;
 }
 </style>
 </head>
@@ -1736,48 +2055,62 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
 
             <div id="tab-performance" class="tabpane is-active">
                 <div class="Perf">
-                    <div class="Perf-toolbar">
-                        <h2 class="Perf-title">Performance</h2>
-                        <div class="TopBar-spacer"></div>
-                        <select class="Select" id="perfComparator" aria-label="Compare versus">
-                            <option value="prior">Compare vs: Prior Year</option>
-                            <option value="budget">Compare vs: Budget</option>
-                            <option value="none">Compare vs: None</option>
-                        </select>
-                        <div class="SettingsMenu" id="perfSettings">
-                            <button class="Btn" onclick="togglePerfSettings(event)"><i class="fa-solid fa-gear"></i> Settings</button>
-                            <div class="SettingsMenu-panel">
-                                <div class="SettingsMenu-section">
-                                    <div class="SettingsMenu-title">Data Settings</div>
-                                    <label class="SettingsMenu-check"><input type="checkbox" id="perfShowPredicted" checked onchange="onPerfSettingsChange()" /> Show Predicted</label>
-                                    <label class="SettingsMenu-check"><input type="checkbox" id="perfIncludeUnassigned" checked onchange="onPerfSettingsChange()" /> Include Unassigned Work</label>
-                                    <div class="SettingsMenu-field">
-                                        <label class="SettingsMenu-fieldLabel" for="perfDisplayCurrency">Display Currency</label>
-                                        <select class="Select Select--full" id="perfDisplayCurrency" onchange="onPerfSettingsChange()"><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
-                                    </div>
-                                    <div class="SettingsMenu-field">
-                                        <label class="SettingsMenu-fieldLabel" for="perfBreakdown">Breakdown</label>
-                                        <select class="Select Select--full" id="perfBreakdown" onchange="onPerfSettingsChange()">
-                                            <option value="net">Net Revenue</option>
-                                            <option value="gross" selected>Gross Revenue</option>
-                                            <option value="adjusted">Adjusted Net Revenue</option>
-                                        </select>
-                                    </div>
-                                    <div class="SettingsMenu-field">
-                                        <label class="SettingsMenu-fieldLabel">Group team by</label>
-                                        <select class="Select Select--full"><option>Engagement Role</option><option>Grade</option><option>Functional Unit</option></select>
+                    <div class="Perf-keyBar" aria-label="Comparator and key">
+                        <div class="Perf-keyStart">
+                            <div class="Perf-field">
+                                <label class="Perf-fieldLabel" for="perfComparator">Comparator:</label>
+                                <div class="Perf-selectWrap">
+                                    <span class="Perf-keySwatch Perf-keySwatch--comparator" aria-hidden="true"></span>
+                                    <select class="Select Select--comparator" id="perfComparator" aria-label="Comparator" onchange="onPerfSettingsChange()">
+                                        <option value="budget" selected>Budget Approval (28/12/2026)</option>
+                                        <option value="prior">Prior Year</option>
+                                        <option value="none">None</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <span class="Perf-keyItem"><span class="Perf-keySwatch Perf-keySwatch--actuals" aria-hidden="true"></span> Actuals</span>
+                            <span class="Perf-keyItem"><span class="Perf-keySwatch Perf-keySwatch--forecast" aria-hidden="true"></span> Forecast</span>
+                            <span class="Perf-keyItem" id="perfKeyPredicted"><span class="Perf-keySwatch Perf-keySwatch--predicted" aria-hidden="true"></span> Predicted Total</span>
+                            <div class="Perf-selectWrap">
+                                <i class="fa-solid fa-users Perf-selectIcon" aria-hidden="true"></i>
+                                <select class="Select Select--analysis" id="perfBreakdown" aria-label="Analysis breakdown" onchange="onPerfSettingsChange()">
+                                    <option value="gross" selected>Gross Revenue by Role</option>
+                                    <option value="net">Net Revenue by Role</option>
+                                    <option value="adjusted">Adjusted Net Revenue by Role</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="Perf-keyEnd">
+                            <span class="Perf-currencyPill" id="perfCurrencyPill" title="Display currency"><i class="fa-solid fa-money-bill" aria-hidden="true"></i><span id="perfCurrencyLabel">GBP</span></span>
+                            <div class="Perf-keyActions">
+                                <div class="SettingsMenu" id="perfSettings">
+                                    <button type="button" class="Btn--iconSoft" onclick="togglePerfSettings(event)" title="Settings" aria-label="Settings" aria-haspopup="true"><i class="fa-solid fa-gear" aria-hidden="true"></i></button>
+                                    <div class="SettingsMenu-panel">
+                                        <div class="SettingsMenu-section">
+                                            <div class="SettingsMenu-title">Data Settings</div>
+                                            <label class="SettingsMenu-check"><input type="checkbox" id="perfShowPredicted" checked onchange="onPerfSettingsChange()" /> Show Predicted</label>
+                                            <label class="SettingsMenu-check"><input type="checkbox" id="perfIncludeUnassigned" checked onchange="onPerfSettingsChange()" /> Include Unassigned Work</label>
+                                            <div class="SettingsMenu-field">
+                                                <label class="SettingsMenu-fieldLabel" for="perfDisplayCurrency">Display Currency</label>
+                                                <select class="Select Select--full" id="perfDisplayCurrency" onchange="onPerfSettingsChange()"><option value="GBP">GBP</option><option value="USD">USD</option><option value="EUR">EUR</option></select>
+                                            </div>
+                                        </div>
+                                        <div class="SettingsMenu-section">
+                                            <div class="SettingsMenu-title">Table Settings</div>
+                                            <label class="SettingsMenu-check"><input type="checkbox" id="perfShowComparatorDiff" checked onchange="onPerfSettingsChange()" /> Show comparator difference</label>
+                                            <label class="SettingsMenu-check"><input type="checkbox" id="perfShowComparatorChange" checked onchange="onPerfSettingsChange()" /> Show comparator change</label>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="SettingsMenu-section">
-                                    <div class="SettingsMenu-title">Table Settings</div>
-                                    <label class="SettingsMenu-check"><input type="checkbox" checked /> Show comparator difference</label>
-                                    <label class="SettingsMenu-check"><input type="checkbox" checked /> Show comparator change</label>
-                                </div>
+                                <button type="button" class="Btn--iconSoft" title="Download" aria-label="Download"><i class="fa-solid fa-download" aria-hidden="true"></i></button>
                             </div>
                         </div>
                     </div>
-                    <div class="PerfTableWrap"><table class="PerfTable" id="perfTable"></table></div>
-                    <table class="MetricsTable" id="metricsTable"></table>
+
+                    <div class="Perf-tables" id="perfTablesPane">
+                        <div class="PerfTableWrap"><table class="PerfTable" id="perfTable"></table></div>
+                        <table class="MetricsTable" id="metricsTable"></table>
+                    </div>
                 </div>
             </div>
 
@@ -1785,9 +2118,6 @@ tr.is-inactive .cell-name { color: var(--text-subtle); }
                  Design review: person-first resource Gantt with breakdown + engagement pivot.
                  Visual/interaction basis: mocks/gantt-resource-breakdown.html -->
             <div id="tab-team" class="tabpane PfTeam">
-                <div class="PfTeam-titlebar">
-                    <h2 class="Perf-title">Team</h2>
-                </div>
                 <div class="PfTeam-scroller" id="pfTeamScroller">
                     <div class="PfTeam-inner" id="pfTeamInner"></div>
                 </div>
@@ -2561,7 +2891,46 @@ function updateStickyOffsets() {
         ? document.getElementById("view-detail")
         : document.getElementById("view-list");
     const topBar = view.querySelector(".TopBar");
+    const tabBar = view.querySelector(".Tab-navBar");
     if (topBar) document.documentElement.style.setProperty("--topbar-h", topBar.offsetHeight + "px");
+    if (tabBar) document.documentElement.style.setProperty("--tabbar-h", tabBar.offsetHeight + "px");
+    const keyBar = document.querySelector("#tab-performance .Perf-keyBar");
+    if (keyBar) document.documentElement.style.setProperty("--perf-keybar-h", keyBar.offsetHeight + "px");
+}
+
+/* sticky multi-row header + frozen left identity columns.
+   Chrome height = TopBar + TabBar + KeyBar (CSS vars) so thead sits flush in the slot under the key bar. */
+function applyPerfStickyOffsets() {
+    const table = document.getElementById("perfTable");
+    const thead = table && table.tHead;
+    if (!thead || !thead.rows.length || !thead.offsetParent) return;
+    updateStickyOffsets();
+    const root = getComputedStyle(document.documentElement);
+    const topbar = parseFloat(root.getPropertyValue("--topbar-h")) || 58;
+    const tabbar = parseFloat(root.getPropertyValue("--tabbar-h")) || 41;
+    const keyH = parseFloat(root.getPropertyValue("--perf-keybar-h")) || 60;
+    const chrome = Math.max(0, Math.round(topbar + tabbar + keyH));
+    document.documentElement.style.setProperty("--perf-thead-top", chrome + "px");
+    let offset = chrome;
+    [...thead.rows].forEach((row, i) => {
+        if (i === 1) document.documentElement.style.setProperty("--perf-thead-band-top", offset + "px");
+        [...row.cells].forEach(c => { c.style.top = offset + "px"; });
+        offset += row.offsetHeight;
+    });
+
+    /* Horizontal freeze: Engagement / Status / Partner */
+    const headRow = thead.rows[0];
+    const c0 = headRow && headRow.cells[0];
+    const c1 = headRow && headRow.cells[1];
+    const w0 = c0 ? c0.getBoundingClientRect().width : 220;
+    const w1 = c1 ? c1.getBoundingClientRect().width : 100;
+    const left1 = Math.round(w0);
+    const left2 = Math.round(w0 + w1);
+    document.documentElement.style.setProperty("--perf-stick-1", left1 + "px");
+    document.documentElement.style.setProperty("--perf-stick-2", left2 + "px");
+    table.querySelectorAll(".perf-stick--0").forEach(el => { el.style.left = "0px"; });
+    table.querySelectorAll(".perf-stick--1").forEach(el => { el.style.left = left1 + "px"; });
+    table.querySelectorAll(".perf-stick--2").forEach(el => { el.style.left = left2 + "px"; });
 }
 
 /* ---- Navigation ---- */
@@ -2616,6 +2985,9 @@ function restoreViewState() {
 let ganttResizeRaf;
 window.addEventListener("resize", () => {
     updateStickyOffsets();
+    if (document.getElementById("view-detail").classList.contains("is-active") && currentTab === "performance") {
+        applyPerfStickyOffsets();
+    }
     if (currentTab !== "team" || !document.getElementById("view-detail").classList.contains("is-active")) return;
     cancelAnimationFrame(ganttResizeRaf);
     ganttResizeRaf = requestAnimationFrame(renderGantt);
@@ -4171,15 +4543,15 @@ const PERF_MIXED_TOOLTIP = "Economics rolled up at engagement level so unable to
 const PERF_MIXED_DEMO_PORTFOLIO = "UK Assurance — London Office";
 
 const perfRowsAll = [
-    { code:"ANG3105", name:"Internal Controls Assessment for Meridian Bank", status:"Completed", partner:"Liam O'Connor", econLevel:"job", a:[853,5123], f:[1033,14923], p:[889,23890], fee:"1,250,000", billing:-45, calc:-45, writeoff:"6,421", gm:850 },
-    { code:"ANG3117", name:"IT Systems Audit for Vertex Financial Services", status:"In Review", partner:"Emma Johnson", econLevel:"jobGroup", a:[912,6842], f:[880,15784], p:[934,24987], fee:"1,750,000", billing:75, calc:75, writeoff:"8,309", gm:-67 },
-    { code:"ANG3102", name:"Compliance Audit for GlobalTech Industries", status:"Pending", partner:"Sophia Martinez", econLevel:"job", a:[1003,7391], f:[920,16845], p:[1075,25643], fee:"2,100,000", billing:150, calc:150, writeoff:"10,254", gm:4.2 },
-    { code:"ANG3110", name:"Risk Management Audit for Apex Pharmaceuticals", status:"On Hold", partner:"Isabella Chen", econLevel:"jobGroup", a:[875,8234], f:[1087,17990], p:[985,26890], fee:"1,600,000", billing:-99, calc:-99, writeoff:"12,876", gm:-100 },
-    { code:"ANG3125", name:"Fraud Risk Assessment for Pinnacle Insurance", status:"Delayed", partner:"Olivia Brown", econLevel:"job", a:[981,9507], f:[947,18567], p:[1111,27901], fee:"2,300,000", billing:999, calc:999, writeoff:"15,238", gm:-5 },
-    { code:"ANG3130", name:"Sustainability Reporting Audit for GreenWave Solutions", status:"Failed", partner:"William Garcia", econLevel:"job", a:[1045,10562], f:[999,19642], p:[864,28765], fee:"1,950,000", billing:-0.5, calc:-0.5, writeoff:"17,049", gm:560 },
-    { code:"ANG3121", name:"Operational Audit for Summit Retail Ltd.", status:"Scheduled", partner:"Michael Davis", econLevel:"jobGroup", a:[897,11678], f:[821,20483], p:[1029,29854], fee:"2,450,000", billing:12, calc:12, writeoff:"19,584", gm:3 },
-    { code:"ANG3113", name:"Tax Compliance Review for Horizon Energy Group", status:"Cancelled", partner:"Noah Patel", econLevel:"job", a:[1102,12735], f:[1123,21567], p:[959,30988], fee:"1,700,000", billing:1200, calc:1200, writeoff:"21,762", gm:700 },
-    { code:"ANG3134", name:"Financial Statement Audit for NovaTech Manufacturing", status:"Processing", partner:"Ava Wilson", econLevel:"job", a:[965,13890], f:[1010,22741], p:[883,31742], fee:"1,820,000", billing:0, calc:0, writeoff:"24,315", gm:233 }
+    { code:"ANG3105", name:"Internal Controls Assessment for Meridian Bank", status:"Completed", partner:"Liam O'Connor", econLevel:"job", a:[853,5123], f:[1033,14923], p:[889,23890], cmpH:158420, cmpHChg:"12.7%", cmpHDiff:"+46,123", cmpGbp:6400, cmpGbpChg:"134.6%", cmpGbpDiff:"+46,123", fee:"1,250,000", billing:-45, calc:-45, writeoff:"6,421", gm:850 },
+    { code:"ANG3117", name:"IT Systems Audit for Vertex Financial Services", status:"In Review", partner:"Emma Johnson", econLevel:"jobGroup", a:[912,6842], f:[880,15784], p:[934,24987], cmpH:3876, cmpHChg:"48.1%", cmpHDiff:"+17,845", cmpGbp:6400, cmpGbpChg:"0.0%", cmpGbpDiff:"+12,400", fee:"1,750,000", billing:75, calc:75, writeoff:"8,309", gm:-67 },
+    { code:"ANG3102", name:"Compliance Audit for GlobalTech Industries", status:"Pending", partner:"Sophia Martinez", econLevel:"job", a:[1003,7391], f:[920,16845], p:[1075,25643], cmpH:4512, cmpHChg:"275%", cmpHDiff:"+29,473", cmpGbp:6400, cmpGbpChg:"499.9%", cmpGbpDiff:"+31,200", fee:"2,100,000", billing:150, calc:150, writeoff:"10,254", gm:4.2 },
+    { code:"ANG3110", name:"Risk Management Audit for Apex Pharmaceuticals", status:"On Hold", partner:"Isabella Chen", econLevel:"jobGroup", a:[875,8234], f:[1087,17990], p:[985,26890], cmpH:3210, cmpHChg:"-7.9%", cmpHDiff:"+5,204", cmpGbp:6400, cmpGbpChg:"302.2%", cmpGbpDiff:"+19,450", fee:"1,600,000", billing:-99, calc:-99, writeoff:"12,876", gm:-100 },
+    { code:"ANG3125", name:"Fraud Risk Assessment for Pinnacle Insurance", status:"Delayed", partner:"Olivia Brown", econLevel:"job", a:[981,9507], f:[947,18567], p:[1111,27901], cmpH:2345, cmpHChg:"89.3%", cmpHDiff:"+14,887", cmpGbp:6400, cmpGbpChg:"4.9%", cmpGbpDiff:"+1,280", fee:"2,300,000", billing:999, calc:999, writeoff:"15,238", gm:-5 },
+    { code:"ANG3130", name:"Sustainability Reporting Audit for GreenWave Solutions", status:"Failed", partner:"William Garcia", econLevel:"job", a:[1045,10562], f:[999,19642], p:[864,28765], cmpH:1678, cmpHChg:"210.5%", cmpHDiff:"+24,159", cmpGbp:6400, cmpGbpChg:"-6.0%", cmpGbpDiff:"-420", fee:"1,950,000", billing:-0.5, calc:-0.5, writeoff:"17,049", gm:560 },
+    { code:"ANG3121", name:"Operational Audit for Summit Retail Ltd.", status:"Scheduled", partner:"Michael Davis", econLevel:"jobGroup", a:[897,11678], f:[821,20483], p:[1029,29854], cmpH:4321, cmpHChg:"-8.8%", cmpHDiff:"+19,643", cmpGbp:6400, cmpGbpChg:"175.3%", cmpGbpDiff:"+11,220", fee:"2,450,000", billing:12, calc:12, writeoff:"19,584", gm:3 },
+    { code:"ANG3113", name:"Tax Compliance Review for Horizon Energy Group", status:"Cancelled", partner:"Noah Patel", econLevel:"job", a:[1102,12735], f:[1123,21567], p:[959,30988], cmpH:1999, cmpHChg:"56.4%", cmpHDiff:"+2,918", cmpGbp:6400, cmpGbpChg:"-1.4%", cmpGbpDiff:"-90", fee:"1,700,000", billing:1200, calc:1200, writeoff:"21,762", gm:700 },
+    { code:"ANG3134", name:"Financial Statement Audit for NovaTech Manufacturing", status:"Processing", partner:"Ava Wilson", econLevel:"job", a:[965,13890], f:[1010,22741], p:[883,31742], cmpH:2876, cmpHChg:"22.1%", cmpHDiff:"+8,440", cmpGbp:6400, cmpGbpChg:"18.6%", cmpGbpDiff:"+1,020", fee:"1,820,000", billing:0, calc:0, writeoff:"24,315", gm:233 }
 ];
 
 function currentPortfolioName() {
@@ -4189,15 +4561,15 @@ function currentPortfolioName() {
 function isPerfMixedDemoPortfolio() {
     return currentPortfolioName() === PERF_MIXED_DEMO_PORTFOLIO;
 }
-/** Active rows for the open portfolio — mixed job / job-group economics only on the demo portfolio. */
+/** Engagement rows only — some rows use job-group economics to demo n/a cells. */
 function currentPerfRows() {
-    if (isPerfMixedDemoPortfolio()) return perfRowsAll;
-    return perfRowsAll.map(r => ({ ...r, econLevel: "job" }));
+    return perfRowsAll;
 }
 
 const parseNum = s => Number(String(s).replace(/,/g, "")) || 0;
 const rateCell = v => v < 0 ? `<span class="rate-pill rate-pill--neg">${v}%</span>` : `<span class="rate-pill rate-pill--subtle">${v}%</span>`;
 const gmCell = v => `<span class="rate-pill rate-pill--subtle${v < 0 ? " is-neg" : ""}">${v}%</span>`;
+const cmpBadge = v => `<span class="cmp-badge">${htmlEsc(v)}</span>`;
 
 function portfolioHasJobGroupEconomics() {
     return currentPerfRows().some(r => r.econLevel === "jobGroup");
@@ -4222,9 +4594,50 @@ function showPerfPredicted() {
     const el = document.getElementById("perfShowPredicted");
     return !el || el.checked;
 }
+function getPerfComparator() {
+    const el = document.getElementById("perfComparator");
+    return (el && el.value) || "prior";
+}
+function showPerfComparator() {
+    return getPerfComparator() !== "none";
+}
+function showPerfComparatorChange() {
+    const el = document.getElementById("perfShowComparatorChange");
+    return showPerfComparator() && (!el || el.checked);
+}
+function showPerfComparatorDiff() {
+    const el = document.getElementById("perfShowComparatorDiff");
+    return showPerfComparator() && (!el || el.checked);
+}
+function getPerfComparatorLabel() {
+    const v = getPerfComparator();
+    if (v === "budget") return "Compare vs Budget Approval";
+    if (v === "prior") return "Compare vs Prior Year";
+    return "Comparator";
+}
+function syncPerfChrome() {
+    const cur = document.getElementById("perfCurrencyLabel");
+    if (cur) cur.textContent = getPerfCurrency();
+    const predKey = document.getElementById("perfKeyPredicted");
+    if (predKey) predKey.hidden = !showPerfPredicted();
+}
 function onPerfSettingsChange() {
+    syncPerfChrome();
     renderPerfTable();
     renderMetricsTable();
+}
+
+function perfCompareColsHtml(r) {
+    if (!showPerfComparator()) return "";
+    const chg = showPerfComparatorChange();
+    const diff = showPerfComparatorDiff();
+    return `
+        <td class="num">${fmt(r.cmpH)}</td>
+        ${chg ? `<td class="num cmp-col">${cmpBadge(r.cmpHChg)}</td>` : ""}
+        ${diff ? `<td class="num cmp-col">${htmlEsc(r.cmpHDiff)}</td>` : ""}
+        <td class="num">${fmt(r.cmpGbp)}</td>
+        ${chg ? `<td class="num cmp-col">${cmpBadge(r.cmpGbpChg)}</td>` : ""}
+        ${diff ? `<td class="num cmp-col">${htmlEsc(r.cmpGbpDiff)}</td>` : ""}`;
 }
 
 function perfRowHtml(r) {
@@ -4236,12 +4649,13 @@ function perfRowHtml(r) {
         : "";
     return `
         <tr>
-            <td><div class="name-cell"><span class="ent-badge"><i class="fa-solid fa-file"></i></span><span class="txt"><span class="code">${r.code}</span><span class="nm">${r.name}</span></span></div></td>
-            <td>${statusPill}</td>
-            <td>${r.partner}</td>
+            <td class="perf-stick perf-stick--0"><div class="name-cell"><span class="ent-badge"><i class="fa-solid fa-file"></i></span><span class="txt"><span class="code">${r.code}</span><span class="nm">${r.name}</span></span></div></td>
+            <td class="perf-stick perf-stick--1">${statusPill}</td>
+            <td class="perf-stick perf-stick--2">${r.partner}</td>
             <td class="num">${fmt(r.a[0])}</td><td class="num">${fmt(r.a[1])}</td>
             <td class="num">${fmt(r.f[0])}</td><td class="num">${fmt(r.f[1])}</td>
             ${predCols}
+            ${perfCompareColsHtml(r)}
             <td class="gap"></td>
             <td class="num">${perfMetricCell(r.fee, suppressExtra)}</td>
             <td class="num">${perfMetricCell(rateCell(r.billing), suppressExtra)}</td>
@@ -4256,31 +4670,48 @@ function renderPerfTable() {
     const currency = getPerfCurrency();
     const breakdown = getPerfBreakdownLabel();
     const showPred = showPerfPredicted();
-    const suppressPortfolioExtra = portfolioHasJobGroupEconomics();
+    const showCmp = showPerfComparator();
+    const showChg = showPerfComparatorChange();
+    const showDiff = showPerfComparatorDiff();
+    const cmpLabel = getPerfComparatorLabel();
 
-    const predHead = showPred ? `<th colspan="2" class="h-grp rblk-tr">Predicted Total</th>` : "";
-    const futureCls = showPred ? "h-grp" : "h-grp rblk-tr";
+    const cmpColSpan = showCmp ? (2 + (showChg ? 2 : 0) + (showDiff ? 2 : 0)) : 0;
+
+    const predHead = showPred ? `<th colspan="2" class="h-grp has-key h-predicted">Predicted Total</th>` : "";
+    const cmpHead = showCmp ? `<th colspan="${cmpColSpan}" class="h-grp has-key h-compare">${htmlEsc(cmpLabel)}</th>` : "";
+    const futureCls = (!showPred && !showCmp) ? "h-grp has-key h-forecast rblk-tr" : "h-grp has-key h-forecast";
+
     const predSub = showPred
-        ? `<th class="h-sub" style="width:76px">Hours</th><th class="h-sub" style="width:84px">${htmlEsc(currency)}</th>`
+        ? `<th class="h-sub h-cmp" style="width:76px">Hours</th><th class="h-sub h-cmp" style="width:84px">${htmlEsc(currency)}</th>`
+        : "";
+    const cmpSub = showCmp
+        ? `<th class="h-sub" style="width:90px">Hours</th>
+           ${showChg ? `<th class="h-sub h-cmp" style="width:100px">% Change</th>` : ""}
+           ${showDiff ? `<th class="h-sub h-cmp" style="width:90px">Diff.</th>` : ""}
+           <th class="h-sub" style="width:90px">${htmlEsc(currency)}</th>
+           ${showChg ? `<th class="h-sub h-cmp" style="width:100px">% Change</th>` : ""}
+           ${showDiff ? `<th class="h-sub h-cmp" style="width:90px">Diff.</th>` : ""}`
         : "";
 
     const head = `
         <thead>
             <tr>
-                <th class="h-grp left tl" style="width:200px">Engagement</th>
-                <th class="h-grp left" style="width:96px">Status</th>
-                <th class="h-grp left" style="width:120px">Partner</th>
-                <th colspan="2" class="h-grp">Actuals</th>
+                <th class="h-grp left tl perf-stick perf-stick--0" style="width:220px"><div class="h-engHead"><span>Engagement</span><button type="button" class="h-engGear" onclick="togglePerfSettings(event)" title="Settings" aria-label="Table settings"><i class="fa-solid fa-gear" aria-hidden="true"></i></button></div></th>
+                <th class="h-grp left perf-stick perf-stick--1" style="width:100px">Status</th>
+                <th class="h-grp left perf-stick perf-stick--2" style="width:120px">Partner</th>
+                <th colspan="2" class="h-grp has-key h-actuals">Actuals</th>
                 <th colspan="2" class="${futureCls}">Future Forecast</th>
                 ${predHead}
+                ${cmpHead}
                 <th rowspan="2" class="h-gap"></th>
                 <th colspan="5" class="h-grp tr">Additional Performance Metrics</th>
             </tr>
             <tr class="band">
-                <td class="band-cell" colspan="3">${htmlEsc(breakdown)} by Grade</td>
+                <td class="band-cell perf-stick perf-stick--0" colspan="3">${htmlEsc(breakdown)} by Grade</td>
                 <th class="h-sub" style="width:76px">Hours</th><th class="h-sub" style="width:84px">${htmlEsc(currency)}</th>
                 <th class="h-sub" style="width:76px">Hours</th><th class="h-sub" style="width:84px">${htmlEsc(currency)}</th>
                 ${predSub}
+                ${cmpSub}
                 <th class="h-sub" style="width:96px">Fee (${htmlEsc(currency)})</th>
                 <th class="h-sub" style="width:110px">Billing Recovery Rate %</th>
                 <th class="h-sub" style="width:120px">Calculated Recovery Rate %</th>
@@ -4291,25 +4722,36 @@ function renderPerfTable() {
 
     const allTotals = rows.reduce((acc, r) => {
         for (let i = 0; i < 2; i++) { acc.a[i] += r.a[i]; acc.f[i] += r.f[i]; acc.p[i] += r.p[i]; }
+        acc.cmpH += r.cmpH;
+        acc.cmpGbp += r.cmpGbp;
         return acc;
-    }, { a:[0,0], f:[0,0], p:[0,0] });
+    }, { a:[0,0], f:[0,0], p:[0,0], cmpH:0, cmpGbp:0 });
 
     const predTotal = showPred
-        ? `<td class="num">${fmt(allTotals.p[0])}</td><td class="num rblk-br">${fmt(allTotals.p[1])}</td>`
+        ? `<td class="num pt-col">${fmt(allTotals.p[0])}</td><td class="num pt-col">${fmt(allTotals.p[1])}</td>`
         : "";
-    const futureBr = showPred ? "" : " rblk-br";
+    const cmpTotal = showCmp
+        ? `<td class="num">${fmt(allTotals.cmpH)}</td>
+           ${showChg ? `<td class="num cmp-col">${cmpBadge("56.4%")}</td>` : ""}
+           ${showDiff ? `<td class="num cmp-col">+${fmt(184692)}</td>` : ""}
+           <td class="num">${fmt(allTotals.cmpGbp)}</td>
+           ${showChg ? `<td class="num cmp-col">${cmpBadge("134.6%")}</td>` : ""}
+           ${showDiff ? `<td class="num cmp-col">+${fmt(122580)}</td>` : ""}`
+        : "";
+    const futureBr = (!showPred && !showCmp) ? " rblk-br" : "";
+    const suppressPortfolioExtra = portfolioHasJobGroupEconomics();
     const dash = () => perfMetricCell("", true, PERF_MIXED_TOOLTIP);
-
     const totalExtra = suppressPortfolioExtra
         ? `<td class="num">${dash()}</td><td class="num">${dash()}</td><td class="num">${dash()}</td><td class="num">${dash()}</td><td class="num">${dash()}</td>`
         : `<td class="total-blank"></td><td class="total-blank"></td><td class="total-blank"></td><td class="total-blank"></td><td class="total-blank"></td>`;
 
     const totalRow = `
         <tr class="total-row">
-            <td>Total (${htmlEsc(breakdown)})</td><td></td><td></td>
+            <td class="perf-stick perf-stick--0">Total (${htmlEsc(breakdown)})</td><td class="perf-stick perf-stick--1"></td><td class="perf-stick perf-stick--2"></td>
             <td class="num">${fmt(allTotals.a[0])}</td><td class="num">${fmt(allTotals.a[1])}</td>
             <td class="num">${fmt(allTotals.f[0])}</td><td class="num${futureBr}">${fmt(allTotals.f[1])}</td>
             ${predTotal}
+            ${cmpTotal}
             <td class="gap"></td>
             ${totalExtra}
         </tr>`;
@@ -4317,16 +4759,6 @@ function renderPerfTable() {
     const table = document.getElementById("perfTable");
     table.innerHTML = head + "<tbody>" + rows.map(r => perfRowHtml(r)).join("") + totalRow + "</tbody>";
     applyPerfStickyOffsets();
-}
-
-/* sticky multi-row header: rows 2 & 3 offset by measured heights of the rows above.
-   Must run while the table is visible, otherwise offsetHeight is 0. */
-function applyPerfStickyOffsets() {
-    const table = document.getElementById("perfTable");
-    const thead = table && table.tHead;
-    if (!thead || thead.rows.length < 2 || !thead.offsetParent) return;
-    const r1 = thead.rows[0].offsetHeight;
-    [...thead.rows[1].cells].forEach(c => c.style.top = r1 + "px");
 }
 
 const metrics = [
@@ -4354,10 +4786,10 @@ function renderMetricsTable() {
     const showPred = showPerfPredicted();
     const suppressMixed = portfolioHasJobGroupEconomics();
     const head = `<thead><tr>
-        <th class="left">Totals and Metrics</th>
+        <th class="left"><div class="MetricsTable-title"><span>Totals and Metrics</span><button type="button" class="MetricsTable-gear" onclick="togglePerfSettings(event)" title="Settings" aria-label="Table settings"><i class="fa-solid fa-gear" aria-hidden="true"></i></button></div></th>
         <th class="colval">${htmlEsc(currency)}</th>
         <th class="colval">${htmlEsc(currency)}</th>
-        ${showPred ? `<th class="colval">${htmlEsc(currency)}</th>` : ""}
+        ${showPred ? `<th class="colval predicted-head">${htmlEsc(currency)}</th>` : ""}
     </tr></thead>`;
     const fmtVal = (val, pill) => {
         if (val && typeof val === "object") return `<span class="rate-pill rate-pill--neg">${val.badge}</span>`;
@@ -4370,11 +4802,15 @@ function renderMetricsTable() {
     };
     const body = "<tbody>" + metrics.map(m => {
         const w = m.warn ? " warn" : "";
-        const icon = m.warn ? '<i class="fa-solid fa-triangle-exclamation warn-icon"></i>' : "";
+        const icon = m.warn ? '<i class="fa-solid fa-triangle-exclamation warn-icon" aria-hidden="true"></i>' : "";
         const suppress = !!m.suppress;
+        const pencil = m.pencil && !(suppress && suppressMixed)
+            ? '<i class="fa-solid fa-pen pencil" title="Edit" aria-label="Edit"></i>'
+            : "";
+        const labelInner = `${icon}<span>${htmlEsc(m.label)}${m.sub ? `<span class="sub-label">${htmlEsc(m.sub)}</span>` : ""}</span>`;
         return `<tr>
-            <td class="label">${icon}${htmlEsc(m.label)}${m.sub ? `<span class="sub-label">${htmlEsc(m.sub)}</span>` : ""}</td>
-            <td class="num${w}">${m.pencil && !(suppress && suppressMixed) ? '<i class="fa-solid fa-pen pencil"></i>' : ""}${cell(m.a, m.pill, suppress)}</td>
+            <td class="label"><div class="label-row"><div class="label-main">${labelInner}</div>${pencil}</div></td>
+            <td class="num${w}">${cell(m.a, m.pill, suppress)}</td>
             <td class="num${w}">${cell(m.f, m.pill, suppress)}</td>
             ${showPred ? `<td class="num predicted-col${w}">${cell(m.p, m.pill, suppress)}</td>` : ""}
         </tr>`;
@@ -4393,7 +4829,7 @@ const PF_BAR_H = 23;
 const PF_BAR_PITCH = PF_BAR_H + 2;
 const PF_BAR_PAD = 2;
 const PF_MENU_W = 275;
-const PF_LEFT_W = 405;
+const PF_LEFT_W = 460;
 const PF_MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 function pfBarsHeight(count, pad) { return count * PF_BAR_PITCH + (pad == null ? PF_BAR_PAD : pad); }
@@ -4708,6 +5144,7 @@ const pfTeamState = {
     expandedRows: {},
     collapsedEngagements: {},
     selectedCell: null,
+    selectedItemId: null,
     menu: null,
     flyout: null
 };
@@ -4855,12 +5292,19 @@ function pfBuildHeadCorner() {
     const addBtn = pfEl("button", "Btn Btn--secondary");
     addBtn.type = "button";
     addBtn.id = "pfTeamAddResourceBtn";
-    addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Resource</span>';
+    addBtn.innerHTML = '<i class="fa-solid fa-plus" aria-hidden="true"></i><span>Resource</span>';
     addBtn.title = "Add Resource Requirement";
     addBtn.addEventListener("click", function (e) { e.stopPropagation(); openReqModal(); });
     tools.appendChild(addBtn);
 
-    const viewBtn = pfEl("button", "Btn Btn--tertiary");
+    const skillsBtn = pfEl("button", "Btn Btn--secondary");
+    skillsBtn.type = "button";
+    skillsBtn.id = "pfTeamSkillsBtn";
+    skillsBtn.title = "Team Skills";
+    skillsBtn.innerHTML = '<span>Team Skills</span><span class="PfTeam-skillCount" aria-label="2 skills">2</span>';
+    tools.appendChild(skillsBtn);
+
+    const viewBtn = pfEl("button", "Btn Btn--iconSoft");
     viewBtn.type = "button";
     viewBtn.id = "pfTeamViewBtn";
     const pivotTo = pfTeamState.pivot === "engagement" ? "Resource view" : "Engagement view";
@@ -4870,7 +5314,7 @@ function pfBuildHeadCorner() {
     viewBtn.addEventListener("click", pivotTeamView);
     tools.appendChild(viewBtn);
 
-    const filterBtn = pfEl("button", "Btn Btn--tertiary");
+    const filterBtn = pfEl("button", "Btn Btn--iconSoft");
     filterBtn.type = "button";
     filterBtn.id = "pfTeamFilterBtn";
     filterBtn.title = "Filter";
@@ -4878,7 +5322,7 @@ function pfBuildHeadCorner() {
     filterBtn.innerHTML = '<i class="fa-solid fa-filter" aria-hidden="true"></i>';
     tools.appendChild(filterBtn);
 
-    const settingsBtn = pfEl("button", "Btn Btn--tertiary");
+    const settingsBtn = pfEl("button", "Btn Btn--iconSoft");
     settingsBtn.type = "button";
     settingsBtn.id = "pfTeamSettingsBtn";
     settingsBtn.title = "Settings";
@@ -4974,10 +5418,20 @@ function pfBuildGroupRow(label, collapseKey, opts) {
     return row;
 }
 
+function pfWorkerTotalHours(worker) {
+    let total = 0;
+    (worker.items || []).forEach(function (it) {
+        if (it.kind === "unavailability") return;
+        const cells = it.cells || {};
+        Object.keys(cells).forEach(function (k) { total += Number(cells[k]) || 0; });
+    });
+    return Math.round(total);
+}
+
 function pfBuildWorkerRow(worker, index) {
     const isUa = pfIsUnassigned(worker);
     const rows = pfBuildBreakdownRows(worker, pfTeamState.breakdown);
-    const row = pfEl("div", "PfTeam-row PfTeam-worker" + (isUa ? " is-unassigned" : "") + (!isUa && index % 2 === 0 ? " is-alt" : ""));
+    const row = pfEl("div", "PfTeam-row PfTeam-worker" + (isUa ? " is-unassigned" : "") + (index % 2 === 0 ? " is-alt" : ""));
     row.dataset.worker = worker.id;
     if (isUa) row.dataset.unassigned = "1";
 
@@ -5019,9 +5473,23 @@ function pfBuildWorkerRow(worker, index) {
     const dims = pfEl("div", "PfTeam-dims");
     left.appendChild(dims);
 
+    const totalHours = pfWorkerTotalHours(worker);
+    const hoursCell = pfEl("div", "PfTeam-cellHours");
+    const hoursVal = pfEl("div", "PfTeam-cellHours-value", String(totalHours));
+    hoursVal.title = totalHours + " hours";
+    hoursCell.appendChild(hoursVal);
+    left.appendChild(hoursCell);
+
     const track = pfEl("div", "PfTeam-rowTrack");
     track.style.width = (PF_WEEKS.length * PF_WEEK_W) + "px";
     track.title = "Double-click to create a booking";
+    track.addEventListener("click", function (e) {
+        if (e.target.closest(".PfTeam-bar, button, a")) return;
+        if (pfTeamState.selectedItemId) {
+            pfTeamState.selectedItemId = null;
+            renderGantt();
+        }
+    });
     track.addEventListener("dblclick", function (e) {
         if (e.target.closest("button, a, .PfTeam-bar")) return;
         e.preventDefault();
@@ -5059,7 +5527,7 @@ function pfBuildWorkerRow(worker, index) {
         bars.style.inset = "0";
         flat.appendChild(bars);
         weeksCol.appendChild(flat);
-        const emptyLbl = pfEl("div", "PfTeam-dimLabel", "");
+        const emptyLbl = pfEl("div", "PfTeam-dimLabel is-spacer", "");
         emptyLbl.style.height = flatH + "px";
         dims.appendChild(emptyLbl);
     } else {
@@ -5155,22 +5623,179 @@ function pfBuildBars(worker, row, topPad) {
 
     row.items.forEach(function (it) {
         const lane = pack.laneOf[it.id] != null ? pack.laneOf[it.id] : 0;
-        const bar = pfEl("div", "PfTeam-bar" + (it.kind === "unavailability" ? " PfTeam-bar--unavail" : ""));
+        const selected = pfTeamState.selectedItemId === it.id;
+        const isUa = pfIsUnassigned(worker);
+        const bar = pfEl("div", "PfTeam-bar"
+            + (it.kind === "unavailability" ? " PfTeam-bar--unavail" : "")
+            + (isUa && it.kind !== "unavailability" ? " PfTeam-bar--unassigned" : "")
+            + (selected ? " is-selected" : ""));
+        bar.dataset.itemId = it.id;
         bar.style.left = (it.startWeek * PF_WEEK_W + 2) + "px";
         bar.style.width = (it.span * PF_WEEK_W - 5) + "px";
         bar.style.top = (pad + lane * PF_BAR_PITCH) + "px";
         if (it.kind !== "unavailability") {
-            bar.style.backgroundColor = PF_PHASE_COLOUR[it.phase] || "#4f4970";
+            if (isUa) {
+                bar.style.backgroundColor = "var(--surface-booking-trait-3)";
+            } else {
+                bar.style.backgroundColor = PF_PHASE_COLOUR[it.phase] || "var(--surface-booking-trait-1)";
+            }
         }
         const perWeek = it.cells[it.startWeek] || it.hours || 0;
         const content = pfEl("div", "PfTeam-barContent");
         content.appendChild(pfEl("span", "PfTeam-barName", perWeek + "h " + it.job));
         bar.appendChild(content);
-        bar.appendChild(pfEl("div", "PfTeam-barHandle"));
+
+        const handleStart = pfEl("div", "PfTeam-barHandle PfTeam-barHandle--start");
+        handleStart.title = "Resize start";
+        handleStart.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            pfStartBarInteract(e, it, worker, bar, "resize-start");
+        });
+        bar.appendChild(handleStart);
+
+        const handleEnd = pfEl("div", "PfTeam-barHandle PfTeam-barHandle--end");
+        handleEnd.title = "Resize end";
+        handleEnd.addEventListener("mousedown", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            pfStartBarInteract(e, it, worker, bar, "resize-end");
+        });
+        bar.appendChild(handleEnd);
+
         bar.title = it.job + (it.code ? " (" + it.code + ")" : "") + " — " + perWeek + " h/week";
+        bar.addEventListener("mousedown", function (e) {
+            if (e.button !== 0) return;
+            if (e.target.closest(".PfTeam-barHandle")) return;
+            e.preventDefault();
+            e.stopPropagation();
+            pfStartBarInteract(e, it, worker, bar, "move");
+        });
+        bar.addEventListener("click", function (e) {
+            e.stopPropagation();
+            if (pfTeamState.selectedItemId !== it.id) {
+                pfTeamState.selectedItemId = it.id;
+                renderGantt();
+            }
+        });
         box.appendChild(bar);
     });
     return box;
+}
+
+function pfItemHours(it) {
+    if (typeof it.hours === "number") return it.hours;
+    const vals = Object.keys(it.cells || {}).map(function (k) { return it.cells[k]; });
+    return vals.length ? vals[0] : 0;
+}
+
+function pfApplyItemWeeks(it, startWeek, span) {
+    startWeek = Math.max(0, Math.min(PF_WEEK_COUNT - 1, startWeek | 0));
+    span = Math.max(1, Math.min(PF_WEEK_COUNT - startWeek, span | 0));
+    const hours = pfItemHours(it);
+    const cells = {};
+    for (let i = 0; i < span; i++) cells[startWeek + i] = hours;
+    it.startWeek = startWeek;
+    it.span = span;
+    it.hours = hours;
+    it.cells = cells;
+    return { startWeek: startWeek, span: span };
+}
+
+function pfWeekFromClientX(clientX, barsEl) {
+    const rect = barsEl.getBoundingClientRect();
+    const x = clientX - rect.left;
+    return Math.max(0, Math.min(PF_WEEK_COUNT - 1, Math.floor(x / PF_WEEK_W)));
+}
+
+function pfPaintBarGeometry(bar, it, startWeek, span) {
+    bar.style.left = (startWeek * PF_WEEK_W + 2) + "px";
+    bar.style.width = (span * PF_WEEK_W - 5) + "px";
+    const hours = pfItemHours(it);
+    const name = bar.querySelector(".PfTeam-barName");
+    if (name) name.textContent = hours + "h " + (it.job || "");
+    bar.title = (it.job || "") + (it.code ? " (" + it.code + ")" : "") + " — " + hours + " h/week · " + span + " wk";
+}
+
+function pfStartBarInteract(e, it, worker, bar, mode) {
+    const barsEl = bar.parentElement;
+    if (!barsEl) return;
+
+    pfTeamState.selectedItemId = it.id;
+    document.querySelectorAll(".PfTeam-bar.is-selected").forEach(function (el) {
+        if (el !== bar) el.classList.remove("is-selected");
+    });
+    bar.classList.add("is-selected");
+
+    const originStart = it.startWeek;
+    const originSpan = it.span;
+    const originEnd = originStart + originSpan - 1;
+    const grabWeek = pfWeekFromClientX(e.clientX, barsEl);
+    let liveStart = originStart;
+    let liveSpan = originSpan;
+    let moved = false;
+    const DRAG_THRESHOLD_PX = 4;
+    const startX = e.clientX;
+
+    if (mode === "move") {
+        /* Delay move chrome until the pointer actually moves — keeps click-to-select crisp */
+    } else {
+        bar.classList.add("is-resizing");
+        document.body.classList.add("PfTeam-is-resizing");
+    }
+
+    function onMove(ev) {
+        if (!moved && Math.abs(ev.clientX - startX) < DRAG_THRESHOLD_PX && mode === "move") return;
+        if (!moved && mode === "move") {
+            bar.classList.add("is-dragging");
+            document.body.classList.add("PfTeam-is-dragging");
+        }
+        const week = pfWeekFromClientX(ev.clientX, barsEl);
+        let nextStart = originStart;
+        let nextSpan = originSpan;
+
+        if (mode === "resize-end") {
+            const end = Math.max(originStart, week);
+            nextStart = originStart;
+            nextSpan = end - originStart + 1;
+        } else if (mode === "resize-start") {
+            const start = Math.min(week, originEnd);
+            nextStart = start;
+            nextSpan = originEnd - start + 1;
+        } else {
+            const delta = week - grabWeek;
+            nextStart = originStart + delta;
+            nextSpan = originSpan;
+            if (nextStart < 0) nextStart = 0;
+            if (nextStart + nextSpan > PF_WEEK_COUNT) nextStart = PF_WEEK_COUNT - nextSpan;
+        }
+
+        if (nextStart === liveStart && nextSpan === liveSpan && moved) return;
+        moved = true;
+        liveStart = nextStart;
+        liveSpan = nextSpan;
+        pfPaintBarGeometry(bar, it, liveStart, liveSpan);
+    }
+
+    function onUp() {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mouseup", onUp);
+        bar.classList.remove("is-dragging", "is-resizing");
+        document.body.classList.remove("PfTeam-is-dragging", "PfTeam-is-resizing");
+        if (!moved) return;
+        pfApplyItemWeeks(it, liveStart, liveSpan);
+        /* Keep the shared source worker item in sync when viewing a scoped engagement row */
+        const sourceId = String(worker.id || "").split("::")[0];
+        const source = pfTeamWorkers.find(function (w) { return w.id === sourceId; });
+        if (source && source !== worker) {
+            const srcItem = source.items.find(function (x) { return x.id === it.id; });
+            if (srcItem && srcItem !== it) pfApplyItemWeeks(srcItem, liveStart, liveSpan);
+        }
+        renderGantt();
+    }
+
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
 }
 
 function pfBuildTodayMarker() {
@@ -5628,8 +6253,13 @@ function submitBooking() {
 
 /* sticky head + labels handle scroll sync */
 
-function togglePerfSettings(e) { e.stopPropagation(); document.getElementById("perfSettings").classList.toggle("is-open"); }
-document.addEventListener("click", e => { if (!e.target.closest("#perfSettings")) document.getElementById("perfSettings")?.classList.remove("is-open"); });
+function togglePerfSettings(e) {
+    e.stopPropagation();
+    document.getElementById("perfSettings")?.classList.toggle("is-open");
+}
+document.addEventListener("click", e => {
+    if (!e.target.closest("#perfSettings")) document.getElementById("perfSettings")?.classList.remove("is-open");
+});
 
 /* Floating tooltips for elements inside overflow containers (e.g. rule-card +N) */
 (function initFloatingTooltips() {
@@ -5728,6 +6358,7 @@ document.addEventListener("click", e => { if (!e.target.closest("#perfSettings")
 
 /* ---- Init ---- */
 renderSections();
+syncPerfChrome();
 renderPerfTable();
 renderMetricsTable();
 updateStickyOffsets();
