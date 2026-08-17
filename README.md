@@ -120,11 +120,19 @@ Run `supabase-changelog.sql` once in the Supabase SQL Editor so the list syncs a
 
 ### Cloudflare Pages
 
-1. Push this repo to GitHub (already: `arronleishman/prototypes`).
+### GitHub Pages (primary)
+
+Repo: `Arron-Leishman-Dayshape/prototypes`  
+Live: `https://arron-leishman-dayshape.github.io/prototypes/`  
+Deploy: push to `main` (Pages from branch `main` / root).
+
+### Cloudflare Pages (optional)
+
+1. Push this repo to GitHub (`Arron-Leishman-Dayshape/prototypes`).
 2. [Cloudflare Pages](https://pages.cloudflare.com) → Connect repo.
 3. Framework: **None** · Build command: empty · Output directory: `/` or blank.
 
-### Netlify
+### Netlify (optional)
 
 Publish directory: `.` · No build command.
 

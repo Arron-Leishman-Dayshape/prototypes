@@ -1,6 +1,6 @@
 # Agent instructions — prototypes hub
 
-This repo is the High Volume Prototypes hub (not Dayshape). Live site: https://arronleishman.github.io/prototypes/
+This repo is the High Volume Prototypes hub (not Dayshape). Live site: https://arron-leishman-dayshape.github.io/prototypes/
 
 ## Goal
 
@@ -69,8 +69,8 @@ Keep shareable HTML mocks in one place. Reviewers open a mock URL, leave feedbac
 
 ## Share URLs (after push)
 
-- **Reviewer (public mock):** `https://arronleishman.github.io/prototypes/mocks/<id>.html`  
+- **Reviewer (public mock):** `https://arron-leishman-dayshape.github.io/prototypes/mocks/<id>.html`  
   They can use the mock + leave feedback. No hub, no View thread.
 - **Internal hub:** use **Copy hub link** on the hub (includes `?key=…`)  
-  Or: `https://arronleishman.github.io/prototypes/?key=<internalAccessKey>`
+  Or: `https://arron-leishman-dayshape.github.io/prototypes/?key=<internalAccessKey>`
 - **Internal feedback:** from the hub only (also requires the key)
