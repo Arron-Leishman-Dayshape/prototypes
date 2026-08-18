@@ -1378,9 +1378,15 @@ button.CreateBooking-unit:hover,
 // The Resource Breakdown menu item is fully gated by the Gantt Aggregation
 // flag. MVP only breaks down by Role, so a customer without roles configured
 // has nothing to aggregate on and never sees the item (DEVO-29502).
+//
+// Job roles are a separate environment setting with its own "mandatory"
+// switch, giving three tenant shapes to review: roles off, roles on and
+// optional, roles on and mandatory. Under mandatory roles a task cannot exist
+// without one, so Other holds unavailabilities alone.
 var FLAGS = {
     ganttAggregation: true,
-    rolesEnabled: true
+    rolesEnabled: true,
+    rolesMandatory: false
 };
 
 function breakdownAvailable() { return FLAGS.ganttAggregation && FLAGS.rolesEnabled; }
@@ -1428,8 +1434,11 @@ var DIMENSIONS = {
 
 var PHASE_ORDER  = ['Preparation', 'First Review', 'Second Review'];
 var PHASE_COLOUR = { 'Preparation': '#2398f2', 'First Review': '#2d7d46', 'Second Review': '#7b3fa0' };
-var ROLE_ORDER   = ['Partner', 'Principal', 'Senior Manager', 'Manager', 'Project Manager',
-                    'Senior Associate', 'Associate', 'Audit Assistant'];
+
+// Customers can glossarize the Other row — "Non-chargeable", "Unavailability"
+// and so on. Whatever it is renamed to, it sorts last rather than into the
+// alphabetical run of roles.
+var OTHER_LABEL = 'Other';
 
 // ── Data ───────────────────────────────────────────────────────────────────
 // Engagement spec: [jobName, code, phase, role, bookingType, resourceRequirement,
@@ -1615,6 +1624,12 @@ DATA.forEach(function (group) {
                 kind: spec[9] || 'booking'
             };
         });
+        // A tenant with mandatory job roles could not have produced the
+        // role-less bookings in this sample, so they drop out and Other is left
+        // holding unavailabilities only.
+        if (FLAGS.rolesMandatory) {
+            wk.items = wk.items.filter(function (it) { return it.role || it.kind === 'unavailability'; });
+        }
         WORKERS.push(wk);
     });
 });
@@ -1680,13 +1695,18 @@ function dimValueOf(item, dim) {
     return item[field] || null;
 }
 
+// Roles sort alphabetically. Phase keeps its lifecycle order because
+// alphabetical would read as nonsense there.
 function orderIndex(dim, value) {
-    if (dim === 'phase') return PHASE_ORDER.indexOf(value);
-    if (dim === 'role') { var i = ROLE_ORDER.indexOf(value); return i === -1 ? 999 : i; }
-    return 999;
+    return dim === 'phase' ? PHASE_ORDER.indexOf(value) : 0;
 }
 
-/** Client-side aggregation of already-loaded Gantt data (DEVO-29503). */
+/**
+ * Client-side aggregation of already-loaded Gantt data (DEVO-29503). Role
+ * buckets and Other are built in a single pass over the resource's tasks — no
+ * second loop to work out what fell through, since the Gantt is performance
+ * sensitive and this runs on the client's machine.
+ */
 function buildBreakdownRows(worker, dim) {
     if (dim === 'none') return null;
     var map = {}, order = [], other = [];
@@ -1703,9 +1723,10 @@ function buildBreakdownRows(worker, dim) {
     var rows = order.map(function (v) {
         return { key: v, label: v, items: map[v], accent: dim === 'phase' ? PHASE_COLOUR[v] : null };
     });
-    // The Other row always renders, and merges unavailabilities with items that
-    // have no value for the chosen dimension (DEVO-29669).
-    rows.push({ key: '__other', label: 'Other', items: other, isOther: true });
+    // Other merges unavailabilities with items that have no value for the
+    // chosen dimension (DEVO-29669). It renders even when every cell is zero,
+    // so work can still be created against it, and always sits last.
+    rows.push({ key: '__other', label: OTHER_LABEL, items: other, isOther: true });
     return rows;
 }
 
@@ -1934,7 +1955,7 @@ function buildWorkerRow(worker, index) {
             if (r.accent) lbl.style.borderLeftColor = r.accent;
             lbl.appendChild(el('span', null, r.label));
             lbl.title = r.isOther
-                ? 'Other — unavailabilities and items with no ' + DIMENSIONS[state.breakdown].label.toLowerCase()
+                ? r.label + ' — unavailabilities and items with no ' + DIMENSIONS[state.breakdown].label.toLowerCase()
                 : r.label;
             if (r.items.length) {
                 lbl.classList.add('is-clickable');
@@ -2273,12 +2294,21 @@ function availabilityFlyout() {
     f.addEventListener('click', function (e) { e.stopPropagation(); });
     f.appendChild(el('div', 'Flyout-title', 'Availability Display Settings'));
 
-    // Slim/Full stay visible while a breakdown is active, but locked to Slim.
+    // Slim/Full both stay visible while a breakdown is active. Slim reads as
+    // the active choice; only Full is greyed out, with a tooltip saying why —
+    // breakdown rows split one resource's time, so there is no separate
+    // capacity to shade each row against.
     [[true, 'Display Slim View'], [false, 'Display Full View']].forEach(function (v) {
-        var r = el('div', 'Radio' + (state.slimView === v[0] ? ' is-checked' : '') + (locked ? ' is-disabled' : ''));
+        var greyed = locked && !v[0];
+        var r = el('div', 'Radio' + (state.slimView === v[0] ? ' is-checked' : '') + (greyed ? ' is-disabled' : ''));
         r.appendChild(el('div', 'Radio-dot'));
         r.appendChild(el('span', null, v[1]));
-        if (!locked) {
+        if (greyed) {
+            r.title = 'Not available while a resource breakdown is active — breakdown rows share the '
+                + 'resource\'s capacity, so there is no separate figure to shade against.';
+        } else if (locked) {
+            r.title = 'Locked to Slim View while a resource breakdown is active.';
+        } else {
             r.addEventListener('click', function () { state.slimView = v[0]; renderMenu(); render(); });
         }
         f.appendChild(r);
@@ -2777,7 +2807,8 @@ function openCreateModal(worker, row, weekDate) {
 
     var noteText;
     if (row.isOther) {
-        noteText = 'Opened from the <strong>Other</strong> row, so no ' + esc(DIMENSIONS[dim].label.toLowerCase()) +
+        noteText = 'Opened from the <strong>' + esc(OTHER_LABEL) + '</strong> row, so no ' +
+                   esc(DIMENSIONS[dim].label.toLowerCase()) +
                    ' is inferred — the practitioner picks the value.';
     } else if (dim === 'none') {
         noteText = 'No breakdown is active, so nothing beyond the resource and date is pre-filled.';
