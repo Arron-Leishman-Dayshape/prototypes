@@ -176,8 +176,10 @@ body {
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  overflow: clip;
+  /* visible so capacity popover is not clipped */
+  overflow: visible;
   box-sizing: border-box;
+  z-index: 40;
 }
 .TopBar-title {
   flex: 1 1 auto;
@@ -193,7 +195,12 @@ body {
   white-space: nowrap;
 }
 .TopBar-actions {
-  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .TopBar-checkInCount {
   display: inline-flex; align-items: center; justify-content: center;
@@ -209,49 +216,7 @@ body {
   font-size: 11px; line-height: 14px; padding: 8px; border-radius: 99px;
 }
 
-.Toolbar {
-  display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-  padding: 24px var(--padding-lg) 16px;
-  background: var(--surface-default);
-  flex-shrink: 0;
-}
-.Toolbar-title {
-  margin: 0; font-size: 20px; font-weight: 700; color: var(--text-default); line-height: 35px;
-  display: inline-flex; align-items: center; gap: 10px;
-}
-.WeekScopeChip {
-  display: inline-flex;
-  align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  border-radius: var(--border-radius-default);
-  border: var(--border-xs) solid var(--surface-primary-accent);
-  background: var(--surface-primary-subtle);
-  color: var(--text-primary);
-  font-size: var(--font-size-extra-small);
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
-  white-space: nowrap;
-}
-.WeekScopeChip[hidden] { display: none !important; }
-.CalPicker .Btn--range.is-this-week {
-  height: 35px;
-  padding: 0 12px;
-  border: var(--border-xs) solid var(--surface-primary-accent);
-  border-radius: var(--border-radius-default);
-  background: var(--surface-primary-subtle);
-  color: var(--text-primary);
-  font-weight: var(--font-weight-semibold);
-}
-.CalPicker .Btn--range.is-this-week:hover,
-.CalPicker .Btn--range.is-this-week:focus {
-  background: var(--surface-primary-accent);
-  color: var(--text-primary);
-  border-color: var(--surface-primary-accent);
-  box-shadow: none;
-}
-.Toolbar-right { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.CalPicker { display: inline-flex; align-items: center; gap: 8px; }
+.CalPicker { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .CalPicker .Btn {
   height: 35px; padding: 0 12px; font-weight: 400;
   color: var(--text-accent); border-color: var(--border-default); background: #fff;
@@ -272,12 +237,26 @@ body {
 .CalPicker .Btn--icon {
   width: 35px; height: 35px; padding: 0; justify-content: center;
 }
-.CalPicker .Btn--range {
-  gap: 8px; color: var(--text-accent); border-color: transparent; border-width: 0;
+/* Week range label — Figma calendar picker text (not a button) */
+.CalPicker-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 35px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  color: var(--text-accent);
+  font-family: var(--font-family);
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-regular);
+  line-height: 21px;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
 }
-.CalPicker .Btn--range:hover,
-.CalPicker .Btn--range:focus {
-  color: var(--text-accent); background: transparent; border-color: transparent; box-shadow: none;
+.CalPicker-range i {
+  font-size: 14px;
+  color: var(--text-accent);
 }
 /* Capacity indicator — Figma High Volume 4187:189189 / 4191:248282 */
 .CapacityInd {
@@ -286,6 +265,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 15px;
+  width: 300px;
   height: 35px;
   padding: 4px 12px;
   background: var(--surface-default);
@@ -298,6 +278,7 @@ body {
   color: var(--text-default);
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .CapacityInd-label,
 .CapacityInd-value {
@@ -309,8 +290,11 @@ body {
 }
 .CapacityInd-value {
   font-variant-numeric: tabular-nums;
-  min-width: 4.5ch;
+  width: 7.5ch;
+  min-width: 7.5ch;
   text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .CapacityInd:hover,
 .CapacityInd[aria-expanded="true"] {
@@ -318,13 +302,15 @@ body {
   background: var(--surface-subtle-light);
 }
 .CapacityInd-bar {
-  width: 144px;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
   height: 6px;
   border-radius: 3px;
   background: var(--surface-subtle-light);
   overflow: hidden;
   display: flex;
-  flex-shrink: 0;
+  flex-shrink: 1;
 }
 .CapacityInd-fill,
 .CapacityInd-warn {
@@ -413,7 +399,7 @@ body {
   font-size: 11px; font-weight: 400; color: var(--text-default); line-height: 1.2;
 }
 .FilterBar {
-  display: none; /* phase board uses My Work chrome; filters available via column filter btn */
+  display: none; /* filters available via column filter btn */
 }
 .FilterMeta { display: none; }
 /* Dayshape Btn — default = btn-outline-secondary, primary = btn-primary */
@@ -498,7 +484,8 @@ body {
 
 /* Board — High Volume Figma (3040:282675) + phase columns for build */
 .board-wrap {
-  flex: 1; overflow: hidden; padding: 0 var(--padding-lg) 24px; min-height: 0;
+  /* 24px top matches Figma: board sits under header with no My Work row */
+  flex: 1; overflow: hidden; padding: 24px var(--padding-lg) 24px; min-height: 0;
   background: var(--surface-default);
 }
 .board {
@@ -3409,16 +3396,10 @@ body.overlay-open { overflow: hidden; }
           Week check-in
           <span class="TopBar-checkInCount" id="weekCheckInCount" hidden></span>
         </button>
-      </div>
-    </div>
-
-    <div class="Toolbar" id="boardToolbar">
-      <h2 class="Toolbar-title">My Work <span class="WeekScopeChip" id="weekScopeChip">This week</span></h2>
-      <div class="Toolbar-right">
         <div class="CalPicker">
           <button type="button" class="Btn is-muted" id="weekToday" disabled>Today</button>
           <button type="button" class="Btn Btn--icon" id="weekPrev" aria-label="Previous week"><i class="fa-solid fa-chevron-left"></i></button>
-          <button type="button" class="Btn Btn--range" id="weekRangeBtn"><i class="fa-regular fa-calendar"></i> <span id="weekLabel">8 Jun – 12 Jun</span></button>
+          <span class="CalPicker-range" id="weekRangeBtn" aria-live="polite"><i class="fa-regular fa-calendar" aria-hidden="true"></i> <span id="weekLabel">8 Jun – 12 Jun</span></span>
           <button type="button" class="Btn Btn--icon" id="weekNext" aria-label="Next week"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
         <button type="button" class="CapacityInd" id="capacityInd" title="This week’s planned booking hours" aria-expanded="false" aria-controls="capacityPopover" aria-haspopup="dialog">
@@ -3456,15 +3437,16 @@ body.overlay-open { overflow: hidden; }
           </div>
         </button>
       </div>
-      <!-- hidden filters kept for JS hooks -->
-      <div class="FilterBar" hidden>
-        <input id="todoSearch" type="search" />
-        <select id="chargeableFilter"><option value="all">All</option></select>
-        <input type="checkbox" id="priorityOnly" />
-        <button type="button" id="clearFilters"></button>
-      </div>
-      <span class="FilterMeta" id="filterMeta" hidden></span>
     </div>
+
+    <!-- hidden filters kept for JS hooks -->
+    <div class="FilterBar" hidden>
+      <input id="todoSearch" type="search" />
+      <select id="chargeableFilter"><option value="all">All</option></select>
+      <input type="checkbox" id="priorityOnly" />
+      <button type="button" id="clearFilters"></button>
+    </div>
+    <span class="FilterMeta" id="filterMeta" hidden></span>
 
     <div id="view-board" class="board-wrap">
       <div class="board" id="board"></div>
@@ -5894,15 +5876,11 @@ function renderBoard() {
   const weekISO = getWeekISO(state.weekOffset);
   document.getElementById('weekLabel').textContent = getWeekLabel(state.weekOffset);
   const weekTodayBtn = document.getElementById('weekToday');
-  const weekScopeChip = document.getElementById('weekScopeChip');
-  const weekRangeBtn = document.getElementById('weekRangeBtn');
   const onTodayWeek = state.weekOffset === state.todayOffset;
   if (weekTodayBtn) {
     weekTodayBtn.classList.toggle('is-muted', onTodayWeek);
     weekTodayBtn.disabled = onTodayWeek;
   }
-  if (weekScopeChip) weekScopeChip.hidden = !onTodayWeek;
-  if (weekRangeBtn) weekRangeBtn.classList.toggle('is-this-week', onTodayWeek);
   updateCapacityChrome();
   updateWeekCheckInBadge();
   const cols = getVisibleColumns();

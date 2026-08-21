@@ -147,8 +147,12 @@ a { color: var(--text-link-color); text-decoration: none; }
 /* ---- App shell ---- */
 .App { display: flex; min-height: 100vh; }
 .NavBar {
+  width: 252px; flex: 0 0 252px; background: var(--deep-black);
+  display: flex; position: sticky; top: 0; height: 100vh; overflow: hidden;
+}
+.NavBar-rail {
   width: 48px; flex: 0 0 48px; background: var(--deep-black);
-  display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: clip;
+  display: flex; flex-direction: column; min-height: 100%;
 }
 .NavBar-logoWrapper { height: 42px; margin: 5px 5px 24px; display: flex; align-items: center; justify-content: center; }
 .NavBar-dayshapeIcon { background: var(--surface-default); border-radius: 2px; height: 38px; width: 38px; object-fit: cover; }
@@ -178,6 +182,29 @@ a { color: var(--text-link-color); text-decoration: none; }
   opacity: 0; visibility: hidden; pointer-events: none; z-index: 200;
 }
 .NavBar-li:hover[data-tooltip]::after { opacity: 1; visibility: visible; }
+.NavBar-subnav {
+  width: 204px; flex: 0 0 204px; min-height: 100%;
+  padding: 0 8px; background: var(--deep-black);
+  border-left: 1px solid rgba(255,255,255,.22); color: var(--text-inverse);
+}
+.NavBar-subnavHeader {
+  display: flex; align-items: center; gap: 8px; height: 48px;
+  padding: 0 4px; font-size: var(--font-size-medium); font-weight: var(--font-weight-regular);
+}
+.NavBar-subnavBack {
+  width: 16px; padding: 0; border: 0; background: transparent;
+  color: var(--text-inverse); cursor: pointer; font-size: 12px;
+}
+.NavBar-subnavGroup { padding: 0 0 12px; border-bottom: 1px solid rgba(255,255,255,.42); }
+.NavBar-subnavGroup + .NavBar-subnavGroup { padding-top: 12px; }
+.NavBar-subnavLink {
+  display: flex; align-items: center; min-height: 40px; padding: 0 4px 0 8px;
+  border-left: 3px solid transparent; color: var(--text-inverse);
+  font-size: var(--font-size-medium); font-weight: var(--font-weight-regular);
+}
+.NavBar-subnavLink:hover, .NavBar-subnavLink.is-active {
+  border-left-color: var(--text-inverse); color: var(--text-inverse);
+}
 
 .Main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .TopBar {
@@ -1177,6 +1204,7 @@ a { color: var(--text-link-color); text-decoration: none; }
 <body>
 <div class="App">
   <nav class="NavBar" aria-label="Main">
+    <div class="NavBar-rail">
     <div class="NavBar-logoWrapper">
       <img class="NavBar-dayshapeIcon" src="data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNzEuOTUgMTcxLjQ4Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmNTkzYjt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTExLjczLDUzLjYzYTczLjA3LDczLjA3LDAsMCwxLDAsNjUuMzRDMTIxLjE1LDExMS4yMSwxMjgsOTkuNDYsMTI4LDg2LjNTMTIxLjE1LDYxLjM5LDExMS43Myw1My42M1oiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03OS40OCw0NC44OWE3NCw3NCwwLDAsMSwwLDgzLjM4LDQyLjMxLDQyLjMxLDAsMCwwLDAtODMuMzhaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNTIuMDUsNDRoLS4xNnY4NC4zNWguMTZDNzEuMzQsMTI4LjM0LDg3LDEwOS40Niw4Nyw4Ni4xNlM3MS4zNCw0NCw1Mi4wNSw0NFoiLz48L3N2Zz4=" alt="Dayshape" />
     </div>
@@ -1187,15 +1215,14 @@ a { color: var(--text-link-color); text-decoration: none; }
       <li class="NavBar-li" data-tooltip="Dashboard"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-chart-line"></i></a></li>
       <li class="NavBar-li" data-tooltip="Schedule"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-calendar"></i></a></li>
       <li class="NavBar-li" data-tooltip="Portfolios"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-folder-open"></i></a></li>
-      <li class="NavBar-li is-active" data-tooltip="Demand templates">
-        <a class="NavBar-menuLink" href="#" onclick="requestWizardExit(); return false;" title="Demand templates">
-          <i class="NavBar-menuIcon fa-solid fa-clipboard-list"></i>
-        </a>
-      </li>
       <li class="NavBar-li" data-tooltip="Create"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-plus"></i></a></li>
       <li class="NavBar-li" data-tooltip="Reports"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-file-lines"></i></a></li>
       <li class="NavBar-li" data-tooltip="Referential data"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-folder-tree"></i></a></li>
-      <li class="NavBar-li" data-tooltip="Configuration"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-wrench"></i></a></li>
+      <li class="NavBar-li is-active" data-tooltip="Demand templates">
+        <a class="NavBar-menuLink" href="#" onclick="requestWizardExit(); return false;" title="Demand templates">
+          <i class="NavBar-menuIcon fa-solid fa-wrench"></i>
+        </a>
+      </li>
       <li class="NavBar-li" data-tooltip="Profile"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-user"></i></a></li>
       <li><hr class="NavBar-hr" /></li>
       <li class="NavBar-li" data-tooltip="Help"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-circle-question"></i></a></li>
@@ -1204,6 +1231,22 @@ a { color: var(--text-link-color); text-decoration: none; }
     <div class="NavBar-menuBottom">
       <button class="NavBar-expandButton" type="button" aria-label="Expand navigation"><i class="fa-solid fa-chevron-right"></i></button>
     </div>
+    </div>
+    <aside class="NavBar-subnav" aria-label="Demand templates">
+      <div class="NavBar-subnavHeader">
+        <button class="NavBar-subnavBack" type="button" aria-label="Collapse menu">
+          <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <span>Configuration</span>
+      </div>
+      <div class="NavBar-subnavGroup">
+        <a class="NavBar-subnavLink is-active" href="#" onclick="requestWizardExit(); return false;">Demand templates</a>
+      </div>
+      <div class="NavBar-subnavGroup">
+        <a class="NavBar-subnavLink" href="#" onclick="openWizard(); return false;">Template builder</a>
+        <a class="NavBar-subnavLink" href="#" onclick="toast('Apply template to job'); return false;">Apply template to job</a>
+      </div>
+    </aside>
   </nav>
 
   <div class="Main">
@@ -1680,8 +1723,7 @@ function toast(msg) {
 
 function wizardHeaderBack() {
   if (state.screen !== 'wizard') return;
-  if (state.wizardStep > 1) wizardNav(-1);
-  else requestWizardExit();
+  requestWizardExit();
 }
 
 function comparableDraft(d) {
