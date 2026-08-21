@@ -24,7 +24,7 @@
   --surface-primary-accent: #dedaf4;
   --surface-accent: #e2e3e9;
   --surface-default: #fff;
-  --surface-subtle-light: #f8f8f8;
+  --surface-subtle-light: #f7f7fa;
   --surface-subtle-dark: #f1f1f4;
   --surface-list-item-hover: #f1f1f4;
   --surface-list-item-selected-light: #f0effb;
@@ -60,11 +60,11 @@
   --phase-intl-prepare: #6366f1;
   --phase-intl-review: #14b8a6;
   --phase-prep-trait: #dc2626;
-  --phase-tax-detailed-review: #9333ea;
-  --phase-tax-prep: #0d9488;
+  --phase-tax-detailed-review: #7059e8;
+  --phase-tax-prep: #167983;
   --phase-tax-project-leader: #d97706;
   --phase-tax-signer-approval: #2563eb;
-  --phase-tax-technical-review: #64748b;
+  --phase-tax-technical-review: #4c5172;
   /* Legacy seeded examples retain their existing planning colours. */
   --phase-prep: #ff8d6c;
   --phase-first-review: #0295b2;
@@ -78,6 +78,7 @@
   --text-accent: #4c5172;
   --text-emphasis: #3d425c;
   --text-subtle: #6a708f;
+  --icon-default: #222430;
   --text-primary: #4f3fa0;
   --text-link-color: #7059e8;
   --text-inverse: #fff;
@@ -181,16 +182,30 @@ a { color: var(--text-link-color); text-decoration: none; }
 .Main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
 .TopBar {
   background: var(--surface-default); border-bottom: 1px solid var(--border-subtle);
-  padding: 14px var(--padding-lg); display: flex; align-items: center; gap: var(--padding-md);
+  padding: 16px var(--padding-lg); display: flex; align-items: center; gap: 8px;
   position: sticky; top: 0; z-index: 30;
 }
-.TopBar-title { font-size: var(--font-size-h1); font-weight: var(--font-weight-semibold); margin: 0; }
-.TopBar-spacer { flex: 1 1 auto; }
-.TopBar-mode { display: none; align-items: center; gap: var(--padding-sm); }
-.TopBar-mode.is-visible { display: inline-flex; }
-.TopBar-modeLabel {
-  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); color: var(--text-subtle);
+.TopBar-title {
+  font-size: 24px; line-height: 32px; font-weight: var(--font-weight-regular);
+  color: var(--text-default); margin: 0;
 }
+.TopBar-spacer { flex: 1 1 auto; }
+.Btn-iconOnly.TopBar-back {
+  position: relative; flex: 0 0 32px; width: 32px; height: 32px; min-height: 32px;
+  padding: 0; border: 0; border-radius: var(--border-radius-circle);
+  background: var(--surface-accent); color: var(--icon-default);
+  font-size: 14px;
+}
+.Btn-iconOnly.TopBar-back:hover { background: var(--surface-accent); color: var(--icon-default); }
+.TopBar-back::after {
+  content: attr(data-tooltip); position: absolute; left: 50%; top: calc(100% + 6px);
+  transform: translateX(-50%); z-index: 200; pointer-events: none;
+  padding: 6px 10px; border-radius: var(--border-radius-default);
+  background: var(--deep-black); color: var(--text-inverse);
+  font-size: var(--font-size-small); font-weight: var(--font-weight-semibold);
+  white-space: nowrap; opacity: 0; visibility: hidden;
+}
+.TopBar-back:hover::after, .TopBar-back:focus-visible::after { opacity: 1; visibility: visible; }
 
 .Btn {
   font-size: var(--font-size-medium); font-weight: var(--font-weight-semibold);
@@ -235,6 +250,17 @@ a { color: var(--text-link-color); text-decoration: none; }
 .Field-hint { font-size: var(--font-size-small); color: var(--text-subtle); line-height: 1.4; }
 .Field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 900px) { .Field-row { grid-template-columns: 1fr; } }
+.DetailsFields { display: flex; flex-direction: column; gap: var(--padding-md); max-width: 720px; }
+.DetailsFields .Field { margin-bottom: 0; gap: 8px; }
+.DetailsFields .Field-row { width: 100%; gap: var(--padding-lg); }
+.DetailsFields .Field-row--single { grid-template-columns: minmax(0, 1fr); }
+.DetailsFields .Input, .DetailsFields .Select,
+.DetailsFields .TreeInput .Input { min-height: 40px; }
+.DetailsFields .TreeInput-append { min-height: 40px; }
+.DetailsFields .BtnGroup { min-height: 40px; }
+.DetailsFields .Field > .BtnGroup { align-self: flex-start; width: max-content; }
+.DetailsFields .BtnGroup > button { min-height: 38px; padding-inline: 16px; }
+.DetailsFields .BusinessUnitTree { max-width: 690px; }
 .Input, .Select {
   border: 1px solid var(--border-default); border-radius: var(--border-radius-default);
   background: var(--surface-default); padding: 0 12px; min-height: 35px;
@@ -324,6 +350,15 @@ a { color: var(--text-link-color); text-decoration: none; }
 .TreeInput-empty {
   padding: 10px 12px; color: var(--text-subtle); font-size: var(--font-size-small);
 }
+.BusinessUnitTree .TreeInput-treeView { max-height: 280px; }
+.BusinessUnitTree .TreeInput-node { padding-left: 8px; }
+.BusinessUnitTree .TreeInput-node--root { padding-left: 4px; font-weight: var(--font-weight-semibold); }
+.BusinessUnitTree .TreeInput-node--child { padding-left: 20px; }
+.BusinessUnitTree-chevron {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; flex: 0 0 16px;
+  color: var(--icon-subtle); font-size: 11px;
+}
+.BusinessUnitTree-chevron.is-empty { visibility: hidden; }
 .ValidIcon { color: var(--text-success); margin-left: var(--padding-xxs); }
 .BtnGroup {
   display: inline-flex; align-items: stretch; width: auto;
@@ -524,46 +559,32 @@ a { color: var(--text-link-color); text-decoration: none; }
 .Wizard-content { min-width: 0; width: 100%; }
 .Stepper--vertical {
   flex-direction: column;
+  gap: var(--padding-xs);
+  align-items: stretch;
   width: 100%;
 }
 .Stepper-step { display: flex; min-width: 0; }
 .Stepper--vertical .Stepper-step {
-  display: grid;
-  grid-template-columns: 27px minmax(0, 1fr);
-  column-gap: var(--padding-sm);
-  min-height: 96px;
-  border-radius: var(--border-radius-default);
-}
-.Stepper--vertical .Stepper-step[role="button"] { cursor: pointer; }
-.Stepper--vertical .Stepper-step[role="button"]:not(.Stepper-step--current):hover {
-  background: var(--surface-list-item-hover);
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--padding-md);
+  width: 100%;
 }
 .Stepper--vertical .Stepper-step.is-locked .Stepper-info { opacity: 0.5; }
-.Stepper-step[role="button"]:focus-visible {
-  outline: 2px solid var(--border-primary-focus);
-  outline-offset: var(--padding-xs);
-}
-.Stepper-rail {
-  display: flex; flex-direction: row; align-items: center; justify-content: center;
-  gap: var(--padding-sm); width: 100%; flex-shrink: 0;
-}
-.Stepper--vertical .Stepper-rail {
-  grid-column: 1;
-  grid-row: 1;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: var(--padding-xs);
-  width: 27px;
-  height: 100%;
+.Stepper-indicator {
+  display: flex; flex-direction: column; align-items: center; gap: var(--padding-xs);
+  flex-shrink: 0; min-height: 67px; align-self: stretch;
 }
 .Stepper-marker {
   box-sizing: border-box; width: 27px; height: 27px; border-radius: var(--border-radius-circle);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   font-size: var(--font-size-small); font-weight: var(--font-weight-semibold); line-height: 1;
   transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+  cursor: pointer;
 }
 .Stepper-marker:hover { transform: scale(1.06); }
 .Stepper-marker:focus-visible { outline: 2px solid var(--border-primary-focus); outline-offset: 3px; }
+.Stepper-step.is-locked .Stepper-marker { cursor: not-allowed; opacity: .5; }
 .Stepper-marker--current { background: var(--surface-primary); color: var(--text-inverse); }
 .Stepper-marker--future { background: var(--surface-container-default); color: var(--text-emphasis); }
 .Stepper-marker--current:hover { background: var(--surface-primary-emphasis); }
@@ -588,15 +609,10 @@ a { color: var(--text-link-color); text-decoration: none; }
 .Stepper-line--inactive::after { background-color: var(--border-subtle); }
 .Stepper-line--success::after { background-color: var(--border-success); }
 .Stepper-line--error::after { background-color: var(--border-danger); }
-.Stepper-info { display: flex; flex-direction: column; gap: var(--padding-xxs); flex: 1 1 auto; min-width: 0; }
+.Stepper-info { display: flex; flex-direction: column; gap: var(--padding-xxs); flex: 1 1 auto; min-width: 0; padding-bottom: var(--padding-sm); overflow-wrap: anywhere; }
 .Stepper-info--centered { align-items: center; text-align: center; }
-.Stepper--vertical .Stepper-info {
-  grid-column: 2;
-  grid-row: 1;
-  align-items: flex-start;
-  text-align: left;
-  padding: 3px 0 var(--padding-md);
-}
+.Stepper--vertical .Stepper-info { align-items: flex-start; text-align: left; padding-top: 3px; }
+.Stepper--vertical .Stepper-step--last .Stepper-indicator { min-height: 0; }
 .Stepper-title {
   margin: 0; font-size: var(--font-size-h3); font-weight: var(--font-weight-semibold);
   line-height: normal; color: var(--text-emphasis);
@@ -641,7 +657,7 @@ a { color: var(--text-link-color); text-decoration: none; }
 .ShapeLabels span:last-child { color: var(--text-default); text-align: right; }
 .ShapeBarWrap { position: relative; min-width: 0; }
 .ShapeBar {
-  display: flex; width: 100%; height: 48px; border-radius: var(--border-radius-default); overflow: hidden;
+  display: flex; width: 100%; height: 40px; border-radius: var(--border-radius-default); overflow: hidden;
   background: var(--surface-subtle-dark); border: 1px solid var(--border-subtle);
 }
 .ShapeSeg {
@@ -699,12 +715,34 @@ a { color: var(--text-link-color); text-decoration: none; }
   font-size: var(--font-size-h2); font-weight: var(--font-weight-semibold);
 }
 .ReviewMeta-detail { color: var(--text-subtle); }
+.ReviewSummaryCard {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--padding-lg);
+  min-height: 93px; padding: 24px; margin-bottom: 24px;
+  border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
+  background: var(--surface-default);
+}
+.ReviewSummary-copy { min-width: 0; flex: 1 1 auto; }
+.ReviewSummary-title {
+  margin: 0 0 var(--padding-xxs); color: var(--text-default);
+  font-size: var(--font-size-h2); font-weight: var(--font-weight-semibold);
+}
+.ReviewSummary-detail { color: var(--text-subtle); font-size: var(--font-size-small); }
+.ReviewSummary-metrics { display: flex; align-items: stretch; flex: 0 0 auto; }
+.ReviewSummary-metric {
+  min-width: 101px; padding: 0 16px; text-align: center;
+  display: flex; flex-direction: column; justify-content: center; gap: 2px;
+}
+.ReviewSummary-metric + .ReviewSummary-metric { border-left: 1px solid var(--border-subtle); }
+.ReviewSummary-metricLabel { color: var(--text-subtle); font-size: var(--font-size-small); }
+.ReviewSummary-metricValue { color: var(--text-default); font-size: var(--font-size-h2); font-weight: var(--font-weight-semibold); }
 .ReviewSection {
   border: 1px solid var(--border-subtle);
   border-radius: var(--border-radius-default);
   overflow: hidden;
   background: var(--surface-default);
 }
+.ReviewSummaryCard + .ReviewSection { margin-top: 0; }
+.ReviewSection + .ReviewSection { margin-top: 24px; }
 .ReviewSection-head {
   display: flex; align-items: center; gap: var(--padding-sm);
   padding: 10px var(--padding-sm);
@@ -712,6 +750,12 @@ a { color: var(--text-link-color); text-decoration: none; }
   background: var(--surface-subtle-light);
 }
 .ReviewSection-title { flex: 1 1 auto; font-weight: var(--font-weight-semibold); }
+#reviewSummary > .ReviewSection:first-of-type { padding: var(--padding-md); }
+#reviewSummary > .ReviewSection:first-of-type .ReviewSection-head {
+  padding: 0 0 var(--padding-md);
+  border-bottom: 0;
+  background: transparent;
+}
 .ReviewPhase {
   display: grid; grid-template-columns: minmax(160px, 220px) minmax(0, 1fr);
   gap: var(--padding-md); padding: var(--padding-sm);
@@ -724,6 +768,29 @@ a { color: var(--text-link-color); text-decoration: none; }
 }
 .ReviewSlots { display: flex; flex-direction: column; gap: var(--padding-xs); }
 .ReviewSlot { color: var(--text-accent); }
+.ReviewDemandGroup { padding: 24px 24px 0; }
+.ReviewDemandGroup:last-child { padding-bottom: 24px; }
+.ReviewDemandGroup-title {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 12px;
+  color: var(--text-emphasis); font-size: 14px; font-weight: var(--font-weight-semibold);
+}
+.ReviewDemandTable {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  border: 1px solid var(--border-subtle); border-radius: var(--border-radius-default);
+  overflow: hidden; font-size: 11px;
+}
+.ReviewDemandTable th {
+  height: 40px; padding: 0 12px; background: var(--surface-subtle-light);
+  border-bottom: 1px solid var(--border-subtle); color: var(--text-emphasis);
+  text-align: left; font-weight: var(--font-weight-semibold);
+}
+.ReviewDemandTable th:not(:first-child), .ReviewDemandTable td:not(:first-child) { text-align: right; }
+.ReviewDemandTable td {
+  height: 40px; padding: 0 12px; border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-accent); vertical-align: middle;
+}
+.ReviewDemandTable tr:last-child td { border-bottom: 0; }
+.ReviewDemandResource { color: var(--text-emphasis); font-weight: var(--font-weight-semibold); }
 
 .Input[aria-invalid="true"], .Select[aria-invalid="true"] {
   border-color: var(--border-danger);
@@ -895,68 +962,101 @@ a { color: var(--text-link-color); text-decoration: none; }
 }
 .MiniGantt-toolbar {
   display: flex; align-items: center; gap: var(--padding-sm);
-  padding: 10px var(--padding-sm); border-bottom: 1px solid var(--border-subtle);
+  min-height: 42px; padding: 0 var(--padding-sm); border-bottom: 1px solid var(--border-subtle);
   background: var(--surface-subtle-light);
 }
-.MiniGantt-title { flex: 1 1 auto; min-width: 0; font-weight: var(--font-weight-semibold); }
-.MiniGantt-help { padding: 8px var(--padding-sm); color: var(--text-subtle); font-size: var(--font-size-small); border-bottom: 1px solid var(--border-subtle); }
+.MiniGantt-title { flex: 1 1 auto; min-width: 0; color: var(--text-emphasis); font-size: 12px; font-weight: var(--font-weight-semibold); }
+.MiniGantt-help { padding: 16px var(--padding-sm); color: var(--text-subtle); font-size: 11px; border-bottom: 1px solid var(--border-subtle); }
 .MiniGantt-scroll { overflow-x: auto; overflow-y: visible; }
-.MiniGantt-canvas { min-width: 100%; width: max-content; --label-w: 230px; --week-w: 40px; }
+.MiniGantt-canvas { min-width: 100%; width: max-content; --label-w: 192px; --week-w: 40px; }
 .MiniGantt-months, .MiniGantt-weeks, .MiniGantt-row { display: flex; min-width: 100%; }
 .MiniGantt-corner, .MiniGantt-label {
   position: sticky; left: 0; z-index: 4; flex: 0 0 var(--label-w); width: var(--label-w);
   border-right: 1px solid var(--border-default); background: var(--surface-default);
 }
 .MiniGantt-corner {
-  display: flex; align-items: center; padding: 0 var(--padding-sm);
-  color: var(--text-subtle); font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
-  text-transform: uppercase; letter-spacing: .03em;
+  display: flex; align-items: center; padding: 0 16px;
+  color: var(--text-emphasis); font-size: 12px; font-weight: var(--font-weight-semibold);
 }
 .MiniGantt-month {
-  height: 28px; display: flex; align-items: center; justify-content: center;
+  height: 24px; display: flex; align-items: center; justify-content: center;
   border-right: 1px solid var(--border-default); border-bottom: 1px solid var(--border-subtle);
   background: var(--surface-subtle-light); color: var(--text-accent);
-  font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
+  font-size: 10px; font-weight: var(--font-weight-semibold);
 }
 .MiniGantt-week {
-  flex: 0 0 var(--week-w); width: var(--week-w); height: 25px;
+  flex: 0 0 var(--week-w); width: var(--week-w); height: 24px;
   display: flex; align-items: center; justify-content: center;
   border-right: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-default);
   color: var(--text-subtle); font-size: 10px; background: var(--surface-default);
 }
-.MiniGantt-row { min-height: 46px; border-bottom: 1px solid var(--border-subtle); }
-.MiniGantt-row:last-child { border-bottom: 0; }
+.MiniGantt-row { min-height: 44px; height: 44px; border-bottom: 1px solid var(--border-subtle); }
 .MiniGantt-label {
-  display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center;
-  gap: 8px; padding: 5px 8px;
+  display: grid; grid-template-columns: 9px minmax(0, 1fr) auto; align-items: center;
+  gap: 6px; height: 44px; padding: 4px 8px 4px 10px;
 }
 .MiniGantt-labelCopy { min-width: 0; }
-.MiniGantt-labelTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: var(--font-weight-semibold); font-size: var(--font-size-small); }
-.MiniGantt-labelMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-subtle); font-size: var(--font-size-extra-small); }
-.MiniGantt-actions { display: inline-flex; }
-.MiniGantt-actions .Btn-iconOnly { width: 28px; height: 28px; }
+.MiniGantt-labelTitle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-emphasis); font-weight: var(--font-weight-semibold); font-size: 11px; }
+.MiniGantt-labelMeta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-subtle); font-size: 10px; }
+.MiniGantt-actions { display: inline-flex; gap: 4px; }
+.MiniGantt-actions .Btn-iconOnly { width: 24px; height: 24px; min-height: 24px; font-size: 11px; }
 .MiniGantt-track {
-  position: relative; flex: 0 0 calc(var(--weeks) * var(--week-w)); width: calc(var(--weeks) * var(--week-w));
+  position: relative; flex: 0 0 calc(var(--weeks) * var(--week-w)); width: calc(var(--weeks) * var(--week-w)); height: 44px;
   background-color: var(--surface-default);
-  background-image: repeating-linear-gradient(to right, transparent 0, transparent calc(var(--week-w) - 1px), var(--border-subtle) calc(var(--week-w) - 1px), var(--border-subtle) var(--week-w));
+  background-image: linear-gradient(to right, transparent calc(100% - 1px), var(--border-subtle) calc(100% - 1px));
+  background-size: var(--week-w) 100%; background-repeat: repeat-x;
   cursor: crosshair;
 }
 .MiniGantt-track:hover { background-color: var(--surface-list-item-hover); }
 .MiniGantt-bar {
-  position: absolute; top: 7px; height: 32px; min-width: 8px;
+  position: absolute; top: 10px; height: 24px; min-width: 8px;
   display: flex; align-items: center; justify-content: center;
   border-radius: var(--border-radius-default); color: var(--text-inverse);
   font-size: var(--font-size-extra-small); font-weight: var(--font-weight-semibold);
-  cursor: grab; overflow: hidden; user-select: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.14);
+  cursor: grab; overflow: hidden; user-select: none;
 }
 .MiniGantt-bar:active { cursor: grabbing; }
 .MiniGantt-resize {
   position: absolute; top: 0; bottom: 0; width: 8px; cursor: ew-resize;
-  background: rgba(255,255,255,.18);
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.75); color: currentColor; font-size: 12px; line-height: 1;
 }
 .MiniGantt-resize--left { left: 0; }
 .MiniGantt-resize--right { right: 0; }
-.MiniGantt-empty { padding: 28px var(--padding-md); text-align: center; color: var(--text-subtle); }
+.MiniGantt-empty {
+  min-height: 299px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: var(--padding-xs); padding: var(--padding-lg) var(--padding-md); text-align: center;
+  color: var(--text-subtle);
+}
+.MiniGantt-emptyIcon {
+  display: grid; place-items: center; width: 64px; height: 64px; margin-bottom: var(--padding-xs);
+  border-radius: 50%; background: var(--surface-subtle-light); color: var(--text-primary);
+  font-size: 28px;
+}
+.MiniGantt-emptyTitle {
+  color: var(--text-default); font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-semibold);
+}
+.MiniGantt-emptyCopy { max-width: 420px; font-size: var(--font-size-small); }
+.MiniGantt-empty .Btn { margin-top: var(--padding-xs); }
+.MiniGantt-addRow { display: flex; min-width: 100%; min-height: 44px; border-top: 1px solid var(--border-subtle); }
+.MiniGantt-label--add {
+  display: flex; align-items: center; gap: 8px; padding: 5px 8px;
+  position: sticky; left: 0; z-index: 4; flex: 0 0 var(--label-w); width: var(--label-w);
+  border-right: 1px solid var(--border-default); background: var(--surface-default);
+  color: var(--text-primary); font-size: var(--font-size-small); font-weight: var(--font-weight-semibold);
+}
+.MiniGantt-addTrack {
+  display: flex; flex: 0 0 calc(var(--weeks) * var(--week-w)); width: calc(var(--weeks) * var(--week-w));
+  background: var(--surface-default);
+  background-image: linear-gradient(to right, transparent calc(100% - 1px), var(--border-subtle) calc(100% - 1px));
+  background-size: var(--week-w) 100%; background-repeat: repeat-x;
+}
+.MiniGantt-addWeek {
+  flex: 0 0 var(--week-w); width: var(--week-w); min-height: 44px; padding: 0;
+  border: 0; border-right: 1px solid transparent; background: transparent; cursor: pointer;
+}
+.MiniGantt-addWeek:hover, .MiniGantt-addWeek:focus-visible { background: var(--surface-list-item-hover); outline: 2px solid var(--border-primary); outline-offset: -2px; }
 .MiniGantt-readonly .MiniGantt-track { cursor: default; }
 .MiniGantt-readonly .MiniGantt-bar { cursor: default; }
 
@@ -967,29 +1067,52 @@ a { color: var(--text-link-color); text-decoration: none; }
 }
 .ModalOverlay.is-open { display: flex; }
 .Modal {
-  width: min(640px, 100%); max-height: calc(100vh - 2 * var(--padding-lg));
+  width: min(648px, 100%); max-height: calc(100vh - 2 * var(--padding-lg));
   display: flex; flex-direction: column; overflow: visible;
   border-radius: var(--border-radius-default); background: var(--surface-default); box-shadow: var(--shadow-footer);
 }
+.Modal--small { width: min(440px, 100%); }
+.ExitConfirm-copy { margin: 0; color: var(--text-accent); line-height: 1.5; }
 .Modal-header, .Modal-footer { display: flex; align-items: center; gap: var(--padding-sm); padding: var(--padding-md); }
 .Modal-header { border-bottom: 1px solid var(--border-default); }
 .Modal-title { flex: 1 1 auto; margin: 0; font-size: var(--font-size-h2); font-weight: var(--font-weight-regular); }
-.Modal-body { padding: var(--padding-md); overflow-y: auto; }
+.Modal .Modal-header .Btn-iconOnly { width: 28px; height: 28px; min-height: 28px; }
+.Modal-body { display: flex; flex-direction: column; gap: var(--padding-md); padding: var(--padding-md); overflow-y: auto; }
 .Modal-footer { justify-content: space-between; border-top: 1px solid var(--border-default); }
 .Modal-actions { display: flex; gap: var(--padding-sm); margin-left: auto; }
 .ModalFieldRow {
-  display: grid; grid-template-columns: 190px minmax(0, 1fr); align-items: center;
-  gap: var(--padding-sm); min-height: 50px;
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 4px; min-height: 0;
 }
-.ModalFieldRow .Field-label { font-weight: var(--font-weight-regular); }
+.ModalFieldRow .Field-label { color: var(--text-emphasis); font-size: 14px; font-weight: var(--font-weight-semibold); }
+.ModalFieldRow .Select { min-height: 35px; }
+.ModalFieldRow .Field-hint { font-size: 14px; }
 .RequiredMark { color: var(--text-danger); }
 .TypeSelectWrap { position: relative; display: flex; align-items: center; }
-.TypeSelectWrap .Select { padding-left: 30px; }
-.TypeSelectSwatch { position: absolute; left: 12px; z-index: 1; width: 8px; height: 8px; border-radius: 50%; background: transparent; pointer-events: none; }
+.TypeSelectWrap .Select { padding-left: 12px; }
+.Modal .TypeSelectSwatch { display: none; }
 .ModalStack { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ModalNumField { display: flex; align-items: center; gap: 8px; }
 .ModalNumField > .Input { width: 120px; flex: 0 0 120px; }
 .ModalNumField-unit { color: var(--text-subtle); font-size: var(--font-size-small); }
+.EffortControl { display: flex; align-items: stretch; gap: 8px; max-width: 557px; }
+.EffortControl > .Input { width: 249px; flex: 1 1 auto; }
+.EffortControl-group { flex: 0 0 300px; min-height: 35px; border-color: var(--border-default); }
+.EffortControl-group > button { flex: 1 1 0; min-height: 35px; padding: 0 12px; font-size: 14px; }
+.EffortControl-group > button.is-active { background: var(--surface-emphasis); color: var(--text-inverse); }
+.EffortControl-group > button + button { border-left-color: var(--border-default); }
+.Modal .DurationControl { width: 560px; max-width: 100%; gap: 8px; }
+.Modal .DurationControl > .Input { width: 180px; flex: 0 0 180px; }
+.Modal .DurationControl .BtnGroup { flex: 1 1 auto; min-height: 35px; border-color: var(--border-default); }
+.Modal .DurationControl .BtnGroup > button { flex: 1 1 0; min-width: 0; min-height: 35px; padding: 0 12px; font-size: 14px; }
+.Modal .DurationControl .BtnGroup > button.is-active { background: var(--surface-emphasis); color: var(--text-inverse); }
+.Modal .DurationControl .BtnGroup > button + button { border-left-color: var(--border-default); }
+.ModalFieldRow#resourceStartRow .ModalNumField > .Input { width: 180px; flex: 0 0 180px; }
+.ModalFieldRow#resourceStartRow .ModalNumField-unit { display: none; }
+#resourceModalOverlay .Modal-body { padding: 16px 24px; }
+#resourceModalOverlay .Modal-footer .Btn:not(.Btn--primary) {
+  border-color: var(--border-primary); color: var(--text-primary); background: var(--surface-default);
+}
 .Modal .DurationControl .BtnGroup > button { min-width: 56px; padding: 0 10px; }
 .Modal .DurationEquivalent { min-height: 0; }
 
@@ -1024,7 +1147,9 @@ a { color: var(--text-link-color); text-decoration: none; }
   .Page { padding: var(--padding-md); }
   .Stepper-description { display: none; }
   .Stepper--horizontal .Stepper-step { gap: var(--padding-xs); }
-  .Stepper-rail { gap: var(--padding-xs); }
+  .ReviewSummaryCard { align-items: flex-start; flex-direction: column; }
+  .ReviewSummary-metrics { width: 100%; }
+  .ReviewSummary-metric { flex: 1 1 0; min-width: 0; padding-inline: 8px; }
   .SegRow {
     grid-template-columns: minmax(110px, 1fr) 107px 107px 35px 35px;
     gap: var(--padding-xs); padding: 8px;
@@ -1063,7 +1188,7 @@ a { color: var(--text-link-color); text-decoration: none; }
       <li class="NavBar-li" data-tooltip="Schedule"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-regular fa-calendar"></i></a></li>
       <li class="NavBar-li" data-tooltip="Portfolios"><a class="NavBar-menuLink" href="#"><i class="NavBar-menuIcon fa-solid fa-folder-open"></i></a></li>
       <li class="NavBar-li is-active" data-tooltip="Demand templates">
-        <a class="NavBar-menuLink" href="#" onclick="showScreen('catalogue'); return false;" title="Demand templates">
+        <a class="NavBar-menuLink" href="#" onclick="requestWizardExit(); return false;" title="Demand templates">
           <i class="NavBar-menuIcon fa-solid fa-clipboard-list"></i>
         </a>
       </li>
@@ -1083,15 +1208,12 @@ a { color: var(--text-link-color); text-decoration: none; }
 
   <div class="Main">
     <header class="TopBar">
+      <button class="Btn-iconOnly TopBar-back hidden" id="topBarBack" type="button"
+        data-tooltip="Back" onclick="wizardHeaderBack()" aria-label="Back">
+        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      </button>
       <h1 class="TopBar-title" id="topTitle">Demand profile templates</h1>
       <div class="TopBar-spacer"></div>
-      <div class="TopBar-mode" id="topBarMode" aria-label="Template type">
-        <span class="TopBar-modeLabel">Template type</span>
-        <div class="BtnGroup" role="group" aria-label="Template type">
-          <button type="button" id="modePhases" class="is-active" onclick="setPhaseWorld(true)">With phases</button>
-          <button type="button" id="modeFlat" onclick="setPhaseWorld(false)">Without phases</button>
-        </div>
-      </div>
     </header>
 
     <!-- Catalogue -->
@@ -1112,7 +1234,6 @@ a { color: var(--text-link-color); text-decoration: none; }
             <th>Name</th>
             <th>Version</th>
             <th>Return type</th>
-            <th>Status</th>
             <th>Shape</th>
             <th style="width:90px"></th>
           </tr>
@@ -1134,9 +1255,10 @@ a { color: var(--text-link-color); text-decoration: none; }
             <h2 class="Wizard-stepTitle">Details</h2>
             <p class="Wizard-stepIntro">Set the template details. The timeline length is shaped by the resource requirements you add next.</p>
 
-            <div class="Field-row Wizard-metaFields">
+            <div class="DetailsFields">
+            <div class="Field-row">
               <div class="Field">
-                <label class="Field-label" for="wp-name">Name *</label>
+                <label class="Field-label" for="wp-name">Name <span class="RequiredMark">*</span></label>
                 <input class="Input" id="wp-name" type="text" placeholder="Corporate Return demand profile"
                   aria-describedby="nameError"
                   oninput="onNameInput(this)" />
@@ -1151,8 +1273,41 @@ a { color: var(--text-link-color); text-decoration: none; }
                   <option value="1065">1065</option>
                   <option value="Trust">Trust</option>
                 </select>
-                <span class="Field-hint" id="returnHint">Optional. Stored for search and reporting; it does not decide the phases.</span>
+                <span class="Field-hint" id="returnHint">Optional custom field used for matching and reporting.</span>
               </div>
+            </div>
+            <div class="Field-row Field-row--single">
+              <div class="Field">
+                <label class="Field-label">Template structure <span class="RequiredMark">*</span></label>
+                <div class="BtnGroup" id="templateStructureGroup" role="group" aria-label="Template structure">
+                  <button type="button" id="modePhases" class="is-active" onclick="setPhaseWorld(true)">With phases</button>
+                  <button type="button" id="modeFlat" onclick="setPhaseWorld(false)">Without phases</button>
+                </div>
+                <span class="Field-hint">Choose whether work is organised by phases or as a flat timeline.</span>
+              </div>
+              <div class="Field DetailsBusinessUnit">
+                <label class="Field-label" for="wp-business-unit">Business unit <span class="RequiredMark">*</span></label>
+                <div class="TreeInput BusinessUnitTree" id="businessUnitPicker">
+                  <div class="input-group">
+                    <input class="Input TreeInput-text" id="wp-business-unit" type="text"
+                      autocomplete="off" placeholder="Business Unit"
+                      aria-describedby="businessUnitError"
+                      onfocus="openBusinessUnitPicker()"
+                      oninput="filterBusinessUnitPicker(this.value)"
+                      onkeydown="businessUnitKeydown(event)"
+                      onblur="blurBusinessUnitPicker()" />
+                    <button class="TreeInput-append" type="button" title="Choose business unit"
+                      onmousedown="event.preventDefault()" onclick="toggleBusinessUnitPicker()">
+                      <i class="fa-solid fa-building" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                  <div class="TreeInput-treeView" id="businessUnitTreeView" role="tree"
+                    onmousedown="event.preventDefault()"></div>
+                </div>
+                <p class="InlineError hidden" id="businessUnitError">Choose a business unit.</p>
+                <span class="Field-hint">Controls where this template is available through configuration.</span>
+              </div>
+            </div>
             </div>
 
           </div>
@@ -1214,7 +1369,7 @@ a { color: var(--text-link-color); text-decoration: none; }
 
       <div class="Wizard-footer">
         <div class="Wizard-footerInner">
-          <button class="Btn" type="button" onclick="showScreen('catalogue')">Cancel</button>
+          <button class="Btn" type="button" onclick="requestWizardExit()">Cancel</button>
           <span class="Wizard-footerSummary" id="wizardFooterSummary"></span>
           <div class="Wizard-footerActions">
             <button class="Btn hidden" type="button" id="wizardBack" onclick="wizardNav(-1)">Back</button>
@@ -1227,6 +1382,25 @@ a { color: var(--text-link-color); text-decoration: none; }
 </div>
 
 <div id="shapeSegPopover" class="ShapeSegPopover" role="tooltip" aria-hidden="true"><div class="ShapeSegPopover-arrow"></div><div class="ShapeSegPopover-content"></div></div>
+<div class="ModalOverlay" id="exitConfirmOverlay" role="presentation" onclick="if(event.target===this)closeExitConfirm()">
+  <div class="Modal Modal--small" role="dialog" aria-modal="true" aria-labelledby="exitConfirmTitle">
+    <div class="Modal-header">
+      <h2 class="Modal-title" id="exitConfirmTitle">Exit template creation?</h2>
+      <button class="Btn-iconOnly" type="button" aria-label="Close" onclick="closeExitConfirm()">
+        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="Modal-body">
+      <p class="ExitConfirm-copy">Are you sure you want to exit? Leaving now will delete your unsaved progress.</p>
+    </div>
+    <div class="Modal-footer">
+      <div class="Modal-actions">
+        <button class="Btn" type="button" onclick="closeExitConfirm()">Keep editing</button>
+        <button class="Btn Btn--primary" type="button" onclick="confirmWizardExit()">Exit and discard</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="ModalOverlay" id="resourceModalOverlay" role="presentation" onclick="if(event.target===this)closeResourceModal()">
   <div class="Modal" role="dialog" aria-modal="true" aria-labelledby="resourceModalTitle">
     <div class="Modal-header">
@@ -1237,28 +1411,41 @@ a { color: var(--text-link-color); text-decoration: none; }
     </div>
     <div class="Modal-body">
       <div class="ModalFieldRow">
-        <label class="Field-label" for="resourceTypeSelect"><span id="resourceTypeLabel">Phase</span> <span class="RequiredMark">*</span></label>
+        <label class="Field-label" for="resourceTypeSelect"><span id="resourceTypeLabel">Phase</span></label>
         <div class="TypeSelectWrap">
           <span class="TypeSelectSwatch" id="resourceTypeSwatch" aria-hidden="true"></span>
           <select class="Select" id="resourceTypeSelect" onchange="syncResourceModalConfirm()"></select>
         </div>
+        <span class="Field-hint" id="resourceTypeHint">The phase colour is inherited by the timeline segment.</span>
       </div>
       <div class="ModalFieldRow">
-        <label class="Field-label" for="resourceGradeSelect">Grade <span class="RequiredMark">*</span></label>
+        <label class="Field-label" for="resourceGradeSelect">Grade</label>
         <select class="Select" id="resourceGradeSelect" onchange="syncResourceModalConfirm()"></select>
+        <span class="Field-hint">Choose the grade required for this work.</span>
+      </div>
+      <div class="ModalFieldRow ResourceRoleField hidden">
+        <label class="Field-label" for="resourceRoleSelect">Project role</label>
+        <select class="Select" id="resourceRoleSelect" onchange="syncResourceModalConfirm()">
+          <option value="">Not set</option>
+        </select>
+        <span class="Field-hint">Optional role used when the same resource works across different types of work.</span>
       </div>
       <div class="ModalFieldRow">
-        <label class="Field-label" for="resourceWeightInput">Weighting <span class="RequiredMark">*</span></label>
+        <label class="Field-label" for="resourceWeightInput">Effort</label>
         <div class="ModalStack">
-          <div class="ModalNumField">
-            <input class="Input" id="resourceWeightInput" type="number" min="0" max="100" step="1" value="100" oninput="syncResourceModalConfirm()">
-            <span class="ModalNumField-unit">%</span>
+          <div class="EffortControl">
+            <input class="Input" id="resourceWeightInput" type="number" min="0" max="100" step="1" value="100"
+              oninput="resourceModalState.weightTouched = true; syncResourceModalConfirm()">
+            <div class="BtnGroup EffortControl-group" role="group" aria-label="Effort unit">
+              <button type="button" class="is-active" aria-pressed="true">Percentage</button>
+              <button type="button" aria-pressed="false">Hours</button>
+            </div>
           </div>
-          <span class="Field-hint" id="resourceWeightHint">The requirements in this phase must total 100%.</span>
+          <span class="Field-hint" id="resourceWeightHint">Requirements in this phase must total 100%.</span>
         </div>
       </div>
       <div class="ModalFieldRow" id="resourceWeeksRow">
-        <label class="Field-label" for="resourceWeeksInput">Duration <span class="RequiredMark">*</span></label>
+        <label class="Field-label" for="resourceWeeksInput">Duration</label>
         <div class="ModalStack">
           <div class="DurationControl">
             <input class="Input" id="resourceWeeksInput" type="number" min="1" step="1" value="4" oninput="syncResourceModalConfirm()">
@@ -1273,7 +1460,7 @@ a { color: var(--text-link-color); text-decoration: none; }
         </div>
       </div>
       <div class="ModalFieldRow" id="resourceStartRow">
-        <label class="Field-label" for="resourceStartInput">Start week <span class="RequiredMark">*</span></label>
+        <label class="Field-label" for="resourceStartInput">Start week</label>
         <div class="ModalStack">
           <div class="ModalNumField">
             <input class="Input" id="resourceStartInput" type="number" min="1" step="1" value="1" oninput="syncResourceModalConfirm()">
@@ -1284,10 +1471,9 @@ a { color: var(--text-link-color); text-decoration: none; }
       </div>
     </div>
     <div class="Modal-footer">
-      <span><span class="RequiredMark">*</span> Mandatory fields</span>
       <div class="Modal-actions">
         <button class="Btn" type="button" onclick="closeResourceModal()">Cancel</button>
-        <button class="Btn Btn--primary" id="resourceModalConfirm" type="button" onclick="confirmResourceModal()" disabled>Confirm</button>
+        <button class="Btn Btn--primary" id="resourceModalConfirm" type="button" onclick="confirmResourceModal()" disabled>Add</button>
       </div>
     </div>
   </div>
@@ -1308,6 +1494,15 @@ const GRADES = [
   'Associate'
 ];
 const ROLES = ['Tax Analyst', 'Senior Tax Analyst', 'Tax Manager', 'Tax Partner'];
+const BUSINESS_UNIT_TREE = [
+  { name: 'Audit and Assurance', children: [{ name: 'Audit' }, { name: 'Assurance' }] },
+  { name: 'Canada', children: [{ name: 'Canada' }] },
+  { name: 'Chile', children: [{ name: 'Chile' }] },
+  { name: 'Consulting', children: [{ name: 'Consulting' }] },
+  { name: 'IT Consulting', children: [{ name: 'IT Consulting' }] },
+  { name: 'Tax & Legal', children: [{ name: 'Tax' }, { name: 'Legal' }] }
+];
+const businessUnitExpanded = new Set(['Root']);
 /* Phase traits and colours copied from the current Templating mock. */
 const PHASE_LIBRARY = {
   '.Depreciation': 'var(--phase-depreciation)',
@@ -1470,8 +1665,8 @@ function showScreen(name) {
   state.screen = name;
   document.querySelectorAll('.screen').forEach(el => el.classList.toggle('is-active', el.id === `screen-${name}`));
   document.getElementById('topTitle').textContent =
-    name === 'wizard' ? 'Create demand template' : 'Demand profile templates';
-  document.getElementById('topBarMode')?.classList.toggle('is-visible', name === 'wizard');
+    name === 'wizard' ? 'Create Demand Template' : 'Demand profile templates';
+  document.getElementById('topBarBack')?.classList.toggle('hidden', name !== 'wizard');
   if (name === 'catalogue') renderCatalogue();
 }
 
@@ -1481,6 +1676,62 @@ function toast(msg) {
   el.style.opacity = '1';
   clearTimeout(toast._t);
   toast._t = setTimeout(() => { el.style.opacity = '0'; }, 2600);
+}
+
+function wizardHeaderBack() {
+  if (state.screen !== 'wizard') return;
+  if (state.wizardStep > 1) wizardNav(-1);
+  else requestWizardExit();
+}
+
+function comparableDraft(d) {
+  const copy = JSON.parse(JSON.stringify(d || {}));
+  delete copy._editing;
+  delete copy._initialSnapshot;
+  delete copy.status;
+  delete copy.version;
+  delete copy.id;
+  delete copy.durationDays;
+  delete copy.durationUnit;
+  return JSON.stringify(copy);
+}
+
+function draftHasProgress(d = state.draft) {
+  if (!d) return false;
+  if (d._initialSnapshot) return comparableDraft(d) !== d._initialSnapshot;
+  return Boolean(
+    d.name ||
+    d.returnType ||
+    d.businessUnit ||
+    d.phaseWorld === false ||
+    requestItems(d).length ||
+    d.sequencing?.allowOverlap === false
+  );
+}
+
+function requestWizardExit() {
+  if (state.screen !== 'wizard') {
+    state.draft = null;
+    showScreen('catalogue');
+    return;
+  }
+  readWizardForm();
+  if (!draftHasProgress()) {
+    state.draft = null;
+    showScreen('catalogue');
+    return;
+  }
+  document.getElementById('exitConfirmOverlay')?.classList.add('is-open');
+}
+
+function closeExitConfirm() {
+  document.getElementById('exitConfirmOverlay')?.classList.remove('is-open');
+}
+
+function confirmWizardExit() {
+  closeExitConfirm();
+  state.draft = null;
+  showScreen('catalogue');
 }
 
 /* ---------- Catalogue ---------- */
@@ -1495,13 +1746,12 @@ function renderCatalogue() {
       <td class="cell-name">${esc(t.name)}</td>
       <td>v${t.version}</td>
       <td>${esc(t.returnType || '—')}</td>
-      <td>${statusPill(t.status)}</td>
       <td>${catalogueShapeLabel(t)}</td>
       <td class="RowActions" onclick="event.stopPropagation()">
         <button class="Btn Btn--sm" type="button" onclick="editProfile('${t.id}')">Edit</button>
       </td>
     </tr>
-  `).join('') || `<tr><td colspan="6" class="cell-muted">No demand profiles match.</td></tr>`;
+  `).join('') || `<tr><td colspan="5" class="cell-muted">No demand profiles match.</td></tr>`;
 }
 
 function catalogueShapeLabel(t) {
@@ -1531,6 +1781,7 @@ function editProfile(pid) {
   if (!Array.isArray(state.draft.phases)) state.draft.phases = [];
   if (!Array.isArray(state.draft.items)) state.draft.items = [];
   normaliseResourceRequests(state.draft);
+  state.draft._initialSnapshot = comparableDraft(state.draft);
   openWizard(false);
 }
 
@@ -1611,7 +1862,9 @@ function normaliseRequestGroup(type, d = state.draft) {
 }
 
 function normaliseResourceWeights(d = state.draft) {
-  const types = [...new Set(requestItems(d).map(request => requestTypeKey(request, d)).filter(Boolean))];
+  const types = [...new Set(requestItems(d)
+    .map(request => requestTypeKey(request, d))
+    .filter(type => type !== undefined && type !== null))];
   types.forEach(type => normaliseRequestGroup(type, d));
 }
 
@@ -1638,6 +1891,7 @@ function normaliseResourceRequests(d) {
     : (d.items || []).reduce((sum, item) => sum + (Number(item.durationWeeks) || 0), 0);
   d.durationDays = Math.max(1, Math.round(Number(d.durationDays) || legacyWeeks * 7 || 90));
   d.durationUnit = ['days', 'weeks', 'months'].includes(d.durationUnit) ? d.durationUnit : 'days';
+  if (d._editing && !d.businessUnit) d.businessUnit = 'Tax';
 
   if (Array.isArray(d.resourceRequests)) {
     d.resourceRequests = d.resourceRequests.map(request => ({
@@ -1654,7 +1908,9 @@ function normaliseResourceRequests(d) {
         ? request.segments.map(segment => ({
             id: segment.id || id('seg'),
             startWeek: Math.max(0, Math.round(Number(segment.startWeek) || 0)),
-            durationWeeks: Math.max(1, Math.round(Number(segment.durationWeeks) || 1))
+            durationWeeks: Math.max(1, Math.round(Number(segment.durationWeeks) || 1)),
+            phase: isPhaseWorld(d) ? (segment.phase || request.phase || '') : '',
+            bookingType: isPhaseWorld(d) ? '' : (segment.bookingType || request.bookingType || '')
           }))
         : []
     }));
@@ -1843,16 +2099,12 @@ function contentWeeks(d = state.draft) {
   requestItems(d).forEach(request => (request.segments || []).forEach(segment => {
     weeks = Math.max(weeks, (Number(segment.startWeek) || 0) + (Number(segment.durationWeeks) || 0));
   }));
-  if (isPhaseWorld(d)) {
-    const shapeWeeks = (d.phases || []).reduce((sum, item) => sum + (Number(item.durationWeeks) || 0), 0);
-    weeks = Math.max(weeks, shapeWeeks);
-  }
   return Math.max(1, weeks);
 }
 
 // The canvas keeps a little empty room to the right so new work can always be drawn or extended.
 const GANTT_CANVAS_SLACK = 2;
-const GANTT_MIN_CANVAS = 8;
+const GANTT_MIN_CANVAS = 12;
 function timelineWeeks(d = state.draft) {
   return Math.max(GANTT_MIN_CANVAS, contentWeeks(d) + GANTT_CANVAS_SLACK);
 }
@@ -1879,6 +2131,10 @@ function normaliseSequencing(d = state.draft) {
   requestItems(d).forEach(request => {
     const type = requestTypeKey(request, d);
     if (type && !d.sequencing.typeOrder.includes(type)) d.sequencing.typeOrder.push(type);
+    (request.segments || []).forEach(segment => {
+      const segmentType = segmentTypeName(request, segment, d);
+      if (segmentType && !d.sequencing.typeOrder.includes(segmentType)) d.sequencing.typeOrder.push(segmentType);
+    });
   });
 }
 
@@ -1889,7 +2145,9 @@ function ensureTypeSequence(type, d = state.draft) {
 }
 
 function requestTypeBounds(type, d = state.draft) {
-  const segments = requestsForType(type, d).flatMap(request => request.segments || []);
+  const segments = requestItems(d).flatMap(request =>
+    (request.segments || []).filter(segment => segmentTypeName(request, segment, d) === type)
+  );
   if (!segments.length) return null;
   return {
     start: Math.min(...segments.map(segment => Number(segment.startWeek) || 0)),
@@ -1901,7 +2159,9 @@ function requestTypeBounds(type, d = state.draft) {
 function sequencingIssue(d = state.draft) {
   if (!d) return null;
   normaliseSequencing(d);
-  const activeTypes = new Set(requestItems(d).map(request => requestTypeKey(request, d)).filter(Boolean));
+  const activeTypes = new Set(requestItems(d).flatMap(request =>
+    (request.segments || []).map(segment => segmentTypeName(request, segment, d))
+  ).filter(Boolean));
   const order = d.sequencing.typeOrder.filter(type => activeTypes.has(type));
   for (let index = 1; index < order.length; index += 1) {
     const previousType = order[index - 1];
@@ -1984,6 +2244,7 @@ function blankDraft() {
     version: 1,
     status: 'draft',
     returnType: '',
+    businessUnit: '',
     phaseWorld: true,
     durationDays: 90,
     durationUnit: 'days',
@@ -2036,6 +2297,7 @@ function syncWizardForm() {
   const d = state.draft;
   document.getElementById('wp-name').value = d.name;
   document.getElementById('wp-return').value = d.returnType || '';
+  document.getElementById('wp-business-unit').value = d.businessUnit || '';
   syncDurationControl();
 }
 
@@ -2043,6 +2305,7 @@ function readWizardForm() {
   const d = state.draft;
   d.name = document.getElementById('wp-name').value.trim();
   d.returnType = document.getElementById('wp-return').value;
+  d.businessUnit = document.getElementById('wp-business-unit').value;
 }
 
 function durationDisplayValue(days = state.draft.durationDays, unit = state.draft.durationUnit) {
@@ -2089,6 +2352,107 @@ function onDurationInput(value) {
 
 function onReturnTypeChange(value) {
   state.draft.returnType = value;
+}
+
+function businessUnitTreeMarkup(nodes, query = '', depth = 0) {
+  const q = query.trim().toLowerCase();
+  return nodes.flatMap(node => {
+    const matches = !q || node.name.toLowerCase().includes(q);
+    const childMarkup = node.children?.length
+      ? businessUnitTreeMarkup(node.children, query, depth + 1)
+      : '';
+    if (!matches && !childMarkup) return [];
+    const expanded = businessUnitExpanded.has(node.name) || Boolean(q);
+    const hasChildren = Boolean(node.children?.length);
+    return [`
+      <button class="TreeInput-node${depth === 0 ? ' TreeInput-node--root' : ' TreeInput-node--child'}"
+        type="button" role="treeitem" aria-expanded="${hasChildren ? expanded : 'false'}"
+        onclick="selectBusinessUnit('${esc(node.name)}')">
+        <span class="BusinessUnitTree-chevron${hasChildren ? '' : ' is-empty'}"
+          ${hasChildren ? `role="button" tabindex="0" onclick="event.stopPropagation(); toggleBusinessUnitNode(event, '${esc(node.name)}')"
+            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();toggleBusinessUnitNode(event, '${esc(node.name)}')}"` : ''}>
+          <i class="fa-solid fa-chevron-${expanded ? 'down' : 'right'}" aria-hidden="true"></i>
+        </span>
+        <span>${esc(node.name)}</span>
+      </button>
+      ${expanded && childMarkup ? `<div role="group">${childMarkup}</div>` : ''}
+    `];
+  }).join('');
+}
+
+function renderBusinessUnitTree(query = '') {
+  const view = document.getElementById('businessUnitTreeView');
+  if (!view) return;
+  view.innerHTML = `
+    <button class="TreeInput-node TreeInput-node--root" type="button" role="treeitem" aria-expanded="true"
+      onclick="selectBusinessUnit('Root')">
+      <span class="BusinessUnitTree-chevron"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+      <span>Root</span>
+    </button>
+    ${businessUnitTreeMarkup(BUSINESS_UNIT_TREE, query)}
+  `;
+}
+
+function openBusinessUnitPicker() {
+  const picker = document.getElementById('businessUnitPicker');
+  if (!picker) return;
+  closeAllTreePickers('businessUnit');
+  picker.classList.add('is-open');
+  renderBusinessUnitTree(document.getElementById('wp-business-unit')?.value || '');
+  document.getElementById('businessUnitTreeView')?.classList.add('is-visible');
+}
+
+function toggleBusinessUnitPicker() {
+  const picker = document.getElementById('businessUnitPicker');
+  if (!picker?.classList.contains('is-open')) openBusinessUnitPicker();
+  else closeBusinessUnitPicker();
+}
+
+function toggleBusinessUnitNode(event, name) {
+  event?.preventDefault();
+  if (businessUnitExpanded.has(name)) businessUnitExpanded.delete(name);
+  else businessUnitExpanded.add(name);
+  renderBusinessUnitTree(document.getElementById('wp-business-unit')?.value || '');
+  document.getElementById('businessUnitTreeView')?.classList.add('is-visible');
+}
+
+function selectBusinessUnit(value) {
+  if (value === 'Root') return;
+  const input = document.getElementById('wp-business-unit');
+  if (input) {
+    input.value = value;
+    input.setAttribute('aria-invalid', 'false');
+  }
+  state.draft.businessUnit = value;
+  document.getElementById('businessUnitError')?.classList.add('hidden');
+  closeBusinessUnitPicker();
+  renderStepper();
+}
+
+function filterBusinessUnitPicker(query) {
+  state.draft.businessUnit = '';
+  document.getElementById('wp-business-unit')?.setAttribute('aria-invalid', 'true');
+  openBusinessUnitPicker();
+  renderBusinessUnitTree(query);
+  document.getElementById('businessUnitTreeView')?.classList.add('is-visible');
+}
+
+function businessUnitKeydown(event) {
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    syncWizardForm();
+    closeBusinessUnitPicker();
+  }
+}
+
+function blurBusinessUnitPicker() {
+  setTimeout(closeBusinessUnitPicker, 120);
+}
+
+function closeBusinessUnitPicker() {
+  const picker = document.getElementById('businessUnitPicker');
+  picker?.classList.remove('is-open');
+  document.getElementById('businessUnitTreeView')?.classList.remove('is-visible');
 }
 
 function toggleAddMenu(event) {
@@ -2307,7 +2671,7 @@ function renderStepper() {
     const connectorStatus = horizontalConnectorStatus(steps, step.stepNumber);
     const reachable = canReachStep(step.stepNumber);
     const blockedBy = reachable ? '' : firstStepIssue(step.stepNumber);
-    const stepInteraction = reachable
+    const markerInteraction = reachable
       ? `role="button" tabindex="0" onclick="onStepperClick(${step.stepNumber})"
           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();onStepperClick(${step.stepNumber})}"`
       : `aria-disabled="true" title="${esc(blockedBy)}"`;
@@ -2320,14 +2684,14 @@ function renderStepper() {
     return `
       <li class="Stepper-step Stepper-step--${step.status}${step.isLast ? ' Stepper-step--last' : ''}${reachable ? '' : ' is-locked'}"
           data-test="Stepper-step-${step.stepNumber}"
-          ${stepInteraction}
           ${step.status === 'current' || step.status === 'error' ? 'aria-current="step"' : ''}>
-        <div class="Stepper-rail" data-test="Stepper-rail">
-          <div class="Stepper-marker Stepper-marker--${step.status}" data-test="Stepper-marker">
-            ${markerInner}
+        <div class="Stepper-indicator">
+          <div class="Stepper-marker Stepper-marker--${step.status}" data-test="Stepper-marker"
+            ${markerInteraction}>
+              ${markerInner}
           </div>
           ${!step.isLast
-            ? `<div class="Stepper-line Stepper-line--vertical Stepper-line--after Stepper-line--${connectorStatus}" aria-hidden="true"></div>`
+            ? `<div class="Stepper-line Stepper-line--vertical Stepper-line--${connectorStatus}" aria-hidden="true" data-test="Stepper-line"></div>`
             : ''}
         </div>
         <div class="Stepper-info">
@@ -2372,6 +2736,7 @@ function onNameInput(field) {
 function stepIssue(panelId) {
   if (panelId === 'details') {
     if (!(state.draft && state.draft.name)) return 'Enter a template name';
+    if (!(state.draft && state.draft.businessUnit)) return 'Choose a business unit';
     return null;
   }
   if (panelId === 'timeline') return timelineIssue();
@@ -2559,9 +2924,9 @@ function demandShapeMarkup(d = state.draft) {
 
   const weeks = Array.from({ length: total }, () => new Map());
   requests.forEach(request => {
-    const name = requestTypeName(request, d);
-    const color = requestColor(request, d);
     (request.segments || []).forEach(segment => {
+      const name = segmentTypeName(request, segment, d);
+      const color = segmentColor(request, segment, d);
       const start = Math.max(0, Math.round(Number(segment.startWeek) || 0));
       const end = Math.min(total, start + Math.max(0, Math.round(Number(segment.durationWeeks) || 0)));
       for (let week = start; week < end; week += 1) {
@@ -2617,10 +2982,12 @@ function demandShapeMarkup(d = state.draft) {
   const legendTypes = [];
   requests.forEach(request => {
     if (!(request.segments || []).length) return;
-    const name = requestTypeName(request, d);
-    if (!legendTypes.some(entry => entry.name === name)) {
-      legendTypes.push({ name, color: requestColor(request, d) });
-    }
+    (request.segments || []).forEach(segment => {
+      const name = segmentTypeName(request, segment, d);
+      if (!legendTypes.some(entry => entry.name === name)) {
+        legendTypes.push({ name, color: segmentColor(request, segment, d) });
+      }
+    });
   });
   const legend = legendTypes.map(entry =>
     `<span class="ShapeLegend-item"><span class="ShapeLegend-swatch" style="background:${entry.color}"></span>${esc(entry.name)}</span>`
@@ -3811,7 +4178,9 @@ function validateSharesUI() {
 }
 
 /* ---------- Resource request modal + mini-Gantt ---------- */
-const resourceModalState = { editingId: null, durationUnit: 'weeks' };
+const resourceModalState = {
+  editingId: null, durationUnit: 'weeks', startWeek: null, segmentId: null, weightTouched: false
+};
 // The Gantt is week-granular, so other units are conveniences that round to whole weeks.
 const DAYS_PER_WEEK = 7;
 const WEEKS_PER_MONTH = 4;
@@ -3855,6 +4224,22 @@ function requestTypeName(request, d = state.draft) {
   return isPhaseWorld(d) ? (request.phase || 'No phase') : (request.bookingType || 'No booking type');
 }
 
+function segmentTypeName(request, segment, d = state.draft) {
+  return isPhaseWorld(d)
+    ? (segment?.phase || requestTypeName(request, d))
+    : (segment?.bookingType || requestTypeName(request, d));
+}
+
+function segmentColor(request, segment, d = state.draft) {
+  const type = segmentTypeName(request, segment, d);
+  return isPhaseWorld(d) ? phaseColorByName(type) : bookingTypeColor(type);
+}
+
+function requestTypeSummary(request, d = state.draft) {
+  return [...new Set((request.segments || []).map(segment => segmentTypeName(request, segment, d)))].join(' + ')
+    || requestTypeName(request, d);
+}
+
 function phaseColorByName(name) {
   return phaseColor(name) || 'var(--surface-emphasis)';
 }
@@ -3865,37 +4250,71 @@ function requestColor(request, d = state.draft) {
     : bookingTypeColor(request.bookingType);
 }
 
+function requestDotStyle(request, d = state.draft) {
+  const colors = [...new Set((request.segments || []).map(segment => segmentColor(request, segment, d)))];
+  if (colors.length <= 1) return `background:${colors[0] || requestColor(request, d)}`;
+  const stops = colors.map((color, index) => {
+    const start = Math.round((index / colors.length) * 100);
+    const end = Math.round(((index + 1) / colors.length) * 100);
+    return `${color} ${start}%, ${color} ${end}%`;
+  }).join(', ');
+  return `background:linear-gradient(135deg, ${stops})`;
+}
+
 // Both modes now pick from a fixed library; nothing is defined at template level.
 function resourceTypeOptions() {
   const library = isPhaseWorld() ? PHASE_LIBRARY : BOOKING_TYPE_LIBRARY;
   return Object.entries(library).map(([name, color]) => ({ name, color }));
 }
 
-function openResourceModal(editingId = null) {
+function openResourceModal(editingId = null, startWeek = null, segmentId = null) {
   const typeOptions = resourceTypeOptions();
   resourceModalState.editingId = editingId;
+  resourceModalState.startWeek = Number.isFinite(Number(startWeek)) ? Math.max(1, Number(startWeek)) : null;
+  resourceModalState.segmentId = segmentId;
+  resourceModalState.weightTouched = false;
   const editing = editingId ? findRequest(editingId) : null;
+  const selectedSegment = editing && segmentId && segmentId !== 'new'
+    ? editing.segments?.find(segment => segment.id === segmentId)
+    : null;
   document.getElementById('resourceModalTitle').textContent =
     editing ? 'Edit Resource Requirement' : 'Add Resource Requirement';
   const typeLabel = isPhaseWorld() ? 'Phase' : 'Booking type';
+  document.getElementById('resourceTypeRequired')?.classList.toggle('hidden', !isPhaseWorld());
   document.getElementById('resourceTypeLabel').textContent = typeLabel;
+  document.getElementById('resourceTypeHint').textContent = isPhaseWorld()
+    ? 'The phase colour is inherited by the timeline segment.'
+    : 'The booking type colour is inherited by the timeline segment.';
   document.getElementById('resourceTypeSelect').innerHTML =
-    `<option value="">Choose ${typeLabel.toLowerCase()}</option>` +
+    `<option value="">${isPhaseWorld() ? `Choose ${typeLabel.toLowerCase()}` : 'No booking type (optional)'}</option>` +
     typeOptions.map(option => `<option value="${esc(option.name)}">${esc(option.name)}</option>`).join('');
   document.getElementById('resourceTypeSelect').value =
-    editing ? (isPhaseWorld() ? editing.phase : editing.bookingType) : '';
+    selectedSegment
+      ? segmentTypeName(editing, selectedSegment)
+      : editing ? (isPhaseWorld() ? editing.phase : editing.bookingType) : '';
   document.getElementById('resourceGradeSelect').innerHTML =
     '<option value="">Choose grade</option>' +
     GRADES.map(grade => `<option value="${esc(grade)}">${esc(grade)}</option>`).join('');
   document.getElementById('resourceGradeSelect').value = editing?.grade || '';
+  document.getElementById('resourceRoleSelect').innerHTML =
+    '<option value="">Not set</option>' +
+    ROLES.map(role => `<option value="${esc(role)}">${esc(role)}</option>`).join('');
+  document.getElementById('resourceRoleSelect').value = editing?.role || '';
 
   const weightInput = document.getElementById('resourceWeightInput');
   const weightHint = document.getElementById('resourceWeightHint');
-  weightInput.value = editing ? Math.round(Number(editing.weightPercent) || 0) : 100;
-  weightInput.disabled = !editing;
-  weightHint.textContent = editing
+  const initialWeightPeers = typeOptions.length && !editing
+    ? requestsForType(document.getElementById('resourceTypeSelect').value).length
+    : 0;
+  weightInput.value = editing
+    ? Math.round(Number(editing.weightPercent) || 0)
+    : initialWeightPeers ? Math.floor(100 / (initialWeightPeers + 1)) : 100;
+  weightInput.disabled = !!segmentId;
+  weightHint.textContent = segmentId
+    ? 'Weighting applies to the whole resource requirement, not an individual segment.'
+    : editing
     ? `Changing this redistributes the remainder across the other requirements in this ${typeLabel.toLowerCase()}.`
-    : `Automatically balanced with the other requirements in this ${typeLabel.toLowerCase()} when added.`;
+    : `Starts with an equal share. Adjusting it redistributes the remainder across this ${typeLabel.toLowerCase()}.`;
 
   const weeksInput = document.getElementById('resourceWeeksInput');
   const weeksHint = document.getElementById('resourceWeeksHint');
@@ -3903,23 +4322,31 @@ function openResourceModal(editingId = null) {
   const startHint = document.getElementById('resourceStartHint');
   const segments = editing?.segments || [];
   const placedWeeks = segments.reduce((sum, seg) => sum + (Number(seg.durationWeeks) || 0), 0);
-  const multiSegment = segments.length > 1;
+  const multiSegment = segments.length > 1 && !segmentId;
 
   resourceModalState.durationUnit = 'weeks';
   syncResourceDurationUnits();
-  weeksInput.value = editing ? (placedWeeks || 4) : 4;
+  weeksInput.value = selectedSegment?.durationWeeks || (editing && !segmentId ? (placedWeeks || 4) : 4);
   weeksInput.disabled = multiSegment;
   weeksHint.textContent = multiSegment
     ? 'Split across the timeline — reshape the blocks there.'
     : 'Adds a block you can reshape on the timeline.';
 
-  startInput.value = (Number(segments[0]?.startWeek) || 0) + 1;
+  startInput.value = selectedSegment
+    ? (Number(selectedSegment.startWeek) || 0) + 1
+    : editing
+    ? (Number(segments[0]?.startWeek) || 0) + 1
+    : (resourceModalState.startWeek || (requestItems().length ? contentWeeks() + 1 : 1));
   startInput.disabled = multiSegment;
   startHint.textContent = multiSegment
     ? 'First block starts here — move the blocks on the timeline to change it.'
-    : 'Week 1 is the start of the template.';
+    : resourceModalState.startWeek
+      ? `Week ${resourceModalState.startWeek} was selected from the timeline.`
+    : requestItems().length
+      ? `Starts after the existing work in week ${contentWeeks() + 1}.`
+      : 'Week 1 is the start of the template.';
 
-  document.getElementById('resourceModalConfirm').textContent = editing ? 'Save' : 'Confirm';
+  document.getElementById('resourceModalConfirm').textContent = editing ? 'Save' : 'Add';
   document.getElementById('resourceModalOverlay').classList.add('is-open');
   syncResourceModalConfirm();
   setTimeout(() => document.getElementById('resourceTypeSelect')?.focus(), 0);
@@ -3928,6 +4355,9 @@ function openResourceModal(editingId = null) {
 function closeResourceModal() {
   document.getElementById('resourceModalOverlay')?.classList.remove('is-open');
   resourceModalState.editingId = null;
+  resourceModalState.startWeek = null;
+  resourceModalState.segmentId = null;
+  resourceModalState.weightTouched = false;
 }
 
 function syncResourceModalConfirm() {
@@ -3942,8 +4372,8 @@ function syncResourceModalConfirm() {
   const startEl = document.getElementById('resourceStartInput');
   const weeksOk = weeksEl.disabled || Number(weeksEl.value) > 0;
   const startOk = startEl.disabled || Number(startEl.value) >= 1;
-  if (!resourceModalState.editingId && weightEl) {
-    const peers = type ? requestsForType(type).length : 0;
+  if (!resourceModalState.editingId && !resourceModalState.weightTouched && weightEl) {
+    const peers = requestsForType(type).length;
     weightEl.value = peers ? Math.floor(100 / (peers + 1)) : 100;
   }
   const weightOk = Number(weightEl?.value) >= 0 && Number(weightEl?.value) <= 100;
@@ -3958,22 +4388,43 @@ function syncResourceModalConfirm() {
     }
   }
 
-  document.getElementById('resourceModalConfirm').disabled = !(type && grade && weeksOk && startOk && weightOk);
+  const typeOk = isPhaseWorld() ? !!type : true;
+  document.getElementById('resourceModalConfirm').disabled = !(typeOk && grade && weeksOk && startOk && weightOk);
 }
 
 function confirmResourceModal() {
   const type = document.getElementById('resourceTypeSelect').value.trim();
   const grade = document.getElementById('resourceGradeSelect').value.trim();
+  const role = document.getElementById('resourceRoleSelect').value.trim();
   const weeksEl = document.getElementById('resourceWeeksInput');
   const weeks = resourceDurationWeeks();
   const startWeek = Math.max(0, Math.round(Number(document.getElementById('resourceStartInput').value) || 1) - 1);
   const weightPercent = Math.min(100, Math.max(0, Math.round(Number(document.getElementById('resourceWeightInput').value) || 0)));
-  if (!type || !grade) return;
+  if ((isPhaseWorld() && !type) || !grade) return;
   ensureTypeSequence(type);
   const existing = resourceModalState.editingId ? findRequest(resourceModalState.editingId) : null;
   if (existing) {
+    if (resourceModalState.segmentId) {
+      const segment = resourceModalState.segmentId === 'new'
+        ? { id: id('seg'), startWeek, durationWeeks: weeks }
+        : existing.segments?.find(item => item.id === resourceModalState.segmentId);
+      if (!segment) return;
+      segment.startWeek = startWeek;
+      segment.durationWeeks = weeks;
+      segment.phase = isPhaseWorld() ? type : '';
+      segment.bookingType = isPhaseWorld() ? '' : type;
+      if (resourceModalState.segmentId === 'new') existing.segments.push(segment);
+      existing.grade = grade;
+      existing.role = role;
+      closeResourceModal();
+      renderResourceGantt('slotEditor');
+      updateFooterSummary();
+      renderStepper();
+      return;
+    }
     const previousType = requestTypeKey(existing);
     existing.grade = grade;
+    existing.role = role;
     existing.weightPercent = weightPercent;
     if (isPhaseWorld()) {
       existing.phase = type;
@@ -3992,7 +4443,7 @@ function confirmResourceModal() {
     const request = {
       id: id('rr'),
       grade,
-      role: '',
+      role,
       count: 1,
       phase: isPhaseWorld() ? type : '',
       bookingType: isPhaseWorld() ? '' : type,
@@ -4000,7 +4451,8 @@ function confirmResourceModal() {
       segments: [{ id: id('seg'), startWeek, durationWeeks: weeks }]
     };
     state.draft.resourceRequests.push(request);
-    equaliseRequestGroup(type);
+    if (resourceModalState.weightTouched) rebalanceRequestWeight(request.id);
+    else equaliseRequestGroup(type);
   }
   closeResourceModal();
   renderResourceGantt('slotEditor');
@@ -4028,10 +4480,11 @@ function miniGanttMarkup(d = state.draft, readOnly = false) {
     <div class="MiniGantt-toolbar">
       <span class="MiniGantt-title">Resource requirements</span>
       <button class="Btn Btn--sm" type="button" onclick="openResourceModal()">
-        <i class="fa-solid fa-plus"></i> Add Resource Requirement
+        <i class="fa-solid fa-plus"></i> Add Resource
       </button>
-    </div>
-    <div class="MiniGantt-help">Double-click an empty week to add work. Drag bars to move them, drag either edge to resize, and right-click to remove a segment.</div>`;
+    </div>`;
+  const help = requests.length ? `
+    <div class="MiniGantt-help">Double-click an empty week to add work. Drag bars to move them, drag either edge to resize, or use the row actions to edit and remove a requirement.</div>` : '';
   const months = monthChunks.map((weeks, index) =>
     `<div class="MiniGantt-month" style="flex:0 0 calc(${weeks} * var(--week-w));width:calc(${weeks} * var(--week-w));">Month ${index + 1}</div>`
   ).join('');
@@ -4039,22 +4492,22 @@ function miniGanttMarkup(d = state.draft, readOnly = false) {
     `<div class="MiniGantt-week">W${index + 1}</div>`
   ).join('');
   const rows = requests.map(request => {
-    const color = requestColor(request, d);
     const requestWeeks = (request.segments || []).reduce((sum, segment) => sum + (Number(segment.durationWeeks) || 0), 0);
-    const metaBits = [requestTypeName(request, d), `${Math.round(Number(request.weightPercent) || 0)}%`];
+    const metaBits = [requestTypeSummary(request, d), `${Math.round(Number(request.weightPercent) || 0)}%`];
+    if (request.role) metaBits.unshift(request.role);
     if (requestWeeks) metaBits.push(`${requestWeeks}w`);
     const bars = (request.segments || []).map(segment => `
-      <div class="MiniGantt-bar" style="left:calc(${segment.startWeek} * var(--week-w));width:calc(${segment.durationWeeks} * var(--week-w));background:${color};"
-        title="${segment.durationWeeks} week${segment.durationWeeks === 1 ? '' : 's'}${readOnly ? '' : ' · Right-click to remove'}"
-        ${readOnly ? '' : `onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','move')" oncontextmenu="deleteGanttSegment(event,'${request.id}','${segment.id}')"`}>
-        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--left" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-left')"></span>`}
+      <div class="MiniGantt-bar" style="left:calc(${segment.startWeek} * var(--week-w));width:calc(${segment.durationWeeks} * var(--week-w));background:${segmentColor(request, segment, d)};"
+        title="${segment.durationWeeks} week${segment.durationWeeks === 1 ? '' : 's'}"
+        ${readOnly ? '' : `onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','move')" ondblclick="event.stopPropagation(); openResourceModal('${request.id}', null, '${segment.id}')"`}>
+        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--left" style="color:${segmentColor(request, segment, d)};" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-left')">⋮</span>`}
         <span>${segment.durationWeeks}w</span>
-        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--right" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-right')"></span>`}
+        ${readOnly ? '' : `<span class="MiniGantt-resize MiniGantt-resize--right" style="color:${segmentColor(request, segment, d)};" onmousedown="startGanttDrag(event,'${request.id}','${segment.id}','resize-right')">⋮</span>`}
       </div>`).join('');
     return `
       <div class="MiniGantt-row">
         <div class="MiniGantt-label">
-          <span class="SegRow-dot" style="background:${color}" aria-hidden="true"></span>
+          <span class="SegRow-dot" style="${requestDotStyle(request, d)}" aria-hidden="true"></span>
           <div class="MiniGantt-labelCopy">
             <div class="MiniGantt-labelTitle">${esc(request.grade || 'Resource requirement')}</div>
             <div class="MiniGantt-labelMeta">${esc(metaBits.join(' · '))}</div>
@@ -4068,25 +4521,42 @@ function miniGanttMarkup(d = state.draft, readOnly = false) {
           ${readOnly ? '' : `ondblclick="addGanttSegment(event,'${request.id}')"`}>${bars}</div>
       </div>`;
   }).join('');
+  const addRow = readOnly || !requests.length ? '' : `
+    <div class="MiniGantt-addRow">
+      <div class="MiniGantt-label--add"><i class="fa-solid fa-plus" aria-hidden="true"></i><span>Add Resource</span></div>
+      <div class="MiniGantt-addTrack" style="--weeks:${totalWeeks};">
+        ${Array.from({ length: totalWeeks }, (_, index) =>
+          `<button class="MiniGantt-addWeek" type="button" aria-label="Add resource in week ${index + 1}" title="Add resource in week ${index + 1}" onclick="openResourceModal(null, ${index + 1})"></button>`
+        ).join('')}
+      </div>
+    </div>`;
   const empty = requests.length ? '' : `
     <div class="MiniGantt-empty">
-      <div class="Strong" style="margin-bottom:4px;">No resource requirements yet</div>
-      <div>Add a resource requirement, then double-click its timeline row to shape the work.</div>
+      <div class="MiniGantt-emptyIcon" aria-hidden="true"><i class="fa-solid fa-calendar-check"></i></div>
+      <div class="MiniGantt-emptyTitle">No resource requirements yet</div>
+      <div class="MiniGantt-emptyCopy">${readOnly
+        ? 'Add resource requirements to build the shape.'
+        : 'Add a resource requirement to start shaping demand on the timeline.'}</div>
+      ${readOnly ? '' : `<button class="Btn Btn--primary" type="button" onclick="openResourceModal()">Add resource requirement</button>`}
     </div>`;
-  return `
-    <div class="MiniGantt${readOnly ? ' MiniGantt-readonly' : ''}">
-      ${toolbar}
+  const timeline = requests.length ? `
       <div class="MiniGantt-scroll">
         <div class="MiniGantt-canvas" data-weeks="${totalWeeks}" style="--weeks:${totalWeeks};">
           <div class="MiniGantt-months">
             <div class="MiniGantt-corner">Resource</div>${months}
           </div>
           <div class="MiniGantt-weeks">
-            <div class="MiniGantt-corner">Timeline</div>${weekHeaders}
+            <div class="MiniGantt-corner" aria-label="Weeks"></div>${weekHeaders}
           </div>
           ${rows}
+          ${addRow}
         </div>
-      </div>
+      </div>` : '';
+  return `
+    <div class="MiniGantt${readOnly ? ' MiniGantt-readonly' : ''}">
+      ${toolbar}
+      ${help}
+      ${timeline}
       ${empty}
     </div>`;
 }
@@ -4105,7 +4575,7 @@ function sizeMiniGantt(mount) {
   const available = scroll.clientWidth;
   if (!available) return;
   const weeks = Math.max(1, Number(canvas.dataset.weeks) || 1);
-  const labelWidth = available < 420 ? 110 : available < 640 ? 160 : 230;
+  const labelWidth = available < 420 ? 110 : available < 640 ? 160 : 192;
   // Floor to hundredths so accumulated sub-pixels never overflow into a scrollbar.
   const fitted = Math.floor(((available - labelWidth) / weeks) * 100) / 100;
   const weekWidth = Math.min(MINI_GANTT_MAX_WEEK_W, Math.max(MINI_GANTT_MIN_WEEK_W, fitted));
@@ -4144,16 +4614,7 @@ function addGanttSegment(event, requestId) {
     Math.floor((event.clientX - rect.left) / (rect.width / totalWeeks))));
   if ((request.segments || []).some(segment =>
     clickedWeek >= segment.startWeek && clickedWeek < segment.startWeek + segment.durationWeeks)) return;
-  let durationWeeks = 0;
-  for (let week = clickedWeek; week < totalWeeks && durationWeeks < 4; week += 1) {
-    if (request.segments.some(segment =>
-      week >= segment.startWeek && week < segment.startWeek + segment.durationWeeks)) break;
-    durationWeeks += 1;
-  }
-  if (!durationWeeks) return;
-  request.segments.push({ id: id('seg'), startWeek: clickedWeek, durationWeeks });
-  renderResourceGantt('slotEditor');
-  renderStepper();
+  openResourceModal(requestId, clickedWeek + 1, 'new');
 }
 
 function deleteGanttSegment(event, requestId, segmentId) {
@@ -4308,7 +4769,7 @@ function renderReviewLegacy() {
     <div class="ReviewMeta">
       <div class="ReviewMeta-copy">
         <h3 class="ReviewMeta-title">${esc(d.name || '(unnamed)')}</h3>
-        <div class="ReviewMeta-detail">${isPhaseWorld(d) ? 'With phases' : 'Without phases'}${d.returnType ? ` · ${esc(d.returnType)}` : ''} · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}</div>
+        <div class="ReviewMeta-detail">${isPhaseWorld(d) ? 'With phases' : 'Without phases'}${d.businessUnit ? ` · ${esc(d.businessUnit)}` : ''}${d.returnType ? ` · ${esc(d.returnType)}` : ''} · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}</div>
       </div>
     </div>
 
@@ -4340,6 +4801,45 @@ function formatDuration(days) {
   return `${days} day${days === 1 ? '' : 's'}`;
 }
 
+function reviewDemandTablesMarkup(d = state.draft) {
+  const requests = requestItems(d);
+  if (!requests.length) {
+    return '<div class="ReviewDemandGroup"><div class="Muted">No resource requirements added yet.</div></div>';
+  }
+  const groups = new Map();
+  requests.forEach(request => {
+    const type = requestTypeKey(request, d) || (isPhaseWorld(d) ? 'No phase' : 'No booking type');
+    if (!groups.has(type)) groups.set(type, []);
+    groups.get(type).push(request);
+  });
+  return [...groups.entries()].map(([type, group]) => `
+    <div class="ReviewDemandGroup">
+      <div class="ReviewDemandGroup-title">
+        <span class="SegRow-dot" style="${requestDotStyle(group[0], d)}" aria-hidden="true"></span>
+        <span>${esc(type)}</span>
+      </div>
+      <table class="ReviewDemandTable">
+        <thead>
+          <tr><th>Resource</th><th>Effort</th><th>Weeks</th><th>Days</th><th>Hours</th></tr>
+        </thead>
+        <tbody>
+          ${group.map(request => {
+            const weeks = (request.segments || []).reduce((sum, segment) =>
+              sum + (Number(segment.durationWeeks) || 0), 0);
+            return `<tr>
+              <td class="ReviewDemandResource">${esc(request.grade || 'Any grade')}${request.role ? ` / ${esc(request.role)}` : ''}</td>
+              <td>${Math.round(Number(request.weightPercent) || 0)}%</td>
+              <td>${weeks}</td>
+              <td>${weeks * 7}</td>
+              <td>—</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `).join('');
+}
+
 function renderReview() {
   readWizardForm();
   const d = state.draft;
@@ -4349,28 +4849,47 @@ function renderReview() {
   const ready = !stepIssue('details') && !issue;
   const requests = requestItems(d);
   const segmentCount = requests.reduce((sum, request) => sum + request.segments.length, 0);
+  const totalWeeks = contentWeeks(d);
+  const sequencingLabel = d.sequencing?.allowOverlap !== false ? 'Overlap allowed' : 'Sequential work';
 
   document.getElementById('reviewSummary').innerHTML = `
-    <div class="ReviewMeta">
-      <div class="ReviewMeta-copy">
-        <h3 class="ReviewMeta-title">${esc(d.name || '(unnamed)')}</h3>
-        <div class="ReviewMeta-detail">
-          ${isPhaseWorld(d) ? 'With phases' : 'Without phases'}
-          ${d.returnType ? ` · ${esc(d.returnType)}` : ''}
-          · ${formatDuration(d.durationDays)}
-          · ${d.sequencing?.allowOverlap !== false ? 'Work may overlap' : 'Work runs sequentially'}
-          · ${d._editing ? `New version v${d.version + 1}` : 'Version 1'}
+    <div class="ReviewSummaryCard">
+      <div class="ReviewSummary-copy">
+        <h3 class="ReviewSummary-title">${esc(d.name || '(unnamed)')}</h3>
+        <div class="ReviewSummary-detail">
+          ${totalWeeks} weeks · ${d.sequencing?.allowOverlap !== false ? 'Work segments may overlap' : 'Work runs sequentially'}
+        </div>
+      </div>
+      <div class="ReviewSummary-metrics">
+        <div class="ReviewSummary-metric">
+          <span class="ReviewSummary-metricLabel">Total Requirements</span>
+          <strong class="ReviewSummary-metricValue">${requests.length} ${requests.length === 1 ? 'Role' : 'Roles'}</strong>
+        </div>
+        <div class="ReviewSummary-metric">
+          <span class="ReviewSummary-metricLabel">Total Weeks</span>
+          <strong class="ReviewSummary-metricValue">${totalWeeks} Weeks</strong>
+        </div>
+        <div class="ReviewSummary-metric">
+          <span class="ReviewSummary-metricLabel">Sequencing</span>
+          <strong class="ReviewSummary-metricValue">${esc(sequencingLabel)}</strong>
         </div>
       </div>
     </div>
 
-    <section class="ReviewSection" aria-labelledby="reviewDemandTitle">
+    <section class="ReviewSection" aria-labelledby="reviewShapeTitle">
       <div class="ReviewSection-head">
-        <div class="ReviewSection-title" id="reviewDemandTitle">Resource demand</div>
+        <div class="ReviewSection-title" id="reviewShapeTitle">Demand shape</div>
         <button class="Btn Btn--sm" type="button" onclick="onStepperClick(${timelineStep})">Edit timeline</button>
       </div>
-      <div class="ShapeTimeline" id="reviewShapeVisual" style="margin-bottom:var(--padding-md);"></div>
-      <div id="reviewGantt"></div>
+      <div class="ShapeTimeline" id="reviewShapeVisual"></div>
+    </section>
+
+    <section class="ReviewSection" aria-labelledby="reviewDemandTitle">
+      <div class="ReviewSection-head">
+        <div class="ReviewSection-title" id="reviewDemandTitle">Resource requirements</div>
+        <button class="Btn Btn--sm" type="button" onclick="onStepperClick(${timelineStep})">Edit timeline</button>
+      </div>
+      ${reviewDemandTablesMarkup(d)}
     </section>
 
     <div class="Banner ${ready ? 'Banner--success' : 'Banner--danger'}" style="margin-bottom:0;">
@@ -4379,7 +4898,7 @@ function renderReview() {
         ? `Ready to publish · ${requests.length} resource requirement${requests.length === 1 ? '' : 's'} · ${segmentCount} work segment${segmentCount === 1 ? '' : 's'} · ${formatDuration(d.durationDays)}`
         : esc(issue || stepIssue('details') || 'Fix the template before publishing')}</div>
     </div>`;
-  renderResourceGantt('reviewGantt', true, d);
+  renderDemandShape('reviewShapeVisual', d);
 }
 
 function wizardNav(dir) {
@@ -4390,9 +4909,10 @@ function wizardNav(dir) {
     if (panel === 'details') {
       const detailsIssue = stepIssue('details');
       if (detailsIssue) {
-        const field = document.getElementById('wp-name');
+        const missingBusinessUnit = !state.draft.businessUnit;
+        const field = document.getElementById(missingBusinessUnit ? 'wp-business-unit' : 'wp-name');
         field.setAttribute('aria-invalid', 'true');
-        document.getElementById('nameError').classList.remove('hidden');
+        document.getElementById(missingBusinessUnit ? 'businessUnitError' : 'nameError').classList.remove('hidden');
         field.focus();
         return;
       }
@@ -4420,10 +4940,10 @@ function timelineIssue() {
   if (isPhaseWorld() && requests.some(request => !PHASE_LIBRARY[request.phase])) {
     return 'Choose a valid phase for every resource requirement';
   }
-  if (!isPhaseWorld() && requests.some(request => !BOOKING_TYPE_LIBRARY[request.bookingType])) {
+  if (!isPhaseWorld() && requests.some(request => request.bookingType && !BOOKING_TYPE_LIBRARY[request.bookingType])) {
     return 'Choose a booking type for every resource requirement';
   }
-  const types = [...new Set(requests.map(request => requestTypeKey(request)).filter(Boolean))];
+  const types = [...new Set(requests.map(request => requestTypeKey(request)))];
   for (const type of types) {
     const group = requestsForType(type);
     const validWeights = group.every(request =>
@@ -4475,6 +4995,7 @@ function publishDraft() {
       existing.version += 1;
       existing.name = d.name;
       existing.returnType = d.returnType;
+      existing.businessUnit = d.businessUnit;
       existing.phaseWorld = d.phaseWorld !== false;
       existing.durationDays = d.durationDays;
       existing.durationUnit = d.durationUnit;
@@ -4488,6 +5009,7 @@ function publishDraft() {
   } else {
     const t = JSON.parse(JSON.stringify(d));
     delete t._editing;
+    delete t._initialSnapshot;
     t.status = 'published';
     t.version = 1;
     state.catalogue.unshift(t);
@@ -4505,6 +5027,10 @@ document.addEventListener('click', (event) => {
   if (!event.target.closest('#addTimelineMenu')) closeAddMenu();
 });
 document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && document.getElementById('exitConfirmOverlay')?.classList.contains('is-open')) {
+    closeExitConfirm();
+    return;
+  }
   if (event.key === 'Escape' && document.getElementById('resourceModalOverlay')?.classList.contains('is-open')) {
     closeResourceModal();
   }

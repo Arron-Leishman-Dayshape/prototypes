@@ -28,7 +28,7 @@
   --surface-success-subtle: #e1faeb;
   --surface-danger: #a3003c;
   --surface-danger-subtle: #feecf2;
-  --surface-danger-subtle-accent: #fdd9e6; /* magenta-200 — On Hold drop fill */
+  --surface-danger-subtle-accent: #fdd9e6; /* magenta-200 — On Hold drop hover fill / default stroke */
   --surface-warning: #fff0e0;
   --surface-warning-accent: #ffd9ad;
   --surface-warning-subtle: #fff0e0;
@@ -67,7 +67,7 @@
   --border-warning-subtle: #ffd9ad;
   --border-warning: #fba645;
   --border-danger: #a3003c;
-  --border-danger-subtle: #f787b0; /* magenta-400 — On Hold drop stroke */
+  --border-danger-subtle: #f787b0; /* magenta-400 — capacity / general danger stroke (drop zones use magenta-200) */
   --border-success: #078138;
   --border-success-subtle: #c9efd8;
   --border-disabled: #f1f1f4;
@@ -96,8 +96,8 @@
   --border-radius-lg: 8px;
   --border-radius-circle: 100px;
   --kanban-drop-secondary-height: 180px;
-  --kanban-drop-gap: 10px;
-  --kanban-drop-pad: 10px;
+  --kanban-drop-gap: 8px;
+  --kanban-drop-pad: 8px;
 }
 
 * { box-sizing: border-box; }
@@ -217,6 +217,38 @@ body {
 }
 .Toolbar-title {
   margin: 0; font-size: 20px; font-weight: 700; color: var(--text-default); line-height: 35px;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.WeekScopeChip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--border-radius-default);
+  border: var(--border-xs) solid var(--surface-primary-accent);
+  background: var(--surface-primary-subtle);
+  color: var(--text-primary);
+  font-size: var(--font-size-extra-small);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  white-space: nowrap;
+}
+.WeekScopeChip[hidden] { display: none !important; }
+.CalPicker .Btn--range.is-this-week {
+  height: 35px;
+  padding: 0 12px;
+  border: var(--border-xs) solid var(--surface-primary-accent);
+  border-radius: var(--border-radius-default);
+  background: var(--surface-primary-subtle);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.CalPicker .Btn--range.is-this-week:hover,
+.CalPicker .Btn--range.is-this-week:focus {
+  background: var(--surface-primary-accent);
+  color: var(--text-primary);
+  border-color: var(--surface-primary-accent);
+  box-shadow: none;
 }
 .Toolbar-right { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
 .CalPicker { display: inline-flex; align-items: center; gap: 8px; }
@@ -247,21 +279,52 @@ body {
 .CalPicker .Btn--range:focus {
   color: var(--text-accent); background: transparent; border-color: transparent; box-shadow: none;
 }
+/* Capacity indicator — Figma High Volume 4187:189189 / 4191:248282 */
 .CapacityInd {
   position: relative;
-  display: inline-flex; align-items: center; gap: 15px;
-  background: #fff; border: 1px solid var(--border-subtle); border-radius: 8px;
-  padding: 12px; font-size: 12px; font-weight: 700; color: var(--text-default);
-  cursor: pointer; font-family: var(--font-family);
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 15px;
+  height: 35px;
+  padding: 4px 12px;
+  background: var(--surface-default);
+  border: var(--border-xs) solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+  font-family: var(--font-family);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-bold);
+  line-height: normal;
+  color: var(--text-default);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.CapacityInd-label,
+.CapacityInd-value {
+  flex-shrink: 0;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-default);
+  line-height: normal;
+}
+.CapacityInd-value {
+  font-variant-numeric: tabular-nums;
+  min-width: 4.5ch;
+  text-align: right;
 }
 .CapacityInd:hover,
 .CapacityInd[aria-expanded="true"] {
   border-color: var(--border-default);
-  background: #fafafa;
+  background: var(--surface-subtle-light);
 }
 .CapacityInd-bar {
-  width: 144px; height: 6px; border-radius: 3px; background: var(--surface-subtle-light);
-  overflow: hidden; display: flex;
+  width: 144px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-subtle-light);
+  overflow: hidden;
+  display: flex;
+  flex-shrink: 0;
 }
 .CapacityInd-fill,
 .CapacityInd-warn {
@@ -275,6 +338,10 @@ body {
 .CapacityInd.is-over {
   color: var(--text-danger);
   border-color: var(--border-danger-subtle);
+}
+.CapacityInd.is-over .CapacityInd-label,
+.CapacityInd.is-over .CapacityInd-value {
+  color: var(--text-danger);
 }
 .CapacityInd.is-over:hover,
 .CapacityInd.is-over[aria-expanded="true"] {
@@ -1258,16 +1325,79 @@ button.CreateBooking-unit:hover,
 
 .column-body {
   flex: 1 0 0; overflow-y: auto; overflow-x: hidden;
-  padding: var(--kanban-drop-pad); display: flex; flex-direction: column;
+  /* No top padding — sticky section seps sit flush so cards can't peek above */
+  padding: 0 var(--kanban-drop-pad) var(--kanban-drop-pad);
+  display: flex; flex-direction: column;
   gap: var(--kanban-drop-gap); align-items: stretch;
   position: relative; transition: background-color .15s ease, outline-color .15s ease;
   outline: var(--border-sm) solid transparent; outline-offset: calc(var(--border-sm) * -1);
   min-height: 0; min-width: 0; width: 100%;
   background: var(--surface-subtle-light);
+  scrollbar-width: thin;
+}
+.column-body > :first-child {
+  margin-top: var(--kanban-drop-pad);
+}
+.column-body > .section-sep:first-child {
+  /* Top spacing is built into the sticky sep itself */
+  margin-top: 0;
+  padding-top: var(--kanban-drop-pad);
+}
+.column-body::-webkit-scrollbar { width: 8px; }
+.column-body::-webkit-scrollbar-track { background: transparent; }
+.column-body::-webkit-scrollbar-thumb {
+  background: rgba(106, 112, 143, 0.35);
+  border-radius: 4px;
 }
 .column-empty {
-  padding: var(--padding-lg) var(--padding-sm); text-align: center;
-  color: var(--text-subtle); font-size: var(--font-size-medium);
+  flex: 1 1 auto;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--padding-sm);
+  padding: var(--padding-lg) var(--padding-sm);
+  text-align: center;
+  color: var(--text-subtle);
+  box-sizing: border-box;
+}
+.column-empty-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--border-radius-circle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--icon-subtle);
+  background: var(--surface-default);
+  border: var(--border-xs) solid var(--border-subtle);
+}
+.column-empty--hold .column-empty-icon {
+  color: var(--icon-danger);
+  background: var(--surface-danger-subtle);
+  border-color: var(--surface-danger-subtle-accent);
+}
+.column-empty--done .column-empty-icon {
+  color: var(--icon-success);
+  background: var(--surface-success-subtle);
+  border-color: var(--border-success-subtle);
+}
+.column-empty-title {
+  margin: 0;
+  font-size: var(--font-size-medium);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-accent);
+  line-height: normal;
+}
+.column-empty-sub {
+  margin: 0;
+  max-width: 220px;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-subtle);
+  line-height: 1.35;
 }
 /* Kanban Drop states — Figma On Hold / Done columns (same shell; tokenised via dayshape-bootstrap) */
 .column-drop-zones {
@@ -1285,6 +1415,11 @@ button.CreateBooking-unit:hover,
 .board.is-dragging .column-body.is-drop-target > .section-sep,
 .board.is-dragging .column-body.is-drop-target > .PrepFilters {
   display: none !important;
+}
+/* Drop zones fill the column — ignore stable scrollbar gutter / scroll chrome */
+.board.is-dragging .column-body.is-drop-target {
+  overflow: hidden;
+  scrollbar-gutter: auto;
 }
 .board.is-dragging .column-body.is-drop-target .column-drop-zones { display: flex; }
 
@@ -1307,7 +1442,7 @@ button.CreateBooking-unit:hover,
   pointer-events: auto;
   cursor: copy;
   box-sizing: border-box;
-  transition: transform .15s ease;
+  transition: background-color .15s ease, transform .15s ease;
 }
 .column-drop-zone::after {
   content: '';
@@ -1316,6 +1451,7 @@ button.CreateBooking-unit:hover,
   border: var(--border-sm) solid var(--border-disabled);
   border-radius: inherit;
   pointer-events: none;
+  transition: border-color .15s ease;
 }
 .column-drop-zone.is-fixed {
   flex: 0 0 auto;
@@ -1324,7 +1460,7 @@ button.CreateBooking-unit:hover,
 }
 .column-drop-zone.is-disabled { cursor: not-allowed; pointer-events: none; opacity: 1; }
 
-/* Primary success (Done / forward to In Progress) */
+/* Primary success (Done / forward) — Figma Kanban Drop state Type=Done */
 .column-drop-zone--forward,
 .column-drop-zone--done {
   background: var(--surface-success-subtle);
@@ -1333,16 +1469,36 @@ button.CreateBooking-unit:hover,
 .column-drop-zone--done::after {
   border-color: var(--border-success-subtle);
 }
+.column-drop-zone--forward:hover:not(.is-disabled),
+.column-drop-zone--forward.is-drag-over,
+.column-drop-zone--done:hover:not(.is-disabled),
+.column-drop-zone--done.is-drag-over {
+  background: var(--surface-success-accent);
+}
+.column-drop-zone--forward:hover:not(.is-disabled)::after,
+.column-drop-zone--forward.is-drag-over::after,
+.column-drop-zone--done:hover:not(.is-disabled)::after,
+.column-drop-zone--done.is-drag-over::after {
+  border-color: var(--surface-success-accent);
+}
 
-/* Primary danger (On Hold) */
+/* Primary danger (On Hold) — Figma Type=Hold Default / Hover (3064:259272 / 3064:259274) */
 .column-drop-zone--hold {
-  background: var(--surface-danger-subtle-accent);
+  background: var(--surface-danger-subtle);
 }
 .column-drop-zone--hold::after {
-  border-color: var(--border-danger-subtle);
+  border-color: var(--surface-danger-subtle-accent);
+}
+.column-drop-zone--hold:hover:not(.is-disabled),
+.column-drop-zone--hold.is-drag-over {
+  background: var(--surface-danger-subtle-accent);
+}
+.column-drop-zone--hold:hover:not(.is-disabled)::after,
+.column-drop-zone--hold.is-drag-over::after {
+  border-color: var(--surface-danger-subtle-accent);
 }
 
-/* Secondary / invalid (Revert, Push out, can't drop) */
+/* Secondary / invalid (Revert, Push out, can't drop) — Figma Type=Push Out / Revert */
 .column-drop-zone--neutral,
 .column-drop-zone--skip,
 .column-drop-zone--invalid {
@@ -1352,6 +1508,18 @@ button.CreateBooking-unit:hover,
 .column-drop-zone--skip::after,
 .column-drop-zone--invalid::after {
   border-color: var(--border-disabled);
+}
+.column-drop-zone--neutral:hover:not(.is-disabled),
+.column-drop-zone--neutral.is-drag-over,
+.column-drop-zone--skip:hover:not(.is-disabled),
+.column-drop-zone--skip.is-drag-over {
+  background: var(--surface-subtle-dark);
+}
+.column-drop-zone--neutral:hover:not(.is-disabled)::after,
+.column-drop-zone--neutral.is-drag-over::after,
+.column-drop-zone--skip:hover:not(.is-disabled)::after,
+.column-drop-zone--skip.is-drag-over::after {
+  border-color: var(--surface-subtle-dark);
 }
 
 .column-drop-zone-icon {
@@ -1420,10 +1588,77 @@ button.CreateBooking-unit:hover,
   transition: box-shadow .15s ease, transform .15s ease, opacity .15s ease;
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.04));
 }
-.card:active { cursor: grabbing; }
+.card:active,
+.card.is-grabbing { cursor: grabbing; }
 .card:hover { transform: translateY(-1px); filter: drop-shadow(0 4px 10px rgba(0,0,0,.08)); }
-.card:focus-visible { outline: 2px solid #4f3fa0; outline-offset: 2px; }
-.card.is-dragging { opacity: .45; transform: scale(.98); }
+.card:focus-visible {
+  outline: 0;
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 0 0 0.2rem rgba(79, 63, 160, 0.35);
+  filter: none;
+}
+.card:focus-visible .card-body,
+.card:focus-visible .card-footer {
+  border-color: var(--border-primary-focus);
+}
+.card.is-dragging {
+  opacity: 0.32;
+  transform: scale(0.985);
+  filter: grayscale(0.2);
+  cursor: grabbing;
+}
+.card.is-dragging:hover { transform: scale(0.985); filter: grayscale(0.2); cursor: grabbing; }
+
+/* Hide OS cursor during drag — we paint our own grab hand (HTML5 ignores CSS cursor) */
+body.is-card-dragging,
+body.is-card-dragging * {
+  cursor: none !important;
+}
+
+/* Custom drag ghost — raised + sideways sway (HTML5 drag image is static) */
+.card-drag-ghost {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10000;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  opacity: 0.95;
+  will-change: left, top;
+}
+.card-drag-ghost-inner {
+  width: 100%;
+  filter: drop-shadow(0 10px 22px rgba(34, 36, 48, 0.22));
+  animation: card-drag-sway 0.7s ease-in-out infinite;
+  transform-origin: center center;
+}
+@keyframes card-drag-sway {
+  0%, 100% { transform: translateX(-5px) rotate(-1.4deg); }
+  50% { transform: translateX(5px) rotate(1.4deg); }
+}
+.card-drag-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 10001;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  color: var(--text-default);
+  filter: drop-shadow(0 1px 2px rgba(34, 36, 48, 0.25));
+  will-change: left, top;
+}
+.card-drag-cursor svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+}
+.card-drag-cursor.is-blocked {
+  color: var(--text-danger);
+}
 .card-priority-corner {
   position: absolute; left: -1px; top: -1px; width: 32px; height: 32px; z-index: 2;
   pointer-events: none; overflow: hidden; border-radius: 8px 0 0 0;
@@ -1441,7 +1676,102 @@ button.CreateBooking-unit:hover,
   background: var(--surface-default);
   border: var(--border-xs) solid var(--border-subtle);
   border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
-  padding: var(--padding-xs) var(--padding-md); display: flex; align-items: center; justify-content: space-between; gap: var(--padding-xs);
+  padding: var(--padding-xs) var(--padding-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--padding-xs);
+}
+.card-traits {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+.card-traits .badge.tax:not(.card-overflow) {
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-traits .tax.is-overflow-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  pointer-events: none;
+}
+.card-overflow {
+  position: relative;
+  flex: 0 0 auto;
+  cursor: help;
+}
+.card-overflow[hidden] { display: none !important; }
+/* Tip content is portaled to body (.CardOverflowTip) — avoid column overflow clipping */
+.card-overflow-tip { display: none !important; }
+.CardOverflowTip {
+  position: fixed;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 72px;
+  max-width: 280px;
+  padding: 8px 10px;
+  border-radius: var(--border-radius-default);
+  background: var(--text-default);
+  color: var(--text-inverse);
+  font-family: var(--font-family);
+  font-size: var(--font-size-extra-small);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(34, 36, 48, 0.2);
+}
+.CardOverflowTip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: var(--text-default);
+}
+.CardOverflowTip.is-above::before {
+  bottom: auto;
+  top: 100%;
+  border-bottom-color: transparent;
+  border-top-color: var(--text-default);
+}
+.CardOverflowTip-line {
+  display: block;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.CardOverflowTip-line.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.meta-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 .badge-row {
   display: flex; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%; min-height: 22px;
@@ -1497,15 +1827,37 @@ button.CreateBooking-unit:hover,
 .card-rule {
   height: 0; border: 0; border-top: var(--border-xs) solid var(--border-subtle); margin: 0; width: 100%;
 }
-.card-titles { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-.card-title {
-  font-size: 12px; font-weight: 700; color: #222430; display: block; margin: 0; line-height: normal;
+.card-titles { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; }
+.card-jobLink {
+  display: inline-block; max-width: 100%;
+  align-self: flex-start;
+  width: fit-content;
+  margin: 0; padding: 0; border: none; background: none;
+  font-family: var(--font-family);
+  font-size: var(--font-size-small); font-weight: var(--font-weight-bold);
+  line-height: normal; color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer; text-align: left;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.card-company {
-  font-size: 11px; font-weight: 400; color: #6a708f; margin: 0; line-height: normal;
+.card-jobLink:hover {
+  color: var(--primary-emphasis);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
+.card-jobLink:focus-visible {
+  outline: 2px solid var(--border-primary-focus); outline-offset: 2px; border-radius: 2px;
+}
+.card-subtitle {
+  margin: 0;
+  font-size: var(--font-size-extra-small); font-weight: var(--font-weight-regular);
+  line-height: normal; color: var(--text-subtle);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* legacy aliases — kept so any leftover markup still renders */
+.card-title { font-size: var(--font-size-small); font-weight: var(--font-weight-bold); color: var(--text-default); display: block; margin: 0; line-height: normal; }
+.card-company { font-size: var(--font-size-extra-small); font-weight: var(--font-weight-regular); color: var(--text-subtle); margin: 0; line-height: normal; }
 .tax.badge { /* trait chips reuse Dayshape badge-secondary */ }
-.meta-right { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex: 0 0 auto; min-width: 0; }
 .vdiv { width: 1px; height: 14px; background: #f1f1f4; flex-shrink: 0; }
 .deadline {
   font-size: 11px; font-weight: 400; color: #3d425c;
@@ -1536,7 +1888,7 @@ button.CreateBooking-unit:hover,
 .priority { width: 8px; height: 8px; border-radius: 50%; background: var(--dayshape-orange); flex-shrink: 0; }
 
 
-/* Section dividers — Figma Frame 626376 / Phase TaskSeparator */
+/* Section dividers — denser sticky strip so long To Do lists stay scannable */
 .section-sep {
   display: flex;
   flex-direction: row;
@@ -1544,16 +1896,31 @@ button.CreateBooking-unit:hover,
   align-self: stretch;
   gap: 10px;
   width: 100%;
-  height: 28px;
-  margin: var(--padding-xxs) 0;
-  padding: 0;
+  min-height: 32px;
+  margin: 0;
+  padding: 2px 0;
   border: none;
-  background: none;
+  background-color: var(--surface-subtle-light);
   cursor: pointer;
   user-select: none;
   flex: none;
   flex-grow: 0;
   box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  isolation: isolate;
+}
+/* Opaque skirt under the sep so card shadows don't bleed through */
+.section-sep::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 6px;
+  background-color: var(--surface-subtle-light);
+  pointer-events: none;
 }
 .section-sep-line {
   flex: 1 0 0;
@@ -1562,15 +1929,17 @@ button.CreateBooking-unit:hover,
   border: none;
   border-top: var(--border-xs) solid var(--border-subtle);
   align-self: center;
+  position: relative;
+  z-index: 1;
 }
 .section-sep-label {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
   gap: var(--padding-xxs);
-  height: 30px;
+  height: 28px;
   padding: 0 var(--padding-xs);
-  background: var(--surface-subtle-dark);
+  background-color: var(--surface-subtle-dark);
   border: none;
   border-radius: var(--border-radius-default);
   color: var(--text-accent);
@@ -1581,6 +1950,8 @@ button.CreateBooking-unit:hover,
   white-space: nowrap;
   overflow: hidden;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 .section-sep-chevron {
   width: 12px;
@@ -1915,6 +2286,27 @@ button.CreateBooking-unit:hover,
   border-bottom: var(--border-xs) solid var(--border-subtle);
 }
 .Drawer-titleRow { display: flex; gap: 12px; align-items: flex-start; width: 100%; }
+.Drawer-titleBlock { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.Drawer-jobLink {
+  display: inline-block; max-width: 100%;
+  align-self: flex-start;
+  width: fit-content;
+  margin: 0; padding: 0; border: none; background: none;
+  font-family: var(--font-family);
+  font-size: 18px; font-weight: var(--font-weight-bold);
+  line-height: normal; color: var(--text-primary);
+  text-decoration: none;
+  cursor: pointer; text-align: left;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.Drawer-jobLink:hover {
+  color: var(--primary-emphasis);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.Drawer-jobLink:focus-visible {
+  outline: 2px solid var(--border-primary-focus); outline-offset: 2px; border-radius: 2px;
+}
 .Drawer-title {
   margin: 0; font-size: 18px; font-weight: var(--font-weight-bold);
   color: var(--text-emphasis); line-height: normal; overflow: hidden; text-overflow: ellipsis;
@@ -1922,6 +2314,7 @@ button.CreateBooking-unit:hover,
 .Drawer-company {
   margin: 0; font-size: var(--font-size-medium); font-weight: var(--font-weight-regular);
   color: var(--text-subtle); line-height: 21px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .Drawer-close {
   flex-shrink: 0; width: 28px; height: 28px; border-radius: var(--border-radius-default);
@@ -1976,6 +2369,10 @@ button.CreateBooking-unit:hover,
 .Drawer-animPanel.is-open {
   grid-template-rows: 1fr;
   margin-top: 8px;
+  overflow: visible;
+}
+.Drawer-animPanel.is-open > .Drawer-animPanelInner {
+  overflow: visible;
 }
 .Drawer-animPanelInner { overflow: hidden; min-height: 0; }
 .Drawer-milestones[data-timeline-collapsed="true"] .is-timelineExtra { display: none; }
@@ -2076,8 +2473,10 @@ button.CreateBooking-unit:hover,
 /* Engagement Details — Job TaskDrawer alignment */
 .Drawer-engagementCard {
   display: flex; flex-direction: column; width: 100%; border-radius: 4px;
-  border: 1px solid #e2e3e9; overflow: hidden; background: #f8f8f8;
+  border: 1px solid #e2e3e9; background: #f8f8f8;
 }
+.Drawer-engagementCard > .Drawer-engagementRow:first-child { border-radius: 4px 4px 0 0; }
+.Drawer-engagementCard > .Drawer-engagementRow:last-child { border-radius: 0 0 4px 4px; border-bottom: none; }
 .Drawer-engagementRow {
   display: grid;
   grid-template-columns: 24px 1fr auto;
@@ -2096,7 +2495,7 @@ button.CreateBooking-unit:hover,
 }
 .Drawer-engagementIcon.is-danger { background: #fef2f2; color: #c53030; }
 .Drawer-engagementIcon.is-warn { background: #fff7ed; color: #b65800; }
-.Drawer-engagementRow .MilestoneIcon {
+.Drawer-engagementRow .MilestoneIconTip {
   grid-column: 1;
   margin-top: 2px;
 }
@@ -2145,7 +2544,7 @@ button.CreateBooking-unit:hover,
 .Drawer-milestones { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 .Drawer-milestoneGroup { display: flex; flex-direction: column; gap: 8px; width: 100%; }
 .Drawer-milestoneStack {
-  width: 100%; background: #f8f8f8; border: 1px solid #e2e3e9; border-radius: 4px; overflow: hidden;
+  width: 100%; background: #f8f8f8; border: 1px solid #e2e3e9; border-radius: 4px;
 }
 .Drawer-milestoneStack.is-inprogress {
   background: #e8f7fa; border-color: #0295b2;
@@ -2175,18 +2574,44 @@ button.CreateBooking-unit:hover,
   display: inline-flex; align-items: center; gap: 8px;
   flex-shrink: 0; margin-left: auto;
 }
-.MilestoneBadge {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 20px; padding: 0 8px; border-radius: 3px; flex-shrink: 0;
-  font-size: 11px; font-weight: 700; line-height: 1; white-space: nowrap;
+/* Dayshape Badge — Storybook API (variant · size · strong); non-interactive status labels */
+.Badge {
+  display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  box-sizing: border-box; flex-shrink: 0;
+  border: var(--border-xs) solid transparent;
+  border-radius: var(--border-radius-default);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  line-height: 1; white-space: nowrap; vertical-align: middle;
 }
-.MilestoneBadge--next { background: #e2e3e9; color: #4c5172; }
-.MilestoneBadge--done { background: #078138; color: #fff; }
-.MilestoneBadge--inprogress { background: #0295b2; color: #fff; }
-.MilestoneBadge--onhold { background: var(--surface-danger); color: #fff; }
-.MilestoneBadge--pending { background: #4f3fa0; color: #fff; }
-.MilestoneBadge--returned { background: #e27209; color: #fff; }
-.MilestoneBadge--warn { background: #e27209; color: #fff; }
+.Badge--sm {
+  min-height: 18px; padding: 2px 6px;
+  font-size: var(--font-size-extra-small);
+}
+.Badge--md {
+  min-height: 22px; padding: var(--padding-xxs) 8px;
+  font-size: var(--font-size-small);
+}
+.Badge--neutral { background: var(--surface-subtle-dark); color: var(--text-accent); border-color: var(--border-subtle); }
+.Badge--primary { background: var(--surface-primary-subtle); color: var(--text-primary); border-color: var(--primary-accent); }
+.Badge--success { background: var(--surface-success-subtle); color: var(--text-success); border-color: var(--border-success-subtle); }
+.Badge--warning { background: var(--surface-warning); color: var(--text-warning); border-color: var(--border-warning-subtle); }
+.Badge--danger { background: var(--surface-danger-subtle); color: var(--text-danger); border-color: var(--border-danger-subtle); }
+.Badge--info { background: #e8f7fa; color: var(--surface-eng-01); border-color: #9ad5e2; }
+.Badge--neutral.Badge--strong { background: #e2e3e9; color: var(--text-accent); border-color: #e2e3e9; }
+.Badge--primary.Badge--strong { background: var(--surface-primary); color: var(--text-inverse); border-color: var(--surface-primary); }
+.Badge--success.Badge--strong { background: var(--surface-success); color: var(--text-inverse); border-color: var(--surface-success); }
+.Badge--warning.Badge--strong { background: var(--warning); color: var(--text-inverse); border-color: var(--warning); }
+.Badge--danger.Badge--strong { background: var(--surface-danger); color: var(--text-inverse); border-color: var(--surface-danger); }
+.Badge--info.Badge--strong { background: var(--surface-eng-01); color: var(--text-inverse); border-color: var(--surface-eng-01); }
+
+.MilestoneIconTip {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: help;
+}
+.MilestoneIconTip-balloon { display: none; } /* content cloned into floating tip */
 .MilestoneIcon {
   width: 24px; height: 24px; border-radius: 60px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
@@ -2199,6 +2624,36 @@ button.CreateBooking-unit:hover,
 .MilestoneIcon--pending { background: #4f3fa0; color: #fff; }
 .MilestoneIcon--returned { background: #e27209; color: #fff; }
 .MilestoneIcon--warn { background: #e27209; color: #fff; }
+
+/* Floating tip — rendered on body so drawer overflow cannot clip it */
+.MilestoneStatusTip {
+  position: fixed;
+  z-index: 2000;
+  display: flex;
+  padding: 4px;
+  background: var(--surface-default);
+  border: var(--border-xs) solid var(--border-subtle);
+  border-radius: var(--border-radius-default);
+  box-shadow: 0 4px 12px rgba(34, 36, 48, 0.16);
+  pointer-events: none;
+}
+.MilestoneStatusTip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface-default);
+  filter: drop-shadow(0 1px 0 var(--border-subtle));
+}
+.MilestoneStatusTip.is-below::after {
+  top: auto;
+  bottom: 100%;
+  border-top-color: transparent;
+  border-bottom-color: var(--surface-default);
+  filter: drop-shadow(0 -1px 0 var(--border-subtle));
+}
 .Drawer-milestone-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0; }
 .Drawer-milestone-phase {
   margin: 0; font-size: 12px; color: #6a708f; font-weight: 400; line-height: normal;
@@ -2381,6 +2836,15 @@ button.CreateBooking-unit:hover,
 }
 .Drawer-bookingsPanel .Drawer-milestone {
   background: #fff; border-color: var(--border-subtle);
+  position: relative;
+  overflow: visible;
+}
+.Drawer-bookingsPanel .MilestoneIconTip {
+  z-index: 2;
+}
+.Drawer-bookingsPanel .MilestoneIconTip:hover,
+.Drawer-bookingsPanel .MilestoneIconTip:focus-within {
+  z-index: 50;
 }
 .Drawer-bookingActions {
   display: inline-flex;
@@ -2949,7 +3413,7 @@ body.overlay-open { overflow: hidden; }
     </div>
 
     <div class="Toolbar" id="boardToolbar">
-      <h2 class="Toolbar-title">My Work</h2>
+      <h2 class="Toolbar-title">My Work <span class="WeekScopeChip" id="weekScopeChip">This week</span></h2>
       <div class="Toolbar-right">
         <div class="CalPicker">
           <button type="button" class="Btn is-muted" id="weekToday" disabled>Today</button>
@@ -2958,12 +3422,12 @@ body.overlay-open { overflow: hidden; }
           <button type="button" class="Btn Btn--icon" id="weekNext" aria-label="Next week"><i class="fa-solid fa-chevron-right"></i></button>
         </div>
         <button type="button" class="CapacityInd" id="capacityInd" title="This week’s planned booking hours" aria-expanded="false" aria-controls="capacityPopover" aria-haspopup="dialog">
-          <span>Capacity</span>
+          <span class="CapacityInd-label">Capacity</span>
           <div class="CapacityInd-bar" aria-hidden="true">
             <div class="CapacityInd-fill" id="capacityFill" style="width:0%;flex-basis:0%"></div>
             <div class="CapacityInd-warn" id="capacityWarn" style="width:0%;flex-basis:0%"></div>
           </div>
-          <span id="capacityText" aria-live="polite">0h/40h</span>
+          <span class="CapacityInd-value" id="capacityText" aria-live="polite">0h/40h</span>
           <div class="CapacityPopover" id="capacityPopover" role="dialog" aria-label="Capacity breakdown" hidden>
             <div class="CapacityPopover-donut" aria-hidden="true">
               <div class="CapacityPopover-donutRing" id="capacityDonutRing"></div>
@@ -3676,16 +4140,17 @@ const MILESTONE_ICON = {
   'deadline-success': { cls: 'MilestoneIcon--done', icon: 'fa-calendar-check' },
 };
 
+/* Storybook Badge: variant + strong. Status chips use strong where they need weight. */
 const MILESTONE_BADGE = {
-  next: { cls: 'MilestoneBadge--next', label: 'Next up' },
-  done: { cls: 'MilestoneBadge--done', label: 'Done' },
-  inprogress: { cls: 'MilestoneBadge--inprogress', label: 'In progress' },
-  onhold: { cls: 'MilestoneBadge--onhold', label: 'On hold' },
-  'awaiting-return': { cls: 'MilestoneBadge--pending', label: 'Awaiting return' },
-  returned: { cls: 'MilestoneBadge--returned', label: 'Reverted' },
-  'due-soon': { cls: 'MilestoneBadge--warn', label: 'Due soon' },
-  deadline: { cls: 'MilestoneBadge--next', label: 'Deadline' },
-  'deadline-success': { cls: 'MilestoneBadge--done', label: 'Done' },
+  next: { variant: 'neutral', strong: false, label: 'Next up' },
+  done: { variant: 'success', strong: true, label: 'Done' },
+  inprogress: { variant: 'info', strong: true, label: 'In progress' },
+  onhold: { variant: 'danger', strong: true, label: 'On hold' },
+  'awaiting-return': { variant: 'primary', strong: true, label: 'Awaiting return' },
+  returned: { variant: 'warning', strong: true, label: 'Reverted' },
+  'due-soon': { variant: 'warning', strong: true, label: 'Due soon' },
+  deadline: { variant: 'neutral', strong: false, label: 'Deadline' },
+  'deadline-success': { variant: 'success', strong: true, label: 'Done' },
 };
 
 function resolveMilestoneState(task, columnId, phaseIdx, phaseImpact, completedPhases, currentIdx) {
@@ -3740,15 +4205,81 @@ function resolveBookingMilestoneMeta(b, weekISO, task, columnId, isCurrentPhase)
   return { label: 'Scheduled', tone: 'is-open', state: 'next' };
 }
 
-function milestoneIconHtml(state) {
-  const cfg = MILESTONE_ICON[state] || MILESTONE_ICON.next;
-  return '<span class="MilestoneIcon ' + cfg.cls + '" aria-hidden="true"><i class="fa-solid ' + cfg.icon + '"></i></span>';
-}
-
-function milestoneBadgeHtml(state) {
+function milestoneBadgeHtml(state, size) {
   if (!state || !MILESTONE_BADGE[state]) return '';
   const cfg = MILESTONE_BADGE[state];
-  return '<span class="MilestoneBadge ' + cfg.cls + '">' + cfg.label + '</span>';
+  const sizeCls = size === 'md' ? 'Badge--md' : 'Badge--sm';
+  const strongCls = cfg.strong ? ' Badge--strong' : '';
+  return (
+    '<span class="Badge ' + sizeCls + ' Badge--' + cfg.variant + strongCls + '">' +
+      cfg.label +
+    '</span>'
+  );
+}
+
+function milestoneIconHtml(state) {
+  const iconCfg = MILESTONE_ICON[state] || MILESTONE_ICON.next;
+  const badgeCfg = MILESTONE_BADGE[state];
+  const label = badgeCfg ? badgeCfg.label : 'Status';
+  const tipBadge = badgeCfg ? milestoneBadgeHtml(state, 'sm') : '';
+  return (
+    '<span class="MilestoneIconTip" tabindex="0" aria-label="' + label.replace(/"/g, '&quot;') + '">' +
+      '<span class="MilestoneIcon ' + iconCfg.cls + '" aria-hidden="true">' +
+        '<i class="fa-solid ' + iconCfg.icon + '"></i>' +
+      '</span>' +
+      (tipBadge
+        ? ('<span class="MilestoneIconTip-balloon" hidden>' + tipBadge + '</span>')
+        : '') +
+    '</span>'
+  );
+}
+
+let _milestoneStatusTipEl = null;
+let _milestoneStatusTipAnchor = null;
+
+function hideMilestoneStatusTip() {
+  if (_milestoneStatusTipEl && _milestoneStatusTipEl.parentNode) {
+    _milestoneStatusTipEl.parentNode.removeChild(_milestoneStatusTipEl);
+  }
+  _milestoneStatusTipEl = null;
+  _milestoneStatusTipAnchor = null;
+}
+
+function positionMilestoneStatusTip(anchor) {
+  if (!_milestoneStatusTipEl || !anchor) return;
+  const rect = anchor.getBoundingClientRect();
+  const tip = _milestoneStatusTipEl;
+  tip.style.visibility = 'hidden';
+  tip.style.left = '0px';
+  tip.style.top = '0px';
+  tip.classList.remove('is-left', 'is-below');
+  const tipW = tip.offsetWidth;
+  const tipH = tip.offsetHeight;
+  let left = rect.left + (rect.width / 2) - (tipW / 2);
+  let top = rect.top - tipH - 8;
+  if (top < 8) {
+    top = rect.bottom + 8;
+    tip.classList.add('is-below');
+  }
+  left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  tip.style.visibility = 'visible';
+}
+
+function showMilestoneStatusTip(anchor) {
+  if (!anchor) return;
+  const source = anchor.querySelector('.MilestoneIconTip-balloon');
+  if (!source || !source.innerHTML.trim()) return;
+  hideMilestoneStatusTip();
+  const tip = document.createElement('div');
+  tip.className = 'MilestoneStatusTip';
+  tip.setAttribute('role', 'tooltip');
+  tip.innerHTML = source.innerHTML;
+  document.body.appendChild(tip);
+  _milestoneStatusTipEl = tip;
+  _milestoneStatusTipAnchor = anchor;
+  positionMilestoneStatusTip(anchor);
 }
 
 function milestoneEstHoursLabel(hours) {
@@ -3760,7 +4291,7 @@ function milestoneStateClass(state) {
 }
 
 function milestoneCardHtml(opts) {
-  let trail = milestoneBadgeHtml(opts.state);
+  let trail = milestoneBadgeHtml(opts.state, 'sm');
   if (opts.showTime && opts.hours > 0) {
     trail += '<div class="Drawer-milestone-meta">' + milestoneEstHoursLabel(opts.hours) + ' <i class="fa-regular fa-clock" aria-hidden="true"></i></div>';
   }
@@ -3789,7 +4320,7 @@ function milestoneCardStackHtml(opts, bookingsParts) {
           '<p class="Drawer-milestone-date' + (opts.dateTone ? ' ' + opts.dateTone : '') + '">' + opts.dateLabel + '</p>' +
         '</div>' +
         '<div class="Drawer-milestone-trail">' +
-          milestoneBadgeHtml(opts.state) +
+          milestoneBadgeHtml(opts.state, 'sm') +
           (opts.showTime && opts.hours > 0 ? ('<div class="Drawer-milestone-meta">' + milestoneEstHoursLabel(opts.hours) + ' <i class="fa-regular fa-clock" aria-hidden="true"></i></div>') : '') +
           (opts.showAvatar ? staffAvatarHtml(opts.avatarInitials || '', opts.avatarName || '') : '') +
           toggleHtml +
@@ -4172,6 +4703,24 @@ function renderDropZone(zone, toId) {
 
 // Mutable board state — status columns (To Do / In Progress / On Hold / Done)
 let columns = JSON.parse(JSON.stringify(ALL_COLUMNS));
+/* Demo overflow tags on a couple of cards (matches design example grey chips) */
+(function enrichTaxTagOverflowDemo() {
+  const demoTags = [
+    'Planning',
+    'Single Audit',
+    'Yellow Book',
+    'A&A Community - Not for Profit',
+    'Ecological',
+    'Agricultural'
+  ];
+  columns.forEach(function (col) {
+    (col.tasks || []).forEach(function (t) {
+      if (t.id === 't-todo-overdue' || t.id === 't-smith-client') {
+        t.taxTypes = demoTags.slice();
+      }
+    });
+  });
+})();
 
 const state = {
   weekOffset: 0,
@@ -4217,8 +4766,163 @@ function engagementLabel(type) {
   return parts[1] || type;
 }
 function taxLabel(task) {
-  if (task.taxTypes && task.taxTypes.length) return task.taxTypes.slice(0, 2);
-  return [(task.engagementType || 'General').split(' - ')[0]];
+  return allTaxLabels(task);
+}
+function allTaxLabels(task) {
+  if (task.taxTypes && task.taxTypes.length) return task.taxTypes.slice();
+  const fallback = (task.engagementType || 'General').split(' - ')[0];
+  return fallback ? [fallback] : [];
+}
+/** Card footer tags — fit as many as width allows; +N tooltip lists the rest. */
+function taxTagsHtml(task) {
+  const all = allTaxLabels(task);
+  if (!all.length) return '';
+  const chips = all.map(function (t) {
+    return '<span class="badge badge-secondary tax">' + escapeHtml(t) + '</span>';
+  }).join('');
+  return (
+    chips +
+    '<span class="badge badge-secondary tax card-overflow" hidden tabindex="0" aria-label="More tags">' +
+      '<span class="card-overflow-count">+0</span>' +
+      '<span class="card-overflow-tip" role="tooltip"></span>' +
+    '</span>'
+  );
+}
+
+function layoutCardTraits(traitsEl) {
+  if (!traitsEl) return;
+  const badges = Array.prototype.slice.call(traitsEl.querySelectorAll('.badge.tax:not(.card-overflow)'));
+  const overflow = traitsEl.querySelector('.card-overflow');
+  if (!badges.length || !overflow) return;
+
+  const countEl = overflow.querySelector('.card-overflow-count');
+  const tipEl = overflow.querySelector('.card-overflow-tip');
+  badges.forEach(function (b) { b.classList.remove('is-overflow-hidden'); });
+  overflow.hidden = true;
+
+  const available = traitsEl.clientWidth;
+  const gap = 8;
+  if (available <= 0) return;
+
+  const widths = badges.map(function (b) { return b.offsetWidth; });
+
+  function rowWidth(count, overflowW) {
+    let used = 0;
+    for (let i = 0; i < count; i++) used += widths[i] + (i ? gap : 0);
+    if (overflowW != null) used += (count ? gap : 0) + overflowW;
+    return used;
+  }
+
+  if (rowWidth(badges.length, null) <= available + 0.5) {
+    overflow.hidden = true;
+    overflow.dataset.overflowTip = '';
+    if (tipEl) tipEl.textContent = '';
+    return;
+  }
+
+  overflow.hidden = false;
+  let fit = 0;
+  for (let n = badges.length - 1; n >= 0; n--) {
+    if (countEl) countEl.textContent = '+' + (badges.length - n);
+    const ow = overflow.offsetWidth;
+    if (rowWidth(n, ow) <= available + 0.5) {
+      fit = n;
+      break;
+    }
+  }
+
+  badges.forEach(function (b, i) {
+    b.classList.toggle('is-overflow-hidden', i >= fit);
+  });
+  const labels = badges.slice(fit).map(function (b) {
+    return (b.textContent || '').trim();
+  }).filter(Boolean);
+  if (countEl) countEl.textContent = '+' + labels.length;
+  if (tipEl) tipEl.textContent = labels.join(', ');
+  overflow.dataset.overflowTip = JSON.stringify(labels);
+  overflow.setAttribute('aria-label', labels.length + ' more tags: ' + labels.join(', '));
+  overflow.hidden = labels.length === 0;
+}
+
+function layoutAllCardTraits() {
+  document.querySelectorAll('.card-traits').forEach(layoutCardTraits);
+}
+
+let _cardOverflowTipEl = null;
+let _cardOverflowTipAnchor = null;
+let _cardOverflowTipTimers = [];
+
+function hideCardOverflowTip() {
+  _cardOverflowTipTimers.forEach(clearTimeout);
+  _cardOverflowTipTimers = [];
+  if (_cardOverflowTipEl) {
+    _cardOverflowTipEl.remove();
+    _cardOverflowTipEl = null;
+  }
+  _cardOverflowTipAnchor = null;
+}
+
+function parseOverflowTipLabels(anchor) {
+  const raw = (anchor && anchor.dataset.overflowTip) || '';
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map(function (s) { return String(s || '').trim(); }).filter(Boolean);
+    }
+  } catch (err) { /* legacy comma string */ }
+  return raw.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+}
+
+function positionCardOverflowTip(anchor) {
+  const tip = _cardOverflowTipEl;
+  if (!tip || !anchor) return;
+  tip.classList.remove('is-above');
+  tip.style.visibility = 'hidden';
+  tip.style.left = '0px';
+  tip.style.top = '0px';
+  const tipW = tip.offsetWidth;
+  const tipH = tip.offsetHeight;
+  const rect = anchor.getBoundingClientRect();
+  let left = rect.left + rect.width / 2 - tipW / 2;
+  /* Prefer below the +N chip (matches design); flip above if clipped */
+  let top = rect.bottom + 10;
+  if (top + tipH > window.innerHeight - 8) {
+    top = rect.top - tipH - 10;
+    tip.classList.add('is-above');
+  }
+  left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  tip.style.visibility = 'visible';
+}
+
+function showCardOverflowTip(anchor) {
+  if (!anchor || anchor.hidden) return;
+  const labels = parseOverflowTipLabels(anchor);
+  if (!labels.length) return;
+  hideCardOverflowTip();
+  const tip = document.createElement('div');
+  tip.className = 'CardOverflowTip';
+  tip.setAttribute('role', 'tooltip');
+  labels.forEach(function (label) {
+    const line = document.createElement('span');
+    line.className = 'CardOverflowTip-line';
+    line.textContent = label;
+    tip.appendChild(line);
+  });
+  document.body.appendChild(tip);
+  _cardOverflowTipEl = tip;
+  _cardOverflowTipAnchor = anchor;
+  positionCardOverflowTip(anchor);
+  const lines = tip.querySelectorAll('.CardOverflowTip-line');
+  lines.forEach(function (line, i) {
+    const t = setTimeout(function () {
+      if (_cardOverflowTipEl !== tip) return;
+      line.classList.add('is-in');
+    }, 40 + i * 90);
+    _cardOverflowTipTimers.push(t);
+  });
 }
 function jobTitle(task) {
   const eng = engagementLabel(task.engagementType);
@@ -4226,6 +4930,58 @@ function jobTitle(task) {
   const short = task.company.replace(/ Inc\.?$| LLC\.?$| Co\.?$| LLP\.?$/i, '');
   if (/return|leave|training|credits/i.test(eng)) return short + ' ' + eng;
   return eng;
+}
+
+/** Engagement / job code shown as the card’s primary linked heading. */
+function jobCodeForTask(task) {
+  if (!task) return '';
+  if (task.jobCode) return task.jobCode;
+  if (task.engagementCode) return task.engagementCode;
+  const catalog = (typeof CREATE_ENGAGEMENTS !== 'undefined' ? CREATE_ENGAGEMENTS : null);
+  if (catalog && task.company) {
+    const hit = catalog.find(function (e) {
+      return e.company === task.company || (e.company && task.company.indexOf(e.company) === 0);
+    });
+    if (hit && hit.code) return hit.code;
+  }
+  // Stable synthetic code from company name (e.g. Audit Public Boston → AUD-PUB-BOS)
+  const words = String(task.company || 'JOB')
+    .replace(/[^a-zA-Z0-9\s]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const parts = words.slice(0, 3).map(function (w) { return w.slice(0, 3).toUpperCase(); });
+  while (parts.length < 2) parts.push('JOB');
+  const n = String(task.id || '1').replace(/\D/g, '').slice(-2) || '1';
+  return parts.join('-') + '-' + n;
+}
+
+/** Secondary line under the job code — company / engagement display name. */
+function jobSubtitleForTask(task) {
+  if (!task) return '';
+  return task.company || jobTitle(task) || '';
+}
+
+function jobHrefForTask(task) {
+  const code = encodeURIComponent(jobCodeForTask(task) || task.id || '');
+  return '#/jobs/' + code;
+}
+
+function cardTitlesHtml(task) {
+  const code = jobCodeForTask(task);
+  const subtitle = jobSubtitleForTask(task);
+  const href = jobHrefForTask(task);
+  return (
+    '<div class="card-titles">' +
+      '<a class="card-jobLink" href="' + href + '" data-job-link="' + String(task.id).replace(/"/g, '') + '"' +
+        ' title="Open job ' + String(code).replace(/"/g, '&quot;') + '">' +
+        escapeHtml(code) +
+      '</a>' +
+      (subtitle
+        ? '<p class="card-subtitle">' + escapeHtml(subtitle) + '</p>'
+        : '') +
+    '</div>'
+  );
 }
 
 function taskVisibleThisWeek(task, weekISO) {
@@ -4329,6 +5085,43 @@ function sectionSep(label, count, collapsed, help) {
       '</span>' +
       '<span class="section-sep-line" aria-hidden="true"></span>' +
     '</button>'
+  );
+}
+
+function columnEmptyState(columnId) {
+  const copy = {
+    'to-do': {
+      mod: '',
+      icon: 'fa-regular fa-clipboard',
+      title: 'Nothing to do',
+      sub: 'Cards you start or claim will show up here.'
+    },
+    'in-progress': {
+      mod: '',
+      icon: 'fa-regular fa-clock',
+      title: 'No work in progress',
+      sub: 'Drag a card here when you start.'
+    },
+    'blocked': {
+      mod: ' column-empty--hold',
+      icon: 'fa-solid fa-pause',
+      title: 'Nothing on hold',
+      sub: 'Blocked work will appear here.'
+    },
+    'done': {
+      mod: ' column-empty--done',
+      icon: 'fa-solid fa-check',
+      title: 'Nothing done this week',
+      sub: 'Completed cards will land here.'
+    }
+  };
+  const cfg = copy[columnId] || copy['to-do'];
+  return (
+    '<div class="column-empty' + cfg.mod + '" role="status">' +
+      '<span class="column-empty-icon" aria-hidden="true"><i class="' + cfg.icon + '"></i></span>' +
+      '<p class="column-empty-title">' + cfg.title + '</p>' +
+      '<p class="column-empty-sub">' + cfg.sub + '</p>' +
+    '</div>'
   );
 }
 
@@ -4943,7 +5736,7 @@ function renderCard(task, columnId, weekISO) {
     ? renderJobHeader(badges, hours)
     : renderPhaseHeader(task, badges, hours);
 
-  const taxes = taxLabel(task).map(t => '<span class="badge badge-secondary tax">' + t + '</span>').join('');
+  const taxes = taxTagsHtml(task);
   let deadline = '';
   if (task.deadline) {
     const isOverdue = task.status === 'overdue';
@@ -4967,23 +5760,20 @@ function renderCard(task, columnId, weekISO) {
   const canReopen = columnId === 'done' && canDropTask('done', 'in-progress', task);
   const canDrag = columnId !== 'done' || canReopen;
   return (
-    '<button class="' + classes.join(' ') + '" type="button" draggable="' + canDrag + '"' +
+    '<div class="' + classes.join(' ') + '" role="button" tabindex="0" draggable="' + canDrag + '"' +
       ' data-id="' + task.id + '" data-column="' + columnId + '" data-card-type="' + cardType + '"' +
       (canDrag ? (canReopen ? ' title="Drag to In Progress to reopen"' : '') : ' title="Done cards from other weeks stay in Done"') + '>' +
       corner +
       '<div class="card-body">' +
         header +
         '<hr class="card-rule" />' +
-        '<div class="card-titles">' +
-          '<p class="card-title">' + jobTitle(task) + '</p>' +
-          '<p class="card-company">' + task.company + '</p>' +
-        '</div>' +
+        cardTitlesHtml(task) +
       '</div>' +
       '<div class="card-footer">' +
         '<div class="card-traits">' + taxes + '</div>' +
         '<div class="meta-right">' + deadline + '</div>' +
       '</div>' +
-    '</button>'
+    '</div>'
   );
 }
 
@@ -5104,11 +5894,15 @@ function renderBoard() {
   const weekISO = getWeekISO(state.weekOffset);
   document.getElementById('weekLabel').textContent = getWeekLabel(state.weekOffset);
   const weekTodayBtn = document.getElementById('weekToday');
+  const weekScopeChip = document.getElementById('weekScopeChip');
+  const weekRangeBtn = document.getElementById('weekRangeBtn');
+  const onTodayWeek = state.weekOffset === state.todayOffset;
   if (weekTodayBtn) {
-    const onTodayWeek = state.weekOffset === state.todayOffset;
     weekTodayBtn.classList.toggle('is-muted', onTodayWeek);
     weekTodayBtn.disabled = onTodayWeek;
   }
+  if (weekScopeChip) weekScopeChip.hidden = !onTodayWeek;
+  if (weekRangeBtn) weekRangeBtn.classList.toggle('is-this-week', onTodayWeek);
   updateCapacityChrome();
   updateWeekCheckInBadge();
   const cols = getVisibleColumns();
@@ -5145,12 +5939,12 @@ function renderBoard() {
         parts.push(sectionSep('Pooled', pooled.length, prepFilters.pooledCollapsed, 'Unscheduled tasks available to be picked up by any team member.'));
         if (!prepFilters.pooledCollapsed) parts.push(pooled.map(t => renderCard(t, col.id, weekISO)).join(''));
       }
-      body = parts.join('') || '<div class="column-empty">Drop a card here</div>';
+      body = parts.join('') || columnEmptyState(col.id);
     } else {
       const visible = col.tasks.filter(t => taskVisibleThisWeek(t, weekISO));
       body = visible.length
         ? visible.map(t => renderCard(t, col.id, weekISO)).join('')
-        : '<div class="column-empty">Drop a card here</div>';
+        : columnEmptyState(col.id);
     }
 
     const filters = col.id === 'to-do'
@@ -5176,6 +5970,10 @@ function renderBoard() {
       '</section>'
     );
   }).join('');
+
+  requestAnimationFrame(function () {
+    layoutAllCardTraits();
+  });
 }
 
 function clearDropHighlights() {
@@ -5795,6 +6593,7 @@ function syncOverlayBodyClass() {
 }
 
 function closeDrawer() {
+  hideMilestoneStatusTip();
   const drawer = document.getElementById('taskDrawer');
   const backdrop = document.getElementById('drawerBackdrop');
   drawer.classList.remove('is-open');
@@ -6184,6 +6983,7 @@ function applyDrawerExpandState(state) {
 }
 
 function renderDrawer() {
+  hideMilestoneStatusTip();
   const task = ui.drawerTask;
   const columnId = ui.drawerColumnId;
   if (!task) return;
@@ -6192,6 +6992,9 @@ function renderDrawer() {
   const expandState = sameTask ? getDrawerExpandState() : null;
 
   const title = jobTitle(task);
+  const jobCode = jobCodeForTask(task);
+  const jobSubtitle = jobSubtitleForTask(task);
+  const jobHref = jobHrefForTask(task);
   const isBlocked = !!task.blockingReason && !task.returnedReason;
   const isReturned = !!task.returnedReason && !task.blockingReason;
   const isDone = columnId === 'done';
@@ -6250,9 +7053,12 @@ function renderDrawer() {
     '<div class="Drawer-header">' +
       priorityMark +
       '<div class="Drawer-titleRow">' +
-        '<div style="flex:1;min-width:0">' +
-          '<p class="Drawer-title" id="drawerTitle">' + title + '</p>' +
-          '<p class="Drawer-company">' + task.company + '</p>' +
+        '<div class="Drawer-titleBlock">' +
+          '<a class="Drawer-jobLink" id="drawerTitle" href="' + jobHref + '" data-job-link="' + String(task.id).replace(/"/g, '') + '"' +
+            ' title="Open job ' + String(jobCode).replace(/"/g, '&quot;') + '">' +
+            escapeHtml(jobCode) +
+          '</a>' +
+          '<p class="Drawer-company">' + escapeHtml(jobSubtitle || title) + '</p>' +
         '</div>' +
         '<button type="button" class="Drawer-close" id="drawerClose" aria-label="Close task details"><i class="fa-solid fa-xmark"></i></button>' +
       '</div>' +
@@ -7789,13 +8595,117 @@ function openModal(name) {
 
 document.getElementById('board').addEventListener('click', (e) => {
   if (drag.didDrag) { drag.didDrag = false; return; }
+  const jobLink = e.target.closest('[data-job-link]');
+  if (jobLink) {
+    e.preventDefault();
+    e.stopPropagation();
+    const taskId = jobLink.getAttribute('data-job-link');
+    const found = findTask(taskId);
+    const code = found ? jobCodeForTask(found.task) : jobLink.textContent.trim();
+    showToast('Open job · ' + code);
+    return;
+  }
   const card = e.target.closest('.card');
   if (!card) return;
   const found = findTask(card.dataset.id);
   if (found) openDrawer(found.task, card.dataset.column || found.columnId);
 });
 
+document.getElementById('board').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  if (e.target.closest('[data-job-link]')) return;
+  const card = e.target.closest('.card');
+  if (!card || e.target !== card) return;
+  e.preventDefault();
+  const found = findTask(card.dataset.id);
+  if (found) openDrawer(found.task, card.dataset.column || found.columnId);
+});
+
 /* Phase 4: HTML5 drag and drop */
+let dragGhostEl = null;
+let dragCursorEl = null;
+let dragGhostOffsetX = 0;
+let dragGhostOffsetY = 0;
+const dragGhostBlank = document.createElement('canvas');
+dragGhostBlank.width = 1;
+dragGhostBlank.height = 1;
+
+const DRAG_CURSOR_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
+    '<path d="M8 11V6.5a1.5 1.5 0 0 1 3 0V10M11 10.5V5a1.5 1.5 0 0 1 3 0v5.5M14 11V6a1.5 1.5 0 0 1 3 0v6.5M17 12.5V9a1.5 1.5 0 1 1 3 0v5.2c0 3.1-2.1 6.1-5.1 6.9l-.7.18c-2.6.64-5.3-.75-6.2-3.2L8.2 14.5" ' +
+      'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="#fff"/>' +
+  '</svg>';
+
+function clearDragGhost() {
+  if (dragGhostEl) {
+    dragGhostEl.remove();
+    dragGhostEl = null;
+  }
+  if (dragCursorEl) {
+    dragCursorEl.remove();
+    dragCursorEl = null;
+  }
+  document.querySelectorAll('.card-drag-ghost, .card-drag-cursor').forEach((el) => el.remove());
+  document.removeEventListener('dragover', onDragGhostMove, true);
+  document.body.classList.remove('is-card-dragging');
+}
+
+function onDragGhostMove(e) {
+  if (e.clientX === 0 && e.clientY === 0) return;
+  if (dragGhostEl) {
+    dragGhostEl.style.left = (e.clientX - dragGhostOffsetX) + 'px';
+    dragGhostEl.style.top = (e.clientY - dragGhostOffsetY) + 'px';
+  }
+  if (dragCursorEl) {
+    dragCursorEl.style.left = e.clientX + 'px';
+    dragCursorEl.style.top = e.clientY + 'px';
+    const overBlocked = !!(e.target && e.target.closest && e.target.closest('.column-drop-zone.is-disabled'));
+    dragCursorEl.classList.toggle('is-blocked', overBlocked);
+  }
+}
+
+function startDragGhost(card, e) {
+  clearDragGhost();
+  document.body.classList.add('is-card-dragging');
+  const rect = card.getBoundingClientRect();
+  dragGhostOffsetX = e.clientX - rect.left;
+  dragGhostOffsetY = e.clientY - rect.top;
+
+  const shell = document.createElement('div');
+  shell.className = 'card-drag-ghost';
+  shell.setAttribute('aria-hidden', 'true');
+  shell.style.width = rect.width + 'px';
+  shell.style.left = rect.left + 'px';
+  shell.style.top = rect.top + 'px';
+  const inner = document.createElement('div');
+  inner.className = 'card-drag-ghost-inner';
+  inner.innerHTML = card.innerHTML;
+  shell.appendChild(inner);
+  document.body.appendChild(shell);
+  dragGhostEl = shell;
+
+  const cursor = document.createElement('div');
+  cursor.className = 'card-drag-cursor';
+  cursor.setAttribute('aria-hidden', 'true');
+  cursor.innerHTML = DRAG_CURSOR_SVG;
+  cursor.style.left = e.clientX + 'px';
+  cursor.style.top = e.clientY + 'px';
+  document.body.appendChild(cursor);
+  dragCursorEl = cursor;
+
+  // Hide native drag preview so only our ghost + hand show
+  try { e.dataTransfer.setDragImage(dragGhostBlank, 0, 0); } catch (_) { /* ignore */ }
+  document.addEventListener('dragover', onDragGhostMove, true);
+}
+
+function endCardDrag() {
+  document.querySelectorAll('.card.is-dragging').forEach((el) => el.classList.remove('is-dragging'));
+  clearDragGhost();
+  clearDropHighlights();
+  drag.taskId = null;
+  drag.fromColumnId = null;
+}
+
 document.getElementById('board').addEventListener('dragstart', (e) => {
   const card = e.target.closest('.card');
   if (!card || card.getAttribute('draggable') === 'false') { e.preventDefault(); return; }
@@ -7803,17 +8713,31 @@ document.getElementById('board').addEventListener('dragstart', (e) => {
   drag.fromColumnId = card.dataset.column;
   drag.didDrag = false;
   card.classList.add('is-dragging');
+  document.body.classList.add('is-card-dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/plain', card.dataset.id);
+  startDragGhost(card, e);
   updateDropHighlights(drag.fromColumnId, drag.taskId);
 });
 
-document.getElementById('board').addEventListener('dragend', (e) => {
+document.getElementById('board').addEventListener('mousedown', (e) => {
   const card = e.target.closest('.card');
-  if (card) card.classList.remove('is-dragging');
-  clearDropHighlights();
-  drag.taskId = null;
-  drag.fromColumnId = null;
+  if (!card || card.getAttribute('draggable') === 'false') return;
+  if (e.button !== 0) return;
+  card.classList.add('is-grabbing');
+});
+
+document.addEventListener('mouseup', () => {
+  document.querySelectorAll('.card.is-grabbing').forEach((el) => el.classList.remove('is-grabbing'));
+});
+
+document.getElementById('board').addEventListener('dragend', () => {
+  endCardDrag();
+});
+
+// Safety: if the source card is removed mid-drag (board re-render), board dragend can miss
+document.addEventListener('dragend', () => {
+  if (dragGhostEl || drag.taskId) endCardDrag();
 });
 
 document.getElementById('board').addEventListener('dragover', (e) => {
@@ -7838,6 +8762,19 @@ document.getElementById('board').addEventListener('dragover', (e) => {
   e.preventDefault();
   e.dataTransfer.dropEffect = 'move';
   drag.didDrag = true;
+  /* Figma Kanban Drop state Hover — CSS :hover is unreliable during HTML5 DnD */
+  document.querySelectorAll('.column-drop-zone.is-drag-over').forEach((el) => {
+    if (el !== zone) el.classList.remove('is-drag-over');
+  });
+  if (zone && !zone.classList.contains('is-disabled')) zone.classList.add('is-drag-over');
+});
+
+document.getElementById('board').addEventListener('dragleave', (e) => {
+  const zone = e.target.closest('.column-drop-zone');
+  if (!zone) return;
+  const next = e.relatedTarget;
+  if (next && zone.contains(next)) return;
+  zone.classList.remove('is-drag-over');
 });
 
 document.getElementById('board').addEventListener('drop', (e) => {
@@ -7850,6 +8787,8 @@ document.getElementById('board').addEventListener('drop', (e) => {
   const fromId = drag.fromColumnId;
   const taskId = drag.taskId;
   drag.didDrag = true;
+  // Clear ghost before board re-render / modals — dragend can miss if the source node is destroyed
+  clearDragGhost();
   drag.taskId = null;
   drag.fromColumnId = null;
   clearDropHighlights();
@@ -7944,11 +8883,54 @@ document.getElementById('board').addEventListener('change', (e) => {
 
 document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
 
+document.getElementById('drawerBody').addEventListener('mouseover', function (e) {
+  const tip = e.target.closest('.MilestoneIconTip');
+  if (!tip || !document.getElementById('drawerBody').contains(tip)) return;
+  if (_milestoneStatusTipAnchor === tip) return;
+  showMilestoneStatusTip(tip);
+});
+document.getElementById('drawerBody').addEventListener('mouseout', function (e) {
+  const tip = e.target.closest('.MilestoneIconTip');
+  if (!tip || !document.getElementById('drawerBody').contains(tip)) return;
+  const next = e.relatedTarget && e.relatedTarget.closest
+    ? e.relatedTarget.closest('.MilestoneIconTip')
+    : null;
+  if (next === tip) return;
+  if (_milestoneStatusTipAnchor === tip) hideMilestoneStatusTip();
+});
+document.getElementById('drawerBody').addEventListener('focusin', function (e) {
+  const tip = e.target.closest('.MilestoneIconTip');
+  if (tip) showMilestoneStatusTip(tip);
+});
+document.getElementById('drawerBody').addEventListener('focusout', function (e) {
+  const tip = e.target.closest('.MilestoneIconTip');
+  if (!tip) return;
+  const next = e.relatedTarget && e.relatedTarget.closest
+    ? e.relatedTarget.closest('.MilestoneIconTip')
+    : null;
+  if (next === tip) return;
+  if (_milestoneStatusTipAnchor === tip) hideMilestoneStatusTip();
+});
+document.getElementById('drawerBody').addEventListener('scroll', hideMilestoneStatusTip, true);
+window.addEventListener('scroll', function () {
+  if (_milestoneStatusTipEl) hideMilestoneStatusTip();
+}, true);
+
 document.getElementById('drawerFooter').addEventListener('click', (e) => {
   const btn = e.target.closest('[data-open-modal]');
   if (btn) openModal(btn.dataset.openModal);
 });
 document.getElementById('drawerBody').addEventListener('click', (e) => {
+  const jobLink = e.target.closest('[data-job-link]');
+  if (jobLink) {
+    e.preventDefault();
+    e.stopPropagation();
+    const taskId = jobLink.getAttribute('data-job-link');
+    const found = findTask(taskId);
+    const code = found ? jobCodeForTask(found.task) : jobLink.textContent.trim();
+    showToast('Open job · ' + code);
+    return;
+  }
   const transitionBtn = e.target.closest('[data-drawer-transition]');
   if (transitionBtn) {
     e.preventDefault();
@@ -8401,6 +9383,48 @@ if (/\?test=1(?:&|$)/.test(location.search) || location.hash === '#test') {
 }
 
 renderBoard();
+
+let cardTraitsResizeTimer = null;
+window.addEventListener('resize', function () {
+  clearTimeout(cardTraitsResizeTimer);
+  cardTraitsResizeTimer = setTimeout(function () {
+    hideCardOverflowTip();
+    layoutAllCardTraits();
+  }, 100);
+});
+
+document.getElementById('board').addEventListener('mouseover', function (e) {
+  const overflow = e.target.closest('.card-overflow');
+  if (!overflow || overflow.hidden) return;
+  if (_cardOverflowTipAnchor === overflow) return;
+  showCardOverflowTip(overflow);
+});
+document.getElementById('board').addEventListener('mouseout', function (e) {
+  const overflow = e.target.closest('.card-overflow');
+  if (!overflow) return;
+  const next = e.relatedTarget && e.relatedTarget.closest
+    ? e.relatedTarget.closest('.card-overflow')
+    : null;
+  if (next === overflow) return;
+  if (_cardOverflowTipAnchor === overflow) hideCardOverflowTip();
+});
+document.getElementById('board').addEventListener('focusin', function (e) {
+  const overflow = e.target.closest('.card-overflow');
+  if (overflow) showCardOverflowTip(overflow);
+});
+document.getElementById('board').addEventListener('focusout', function (e) {
+  const overflow = e.target.closest('.card-overflow');
+  if (!overflow) return;
+  const next = e.relatedTarget && e.relatedTarget.closest
+    ? e.relatedTarget.closest('.card-overflow')
+    : null;
+  if (next === overflow) return;
+  if (_cardOverflowTipAnchor === overflow) hideCardOverflowTip();
+});
+document.getElementById('board').addEventListener('scroll', hideCardOverflowTip, true);
+window.addEventListener('scroll', function () {
+  if (_cardOverflowTipEl) hideCardOverflowTip();
+}, true);
 </script>
 <script src="../config.js"></script>
 <script src="../shared/access.js"></script>

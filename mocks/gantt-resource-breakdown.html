@@ -450,9 +450,6 @@ button { font-family: inherit; }
     font-weight: 600;
 }
 
-/* Slim availability strip in the left panel gutter */
-.SlimGutter { height: var(--slim-h); }
-
 /* Timeline cells */
 .Track-weeks { display: flex; flex-direction: column; }
 .Track-subrow { display: flex; height: var(--sub-row-h); border-bottom: var(--border-xs) solid var(--border-subtle); }
@@ -464,6 +461,9 @@ button { font-family: inherit; }
     height: calc(var(--sub-row-h) - var(--border-xs));
     flex: 0 0 calc(var(--sub-row-h) - var(--border-xs));
 }
+/* Open rows push the sub-row's own rule down past the revealed bookings, so the
+   hours strip carries the divider itself and stays visually capped. */
+.Track-hours.is-open { border-bottom: var(--border-xs) solid var(--border-subtle); }
 
 /* Daylight PhaseWeekCell (Figma 16232:17192). */
 .Cellw {
@@ -1395,6 +1395,8 @@ function breakdownAvailable() { return FLAGS.ganttAggregation && FLAGS.rolesEnab
 var WEEK_COUNT = 52;
 var WEEK_W = 112.6;
 var DAY_W = WEEK_W / 5;
+// Height of the slim availability strip; mirrors the --slim-h CSS token.
+var SLIM_H = 5;
 
 // Booking bars match the main Gantt's 23px .gantt-item, stacked with a 2px gap.
 var BAR_H = 23;
@@ -1913,9 +1915,14 @@ function buildWorkerRow(worker, index) {
     weeksCol.style.width = '100%';
     track.appendChild(weeksCol);
 
-    // Slim availability strip — top-level resource row only (DEVO-29673)
+    // Slim availability strip — top-level resource row only (DEVO-29673).
+    // The strip lives on the timeline; in the label column its height is folded
+    // into the first row's top padding instead of a separate spacer, so the
+    // resource separator reads as a single line rather than doubling up above an
+    // empty band.
+    var slimCap = 0;
     if (state.showAvailability) {
-        dims.appendChild(el('div', 'SlimGutter'));
+        slimCap = SLIM_H;
         var slim = el('div', 'SlimRow');
         WEEKS.forEach(function (d, wi) {
             var c = el('div', 'SlimCell');
@@ -1940,17 +1947,23 @@ function buildWorkerRow(worker, index) {
         bars.style.inset = '0';
         flat.appendChild(bars);
         weeksCol.appendChild(flat);
-        dims.appendChild(el('div', 'DimLabel', ''));
-        dims.lastChild.style.height = flatH + 'px';
+        var flatLbl = el('div', 'DimLabel', '');
+        flatLbl.style.height = (flatH + slimCap) + 'px';
+        if (slimCap) flatLbl.style.paddingTop = (2 + slimCap) + 'px';
+        dims.appendChild(flatLbl);
     } else {
-        rows.forEach(function (r) {
+        rows.forEach(function (r, ri) {
             var open = rowExpanded(worker, r);
             var itemCount = open ? r.items.length : 0;
             var h = 24 + (itemCount ? barsHeight(itemCount, BAR_PAD) : 0);
+            // The first label absorbs the slim-strip height so it lines up with
+            // the timeline's strip + first sub-row and needs no separate spacer.
+            var cap = ri === 0 ? slimCap : 0;
 
             // Left label
             var lbl = el('div', 'DimLabel' + (r.isOther ? ' is-other' : '') + (open ? ' is-expanded' : ''));
-            lbl.style.height = h + 'px';
+            lbl.style.height = (h + cap) + 'px';
+            if (cap) lbl.style.paddingTop = (2 + cap) + 'px';
             if (h > 24) lbl.style.alignItems = 'flex-start';
             if (r.accent) lbl.style.borderLeftColor = r.accent;
             lbl.appendChild(el('span', null, r.label));
@@ -1980,7 +1993,7 @@ function buildWorkerRow(worker, index) {
             sub.style.flexDirection = 'column';
             sub.style.position = 'relative';
 
-            var hoursRow = el('div', 'Track-hours');
+            var hoursRow = el('div', 'Track-hours' + (open && r.items.length ? ' is-open' : ''));
             WEEKS.forEach(function (d, wi) {
                 hoursRow.appendChild(buildCell(worker, r, wi, d));
             });
@@ -2009,9 +2022,9 @@ function buildCell(worker, row, wi, weekDate) {
     if (state.selectedCell === key) c.classList.add('is-selected');
     c.classList.add('is-clickable');
 
-    // Click expands the row so this cell's bookings are visible. Clicking the
-    // open cell again closes it. Does not open the side panel — that only
-    // follows from selecting a booking bar.
+    // Click expands the row so this cell's bookings are visible. Any cell in an
+    // open row closes it again, not just the one that opened it. Does not open
+    // the side panel — that only follows from selecting a booking bar.
     c.addEventListener('click', function () {
         if (!items.length) {
             state.selectedCell = null;
@@ -2019,12 +2032,12 @@ function buildCell(worker, row, wi, weekDate) {
             render();
             return;
         }
-        if (state.selectedCell === key && state.expandedRows[rowKey]) {
+        if (state.expandedRows[rowKey]) {
             state.selectedCell = null;
             delete state.expandedRows[rowKey];
         } else {
             state.selectedCell = key;
-            if (row.items.length) openRow(worker, row);
+            openRow(worker, row);
         }
         state.selection = [];
         render();
